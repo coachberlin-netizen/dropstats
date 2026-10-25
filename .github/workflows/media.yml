@@ -1,0 +1,43 @@
+# Captura recursos para el vídeo promocional (capturas reales de dropstats.vercel.app y modelos de voz Piper).
+# Se ejecuta al subir a la rama media-job y publica el resultado en la rama media-out.
+name: media
+on:
+  push:
+    branches: [media-job]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Playwright
+        run: pip install playwright==1.48.0 && python -m playwright install --with-deps chromium
+      - name: Capturas
+        run: python tools/capture.py
+      - name: Voces Piper (es_ES)
+        run: |
+          mkdir -p out/voice
+          for v in es/es_ES/davefx/medium/es_ES-davefx-medium es/es_ES/sharvard/medium/es_ES-sharvard-medium es/es_MX/claude/high/es_MX-claude-high; do
+            n=$(basename $v)
+            curl -sSfL -o out/voice/$n.onnx "https://huggingface.co/rhasspy/piper-voices/resolve/main/$v.onnx" || true
+            curl -sSfL -o out/voice/$n.onnx.json "https://huggingface.co/rhasspy/piper-voices/resolve/main/$v.onnx.json" || true
+          done
+          ls -la out out/voice
+      - name: Publicar en media-out
+        run: |
+          git config user.name "dropstats-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mv out /tmp/out
+          git checkout --orphan media-out
+          git rm -rfq --cached .
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          mv /tmp/out out
+          git add out
+          git commit -qm "Recursos del vídeo"
+          git push -f origin media-out
