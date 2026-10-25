@@ -1,6 +1,7 @@
 #!/bin/bash
-mkdir -p out/probe; B=https://dropstats.vercel.app
-sleep 70
-for q in "%C2%BFCu%C3%A1nto%20da%C3%B1o%20hace%20la%20escopeta%20m%C3%A1s%20com%C3%BAn%20de%20Fortnite%20en%20el%20parche%20actual%3F"; do
-  curl -s -m 90 -w "\nHTTP %{http_code} en %{time_total}s\n" "$B/api/ai?op=web&q=$q" > out/probe/web1.txt
-done
+mkdir -p out/probe; W=https://fortnite.fandom.com/api.php
+curl -s -m 30 -A "DropStats/1.0 (dropstats.vercel.app)" "$W?action=query&list=search&srsearch=Pump%20Shotgun&srlimit=5&format=json" > out/probe/f_search.json
+curl -s -m 30 -A "DropStats/1.0 (dropstats.vercel.app)" "$W?action=parse&page=Pump_Shotgun&prop=wikitext&format=json&formatversion=2" > out/probe/f_wikitext.json
+curl -s -m 30 -A "DropStats/1.0 (dropstats.vercel.app)" "$W?action=parse&page=Pump_Shotgun&prop=sections&format=json&formatversion=2" > out/probe/f_sections.json
+curl -s -m 30 -A "DropStats/1.0 (dropstats.vercel.app)" "$W?action=query&list=search&srsearch=Escopeta%20de%20corredera&srlimit=3&format=json" > out/probe/f_search_es.json
+curl -s -m 30 -A "DropStats/1.0" "https://fortnite.fandom.com/es/api.php?action=query&list=search&srsearch=escopeta&srlimit=5&format=json" > out/probe/f_es_wiki.json
