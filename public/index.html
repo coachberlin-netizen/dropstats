@@ -174,14 +174,15 @@ label.lbl .inp,label.lbl .sel{color:var(--fg);font-weight:400}
 .tile{position:relative;display:flex;flex-direction:column;padding:0;border-radius:var(--r);overflow:hidden;background:var(--surface);border:1px solid var(--line);text-align:left;color:var(--fg);transition:transform .16s ease,border-color .2s,box-shadow .2s;min-width:0}
 .tile:active{transform:scale(.975)}
 @media (hover:hover){.tile:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:0 12px 30px -14px #000}}
-.art{position:relative;aspect-ratio:1/1;max-width:100%;overflow:hidden;display:grid;place-items:center;
+.art{position:relative;display:block;flex:none;width:100%;max-width:100%;overflow:hidden;
   --c1:var(--rc,#4a4a63);--c2:color-mix(in srgb,var(--rc,#4a4a63) 30%,#06060a);
   background:radial-gradient(110% 85% at 50% 18%,var(--c1) 0%,color-mix(in srgb,var(--c1) 55%,var(--c2)) 48%,var(--c2) 100%)}
+.art::before{content:"";display:block;padding-top:100%} /* cuadrado fiable en todos los navegadores */
 .art::after{content:"";position:absolute;inset:auto 0 0;height:30%;background:linear-gradient(transparent,#0000004d);pointer-events:none}
 .art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%;opacity:0;transition:opacity .35s ease;z-index:1}
 .art.ld img{opacity:1}
-.art .ini{display:none;font-family:var(--display);font-weight:700;font-size:30px;color:#ffffffc0;letter-spacing:.05em;z-index:1}
-.art.noimg .ini{display:block}
+.art .ini{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:30px;color:#ffffffc0;letter-spacing:.05em;z-index:1}
+.art.noimg .ini{display:flex}
 .art .tag{position:absolute;z-index:2;top:8px;left:8px;max-width:calc(100% - 16px);background:#0a0a10d9;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:7px;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .art .tag.today{background:var(--ok);color:#052a1a}
 .art .fv{position:absolute;z-index:2;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:#0a0a10d9;color:var(--warn);display:grid;place-items:center}
