@@ -19,6 +19,7 @@ for ln in res:
 print("deltas:", n, "primer trozo a", round(first or -1,2), "s · total", round(time.time()-t0,2), "s · caracteres", len(text))
 print("inicio:", text[:300].replace("\n"," | "))
 PY
+exit_after_stream=1
 # 2) detener: se corta a los 1,5 s
 python3 - "$Q" <<'PY' > out/probe/3_stop.txt
 import sys, time, json, http.cookiejar, urllib.request
