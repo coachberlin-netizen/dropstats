@@ -188,11 +188,11 @@ label.lbl .inp,label.lbl .sel{color:var(--fg);font-weight:400}
 .vb i{width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e0f1ff,#6fb3f5 50%,#2457b8);display:inline-block;box-shadow:inset 0 0 0 1.5px #ffffff4d}
 .vb s{color:var(--faint);font-weight:500;font-size:12px}
 .off{font-size:11px;font-weight:700;color:#052a1a;background:var(--ok);border-radius:6px;padding:1px 6px}
-.hscroll{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,42%);gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;scroll-padding-inline:16px}
+.hscroll{display:grid;grid-auto-flow:column;grid-auto-columns:42%;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;scroll-padding-inline:16px}
 .hscroll::-webkit-scrollbar{display:none}
 .hscroll>*{scroll-snap-align:start}
-@media (min-width:600px){.hscroll{grid-auto-columns:minmax(0,28%)}}
-@media (min-width:960px){.hscroll{grid-auto-columns:minmax(0,19%);margin-inline:0;padding-inline:0}}
+@media (min-width:600px){.hscroll{grid-auto-columns:28%}}
+@media (min-width:960px){.hscroll{grid-auto-columns:19%;margin-inline:0;padding-inline:0}}
 .skel{border-radius:var(--r);background:linear-gradient(100deg,var(--surface) 30%,var(--surface2) 50%,var(--surface) 70%);background-size:300% 100%;animation:sk 1.3s infinite linear;border:1px solid var(--line)}
 @keyframes sk{from{background-position:100% 0}to{background-position:-200% 0}}
 .skel.tilesk{aspect-ratio:3/4}
