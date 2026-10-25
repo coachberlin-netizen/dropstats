@@ -1,7 +1,12 @@
 #!/bin/bash
-# Comprueba sin claves que los servicios existen y qué responden (código HTTP y cabeceras)
-mkdir -p out/probe
-for u in "https://prod.api-fortnite.com/api/v2/weapons/patches" "https://prod.api-fortnite.com/api/v2/weapons" "https://api.groq.com/openai/v1/models" "https://generativelanguage.googleapis.com/v1beta/models"; do
-  n=$(echo "$u" | sed 's#https://##; s#[/?=&]#_#g')
-  curl -s -m 25 -D out/probe/$n.h -o out/probe/$n.b "$u"; echo "$u $(head -1 out/probe/$n.h)" >> out/probe/summary.txt
+# Prueba real de Drop AI en producción con una cuenta temporal que se borra al final
+mkdir -p out/probe; B=https://dropstats.vercel.app; O="Origin: $B"; J="Content-Type: application/json"
+E="prueba-$(date +%s)@dropstats-test.invalid"; P="Prueba-$(openssl rand -hex 8)"
+curl -s -m 20 -c c.txt -H "$O" -H "$J" -d "{\"action\":\"register\",\"email\":\"$E\",\"password\":\"$P\"}" $B/api/auth > out/probe/1_register.json
+CTX='{"app":"DropStats","plan":"Drop Ultra","misEstadisticas":{"jugador":"PruebaReal","periodo":"total","general":{"victorias":120,"eliminaciones":3400,"partidas":1800,"kd":2.03,"porcentajeVictorias":6.67}},"noDisponible":["Meta Lab (no configurado)"],"torneos":"El usuario no tiene recordatorios de torneos."}'
+for q in "Interpreta mis estadísticas en 3 puntos breves" "¿Qué daño hace la escopeta del parche actual?"; do
+  curl -s -m 60 -b c.txt -H "$O" -H "$J" -d "{\"messages\":[{\"role\":\"user\",\"content\":\"$q\"}],\"context\":$CTX}" $B/api/ai >> out/probe/2_chat.jsonl; echo >> out/probe/2_chat.jsonl
 done
+curl -s -m 20 -H "$O" -H "$J" -d '{"messages":[{"role":"user","content":"hola"}]}' $B/api/ai > out/probe/3_nosession.json
+curl -s -m 20 -b c.txt -H "$O" -H "$J" -d "{\"action\":\"delete\",\"password\":\"$P\"}" $B/api/auth > out/probe/4_delete.json
+rm -f c.txt
