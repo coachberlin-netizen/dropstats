@@ -18,17 +18,11 @@ jobs:
           python-version: "3.12"
       - name: Playwright
         run: pip install playwright==1.48.0 && python -m playwright install --with-deps chromium
+      - name: Esperar a que Vercel publique la última versión
+        run: |
+          for i in $(seq 1 40); do curl -s https://dropstats.vercel.app/ | grep -q "padding-top:100%}" && echo listo && break; sleep 15; done
       - name: Capturas
         run: python tools/capture.py
-      - name: Voces Piper (es_ES)
-        run: |
-          mkdir -p out/voice
-          for v in es/es_ES/davefx/medium/es_ES-davefx-medium es/es_ES/sharvard/medium/es_ES-sharvard-medium es/es_MX/claude/high/es_MX-claude-high; do
-            n=$(basename $v)
-            curl -sSfL -o out/voice/$n.onnx "https://huggingface.co/rhasspy/piper-voices/resolve/main/$v.onnx" || true
-            curl -sSfL -o out/voice/$n.onnx.json "https://huggingface.co/rhasspy/piper-voices/resolve/main/$v.onnx.json" || true
-          done
-          ls -la out out/voice
       - name: Publicar en media-out
         run: |
           git config user.name "dropstats-bot"
