@@ -42,12 +42,21 @@ Reglas:
 - Planes de DropStats: Gratis, Pro, Elite y Drop Ultra. Meta Lab básico, mapa, stats esenciales, tienda, catálogo y torneos están en todos los planes; Pro y Elite añaden funciones avanzadas; Widgets y Drop AI son exclusivos de Drop Ultra. Si algo de Meta Lab no está disponible, es porque la fuente de datos no está activa, no por el plan del usuario.
 - No pidas ni aceptes contraseñas, y no ayudes con trampas, cuentas compartidas, compraventa de cuentas ni nada contra las normas de Epic.`;
 
+// Le dice al modelo exactamente qué datos de DropStats tiene en esta conversación, para que no atribuya a la app nada más
+const INFO_KEYS = { misEstadisticas: "estadísticas del usuario", jugadorConsultado: "un jugador consultado", estrategias: "estrategias guardadas", mapaSinGuardar: "mapa sin guardar", lugaresDelMapa: "lugares del mapa", metaLab: "Meta Lab (armas)", tiendaHoy: "tienda de hoy", torneos: "torneos del usuario", novedadesOficiales: "novedades oficiales", favoritos: "favoritos" };
+function buildSystem(context) {
+  const c = context && typeof context === "object" ? context : {};
+  const have = Object.keys(INFO_KEYS).filter(k => k in c && !(k === "torneos" && typeof c.torneos === "string")).map(k => INFO_KEYS[k]);
+  return SYSTEM + `\n\nDATOS DE DROPSTATS EN ESTA CONVERSACIÓN: ${have.length ? have.join(", ") : "ninguno"}. ` +
+    `Todo lo que no esté en esa lista NO lo sabes por DropStats: no escribas «según DropStats», «DropStats indica» ni nada parecido salvo para citar esos datos. Para lo demás usa tu conocimiento general y dilo así («en general…»).` +
+    "\n\nCONTEXTO (JSON, datos reales de DropStats en este momento):\n" + JSON.stringify(c);
+}
 const errOf = (status, msg) => status === 429 ? "provider_rate" : status === 401 || status === 403 ? "provider_key" : status === 400 || status === 404 ? "provider_config" : "provider_error";
 async function callOnce(p, model, sys, messages, maxTokens, signal) {
   if (p.id === "gemini") {
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
       method: "POST", signal, headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
-      body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents: messages.map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })), generationConfig: { maxOutputTokens: maxTokens, temperature: 0.6 } })
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents: messages.map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })), generationConfig: { maxOutputTokens: maxTokens, temperature: 0.4 } })
     });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) return { err: errOf(r.status), status: r.status, detail: j.error?.message };
@@ -65,7 +74,7 @@ async function callOnce(p, model, sys, messages, maxTokens, signal) {
     return text ? { text } : { err: "empty" };
   }
   // Groq y cualquier API compatible con OpenAI
-  const body = { model, temperature: 0.6, messages: [{ role: "system", content: sys }, ...messages] };
+  const body = { model, temperature: 0.4, messages: [{ role: "system", content: sys }, ...messages] };
   if (p.id === "groq") { body.max_completion_tokens = maxTokens; if (/gpt-oss/.test(model)) { body.reasoning_effort = "low"; body.include_reasoning = false; } }
   else body.max_tokens = maxTokens;
   const r = await fetch(p.url + "/chat/completions", { method: "POST", signal, headers: { "Content-Type": "application/json", Authorization: `Bearer ${p.key}` }, body: JSON.stringify(body) });
@@ -75,7 +84,7 @@ async function callOnce(p, model, sys, messages, maxTokens, signal) {
   return text ? { text } : { err: "empty", detail: j.choices?.[0]?.finish_reason };
 }
 async function callModel(p, messages, context, maxTokens = 1100) {
-  const sys = SYSTEM + "\n\nCONTEXTO (JSON, datos reales de DropStats en este momento):\n" + JSON.stringify(context || {});
+  const sys = buildSystem(context);
   const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 50000);
   let last = { err: "provider_error" };
   try {
@@ -92,7 +101,7 @@ async function callModel(p, messages, context, maxTokens = 1100) {
 // en líneas JSON (NDJSON): {"t":"delta","d":"…"} · {"t":"done",…} · {"t":"error","error":"…"}
 const canStream = p => p.id === "groq" || p.id === "openai";
 async function openStream(p, model, sys, messages, maxTokens, signal) {
-  const body = { model, temperature: 0.6, stream: true, messages: [{ role: "system", content: sys }, ...messages] };
+  const body = { model, temperature: 0.4, stream: true, messages: [{ role: "system", content: sys }, ...messages] };
   if (p.id === "groq") { body.max_completion_tokens = maxTokens; if (/gpt-oss/.test(model)) { body.reasoning_effort = "low"; body.include_reasoning = false; } }
   else body.max_tokens = maxTokens;
   const r = await fetch(p.url + "/chat/completions", { method: "POST", signal, headers: { "Content-Type": "application/json", Authorization: `Bearer ${p.key}`, Accept: "text/event-stream" }, body: JSON.stringify(body) });
@@ -100,7 +109,7 @@ async function openStream(p, model, sys, messages, maxTokens, signal) {
   return { reader: r.body.getReader() };
 }
 async function streamReply(req, res, p, messages, context, onFail, onOk) {
-  const sys = SYSTEM + "\n\nCONTEXTO (JSON, datos reales de DropStats en este momento):\n" + JSON.stringify(context || {});
+  const sys = buildSystem(context);
   const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 55000);
   let closed = false; res.on("close", () => { if (!res.writableEnded) { closed = true; ctl.abort(); } }); // el usuario ha pulsado «Detener» o se ha ido
   let opened = null, model = null;
