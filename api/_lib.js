@@ -2,8 +2,18 @@
 import crypto from "node:crypto";
 
 // Upstash Redis por REST. Vercel crea estas variables al conectar «Upstash for Redis» desde Storage/Marketplace.
-const RURL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const RTOK = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+// Si al conectarla se eligió otro prefijo (p. ej. STORAGE_), se busca cualquier pareja *_REST_API_URL / *_REST_API_TOKEN.
+function findStore() {
+  const e = process.env;
+  if (e.KV_REST_API_URL && e.KV_REST_API_TOKEN) return [e.KV_REST_API_URL, e.KV_REST_API_TOKEN];
+  if (e.UPSTASH_REDIS_REST_URL && e.UPSTASH_REDIS_REST_TOKEN) return [e.UPSTASH_REDIS_REST_URL, e.UPSTASH_REDIS_REST_TOKEN];
+  for (const k of Object.keys(e)) {
+    const m = k.match(/^(.*)_REST_API_URL$/);
+    if (m && e[m[1] + "_REST_API_TOKEN"] && /^https:\/\//.test(e[k])) return [e[k], e[m[1] + "_REST_API_TOKEN"]];
+  }
+  return [null, null];
+}
+const [RURL, RTOK] = findStore();
 export const storeReady = () => !!(RURL && RTOK);
 
 export async function redis(...cmd) {
