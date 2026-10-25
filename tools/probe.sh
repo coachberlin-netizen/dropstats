@@ -1,12 +1,38 @@
 #!/bin/bash
-# Prueba real de Drop AI en producción con una cuenta temporal que se borra al final
+# Prueba real de streaming de Drop AI en producción con cuenta temporal (se borra al final)
 mkdir -p out/probe; B=https://dropstats.vercel.app; O="Origin: $B"; J="Content-Type: application/json"
 E="prueba-$(date +%s)@dropstats-test.invalid"; P="Prueba-$(openssl rand -hex 8)"
 curl -s -m 20 -c c.txt -H "$O" -H "$J" -d "{\"action\":\"register\",\"email\":\"$E\",\"password\":\"$P\"}" $B/api/auth > out/probe/1_register.json
-CTX='{"app":"DropStats","plan":"Drop Ultra","misEstadisticas":{"jugador":"PruebaReal","periodo":"total","general":{"victorias":120,"eliminaciones":3400,"partidas":1800,"kd":2.03,"porcentajeVictorias":6.67}},"noDisponible":["Meta Lab (no configurado)"],"torneos":"El usuario no tiene recordatorios de torneos."}'
-for q in "Interpreta mis estadísticas en 3 puntos breves" "¿Qué daño hace la escopeta del parche actual?"; do
-  curl -s -m 60 -b c.txt -H "$O" -H "$J" -d "{\"messages\":[{\"role\":\"user\",\"content\":\"$q\"}],\"context\":$CTX}" $B/api/ai >> out/probe/2_chat.jsonl; echo >> out/probe/2_chat.jsonl
-done
-curl -s -m 20 -H "$O" -H "$J" -d '{"messages":[{"role":"user","content":"hola"}]}' $B/api/ai > out/probe/3_nosession.json
-curl -s -m 20 -b c.txt -H "$O" -H "$J" -d "{\"action\":\"delete\",\"password\":\"$P\"}" $B/api/auth > out/probe/4_delete.json
+Q='{"messages":[{"role":"user","content":"Dame 6 consejos detallados para mejorar las rotaciones en Fortnite, uno por párrafo."}],"context":{"app":"DropStats"},"stream":true}'
+# 1) streaming completo: marca de tiempo de cada línea recibida
+python3 - "$Q" <<'PY' > out/probe/2_stream.txt
+import sys, time, json, http.cookiejar, urllib.request
+cj=http.cookiejar.MozillaCookieJar("c.txt"); cj.load(ignore_discard=True, ignore_expires=True)
+op=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
+r=urllib.request.Request("https://dropstats.vercel.app/api/ai", data=sys.argv[1].encode(), headers={"Content-Type":"application/json","Origin":"https://dropstats.vercel.app"})
+t0=time.time(); res=op.open(r, timeout=70); print("content-type:", res.headers.get("content-type"))
+n=0; first=None; text=""
+for ln in res:
+    t=time.time()-t0; o=json.loads(ln)
+    if o["t"]=="delta": n+=1; text+=o["d"]; first=first or t
+    else: print(f"{t:.2f}s", o)
+print("deltas:", n, "primer trozo a", round(first or -1,2), "s · total", round(time.time()-t0,2), "s · caracteres", len(text))
+print("inicio:", text[:300].replace("\n"," | "))
+PY
+# 2) detener: se corta a los 1,5 s
+python3 - "$Q" <<'PY' > out/probe/3_stop.txt
+import sys, time, json, http.cookiejar, urllib.request
+cj=http.cookiejar.MozillaCookieJar("c.txt"); cj.load(ignore_discard=True, ignore_expires=True)
+op=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
+r=urllib.request.Request("https://dropstats.vercel.app/api/ai", data=sys.argv[1].encode(), headers={"Content-Type":"application/json","Origin":"https://dropstats.vercel.app"})
+t0=time.time(); res=op.open(r, timeout=70); n=0
+for ln in res:
+    n+=1
+    if time.time()-t0>1.5: break
+res.close(); print("cortado tras", n, "líneas a", round(time.time()-t0,2), "s")
+PY
+# 3) sin streaming (compatibilidad) y sin sesión
+curl -s -m 60 -b c.txt -H "$O" -H "$J" -d '{"messages":[{"role":"user","content":"Di hola en una frase"}],"context":{}}' $B/api/ai > out/probe/4_json.json
+curl -s -m 20 -H "$O" -H "$J" -d '{"messages":[{"role":"user","content":"hola"}],"stream":true}' $B/api/ai > out/probe/5_nosession.json
+curl -s -m 20 -b c.txt -H "$O" -H "$J" -d "{\"action\":\"delete\",\"password\":\"$P\"}" $B/api/auth > out/probe/6_delete.json
 rm -f c.txt
