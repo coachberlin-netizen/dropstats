@@ -4,7 +4,7 @@ Tienda diaria, catálogo de cosméticos, mapa interactivo, estadísticas de juga
 
 DropStats es un proyecto independiente. No está afiliado, patrocinado ni aprobado por Epic Games. Fortnite y los nombres e imágenes de sus objetos son marcas de Epic Games, Inc.
 
-Versión del 25 de octubre de 2026 (cuatro planes, Widgets, Meta Lab, Drop AI y mapa táctico).
+Versión del 25 de octubre de 2026 (cuatro planes con pagos por Stripe, Widgets, Drop AI y mapa táctico).
 
 ---
 
@@ -31,8 +31,7 @@ Cuatro niveles en orden ascendente. Los precios (2,99 €, 5,99 € y 9,99 € a
 | | Gratis | Pro | Elite | Drop Ultra |
 |---|---|---|---|---|
 | Stats | Victorias, eliminaciones, partidas, % victorias | + K/D, top 10, métricas extra, desglose por modo y control, gráfico por modo, comparar con 1 jugador, fijar/borrar historial | + gráficas históricas (varias métricas), tendencias, total vs temporada, hasta 3 rivales | Todo |
-| Mapa | Marcadores, rutas, 5 estrategias | 50 estrategias, buscar, categorías, duplicar, colores de ruta, notas, buscar lugares | Sin límite, modo/temporada/estilo, plan por fases, análisis de rutas, comparar estrategias | + carpetas, fijar, armas de Meta Lab en la estrategia |
-| Meta Lab | Lista y stats principales | Filtros, tabla completa, comparar 2 | Comparar 4, gráficas, % diferencia, cambios entre parches, comparaciones guardadas | Todo + integración con estrategias y Drop AI |
+| Mapa | Marcadores, rutas, 5 estrategias | 50 estrategias, buscar, categorías, duplicar, colores de ruta, notas, buscar lugares | Sin límite, modo/temporada/estilo, plan por fases, análisis de rutas, comparar estrategias | + carpetas y estrategias fijadas |
 | Catálogo y favoritos | Búsqueda y tipo, 30 favoritos | Rareza, precio, orden, «solo hoy», 300 favoritos, 5 listas, 5 filtros guardados, comparar 2 | Tabla, comparar 4, 20 listas | Sin límites |
 | Interfaz | Tema base | 3 temas, compacto, orden del inicio, acabado negro y morado | 5 temas, acabado violeta y azul | 7 temas, efectos, color/esquinas/texto |
 | **Widgets** y **Drop AI** | — | — | — | **Solo Ultra** |
@@ -45,11 +44,11 @@ Cuatro niveles en orden ascendente. Los precios (2,99 €, 5,99 € y 9,99 € a
 
 ## Widgets (Drop Ultra)
 
-12 tipos: estadísticas del jugador, victorias, eliminaciones, % de victorias, resumen de temporada, tienda actual, cosméticos favoritos, torneos confirmados, rutas y estrategias, accesos rápidos, novedades oficiales y resumen de Meta Lab. Se pueden añadir, quitar, reordenar (botones subir/bajar), cambiar de tamaño y diseño, elegir los datos visibles, configurar (por ejemplo, qué accesos muestra), cambiar la disposición (cuadrícula o lista) y restaurar el diseño original. Se guardan solos en el dispositivo y en la cuenta.
+12 tipos: estadísticas del jugador, victorias, eliminaciones, % de victorias, resumen de temporada, tienda actual, cosméticos favoritos, torneos confirmados, rutas y estrategias, accesos rápidos, novedades oficiales y tu mejor modo (K/D por modo). Se pueden añadir, quitar, reordenar (botones subir/bajar), cambiar de tamaño y diseño, elegir los datos visibles, configurar (por ejemplo, qué accesos muestra), cambiar la disposición (cuadrícula o lista) y restaurar el diseño original. Se guardan solos en el dispositivo y en la cuenta.
 
 ## Drop AI (Drop Ultra)
 
-Chat con un modelo de IA real a través de `/api/ai`: burbujas, respuestas con formato, copiar, nueva conversación, historial local, preguntas sugeridas, estados de carga y error. Con «Usar mis datos de DropStats» activado envía al modelo solo lo que la app tiene cargado (tus stats, estrategias, Meta Lab, tienda, torneos con su marca de confirmado, novedades) y una lista de lo que **no** está disponible, para que no afirme haberlo consultado.
+Chat con un modelo de IA real a través de `/api/ai`: burbujas, respuestas con formato, copiar, nueva conversación, historial local, preguntas sugeridas, estados de carga y error. Con «Usar mis datos de DropStats» activado envía al modelo solo lo que la app tiene cargado (tus stats, estrategias, tienda, torneos con su marca de confirmado, novedades) y una lista de lo que **no** está disponible, para que no afirme haberlo consultado.
 
 Configuración (Vercel → Settings → Environment Variables):
 
@@ -58,9 +57,19 @@ Configuración (Vercel → Settings → Environment Variables):
 - `GEMINI_API_KEY` — admitido, pero las condiciones de Google no permiten usar su nivel gratuito para dar servicio a usuarios del EEE (España incluida); solo con facturación activada.
 - Opcionales: `AI_PROVIDER` (forzar proveedor), `AI_DAILY_LIMIT` (30 mensajes por cuenta y día), `AI_GLOBAL_LIMIT` (300 al día en total), `AI_PING_LIMIT` (20 pruebas al día).
 
+Datos de armas: cuando se pregunta por un arma (daño, cadencia, cargador…), el servidor identifica el arma, consulta la **Fortnite Wiki** (fortnite.fandom.com, API pública y gratuita) y pasa al modelo solo la ficha y las estadísticas por rareza del parche actual; la respuesta cita la página. Si la wiki no tiene el arma, Drop AI lo dice y no da cifras. La búsqueda web libre de Groq queda desactivada (en pruebas devolvió notas de parche de 2018 como actuales); se activa con `AI_WEB_SEARCH=on`.
+
 Prueba real: Ajustes → Fuentes de datos → Drop AI → «Comprobar» (llama a `/api/ai?op=ping`, que hace una petición mínima al proveedor).
 
 Requiere sesión iniciada (para aplicar el límite diario en Redis). Si no hay clave, la pantalla dice que el servicio aún no está configurado y no envía nada.
+
+## Pagos (Stripe)
+
+`api/billing.js` crea la página de pago de Stripe (Checkout), comprueba cada pago con Stripe en el servidor antes de activar el plan y abre el portal de cliente (cambiar de plan, cancelar, facturas, tarjeta). No hace falta configurar webhooks: el plan se vuelve a comprobar con Stripe cada 30 minutos y al volver del portal.
+
+- `STRIPE_SECRET_KEY` = `sk_test_…` → **modo de prueba** (tarjeta 4242 4242 4242 4242, sin dinero real). Se mantiene el selector de demostración.
+- `STRIPE_SECRET_KEY` = `sk_live_…` + `BILLING_LIVE=on` → **cobros reales**. Sin `BILLING_LIVE=on` una clave real se ignora. En este modo el selector de demostración desaparece y Drop AI exige Ultra pagado también en el servidor.
+- Los productos y precios (2,99 €, 5,99 € y 9,99 € al mes, IVA incluido) se crean solos en Stripe la primera vez.
 
 ## Mapa táctico
 

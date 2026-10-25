@@ -43,7 +43,7 @@ svg{flex:none}
 main{grid-area:main;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line2) transparent;
   padding-block:2px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
 main.full{padding:0;overflow:hidden;display:flex;flex-direction:column}
-.nav{grid-area:nav;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));background:#0b0b12f2;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);
+.nav{grid-area:nav;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#0b0b12f2;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);
   padding-top:4px;padding-bottom:max(4px,env(safe-area-inset-bottom,0px));padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 .nav button{background:none;border:0;padding:4px 0 2px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--faint);font-size:11px;font-weight:600;letter-spacing:.01em}
 .nav .ic{width:46px;height:28px;border-radius:999px;display:grid;place-items:center;transition:background .2s}
@@ -506,6 +506,7 @@ td .pct.up{color:var(--ok)} td .pct.dn{color:var(--bad)}
 .msg .md a{color:var(--violet2);overflow-wrap:anywhere}
 .msg .md-t{margin:8px 0;background:var(--bg)}.msg .md-t table{font-size:13.5px}.msg .md-t th{text-align:left}
 .msg-tools .small svg{width:13px;height:13px;vertical-align:-2px;margin-right:3px}
+.sub-box{padding:14px 16px;display:flex;align-items:center;gap:12px}.sub-box h2{font-size:20px;margin:2px 0}
 .stop-btn{background:var(--raise);border:1px solid var(--line2);color:var(--fg)}
 .stop-btn svg{width:14px!important;height:14px!important}
 .to-end{position:sticky;bottom:118px;align-self:center;width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:var(--surface2);color:var(--fg);display:grid;place-items:center;box-shadow:0 8px 24px -8px #000;margin-top:-40px;z-index:2}
@@ -571,6 +572,7 @@ td .pct.up{color:var(--ok)} td .pct.dn{color:var(--bad)}
 @media (min-width:900px){.ux-card{margin-top:16vh}}
 @media (prefers-reduced-motion:reduce){.unlock *{animation:none!important}.ux-card,.ux-perks li,.ux-go{opacity:1!important;transform:none!important}}
 .switch.tiny{font-size:13px;color:var(--muted);justify-content:flex-start;gap:8px;min-height:0;padding:0;border:0;background:none}
+.prem-banner>svg{width:18px;height:18px;color:var(--muted)}.prem-banner .grow{flex:1;min-width:0}.prem-banner .t,.prem-banner .s{display:block;white-space:normal}
 /* ---------- widgets y catálogo ---------- */
 .w-quick{display:flex;flex-wrap:wrap;gap:6px}
 .wgrid.wlist{grid-template-columns:minmax(0,1fr)}.wgrid.wlist .wg{grid-column:auto}
@@ -1765,18 +1767,54 @@ const LIMITS = {
   compareItems: { free: 0, pro: 2, elite: 4, ultra: 4 },
   comparePlayers: { free: 0, pro: 1, elite: 3, ultra: 3 }
 };
+/* Suscripción real (Stripe): el plan pagado lo verifica el servidor (/api/billing). En modo de prueba de Stripe
+   se mantiene el selector de demostración; con cobros reales se desactiva y solo cuenta el plan pagado. */
+const BILL = { checked: false, configured: false, mode: null, plan: null, status: null, periodEnd: null, cancelAtPeriodEnd: false, hasCustomer: false };
+const demoAllowed = () => !BILL.configured || BILL.mode === "test";
+async function billCheck(force) {
+  const before = Entitlements.plan();
+  try { const j = await fetchJSON("/api/billing" + (force ? "?force=1" : ""), 12000); Object.assign(BILL, { configured: !!j.configured, mode: j.mode || null, plan: j.plan || null, status: j.status || null, periodEnd: j.periodEnd || null, cancelAtPeriodEnd: !!j.cancelAtPeriodEnd, hasCustomer: !!j.hasCustomer }); }
+  catch { /* sin servidor: se queda como está */ }
+  BILL.checked = true;
+  if (Entitlements.plan() !== before) onPlanChange(); else rerender("premium", "settings");
+}
 const Entitlements = {
-  source: "demo", // "demo" ahora; "server" cuando se integre una suscripción real
-  plan() { const p = store.get("demoPlan", "free"); return PLANS[p] ? p : "free"; },
-  setDemo(p) { if (!PLANS[p]) return; store.set("demoPlan", p); onPlanChange(); }, // solo cambia permisos; la configuración del usuario no se toca
-  async refresh() { return this.plan(); } // con pagos reales: leer de /api/auth el plan verificado de la cuenta
+  get source() { return BILL.configured ? "server" : "demo"; },
+  paid() { return BILL.configured && ACC.user && PLANS[BILL.plan] ? BILL.plan : "free"; },  // plan pagado y verificado por el servidor
+  demo() { if (!demoAllowed()) return "free"; const p = store.get("demoPlan", "free"); return PLANS[p] ? p : "free"; },
+  plan() { const a = this.paid(), b = this.demo(); return PLANS[a].rank >= PLANS[b].rank ? a : b; },
+  setDemo(p) { if (!PLANS[p]) return; if (!demoAllowed()) return toast("El selector de demostración no está disponible con pagos reales"); store.set("demoPlan", p); onPlanChange(); }, // solo cambia permisos; la configuración del usuario no se toca
+  async refresh() { await billCheck(true); return this.plan(); }
 };
 /* MODO PRUEBA TEMPORAL (pedido por Su para ver la experiencia completa): el botón de cada plan lo activa en
    demostración, sin pago, y lanza la animación. Para volver al comportamiento normal: TEST_UNLOCK = false. */
 const TEST_UNLOCK = false;
-const Billing = { // estructura preparada para una pasarela real (Stripe, App Store…); hoy no cobra nada
-  available: false,
-  async checkout(plan) { return { ok: false, status: "not_available", reason: "not_available", plan }; },
+const Billing = { // pasarela: Stripe Checkout (servidor /api/billing). La app nunca concede un plan por su cuenta.
+  get available() { return BILL.configured; },
+  async checkout(plan) {
+    if (!BILL.configured) return { ok: false, status: "not_available", reason: "not_available", plan };
+    if (!ACC.user) return { ok: false, status: "login", plan };
+    const r = await sendJSON("/api/billing", { op: "checkout", plan });
+    if (r.ok && r.j.ok && r.j.url) { location.assign(r.j.url); return { ok: false, status: "redirect", plan }; } // se vuelve con ?checkout=…
+    return { ok: false, status: "error", error: r.j.error, detail: r.j.detail, plan };
+  },
+  async portal() {
+    const r = await sendJSON("/api/billing", { op: "portal" });
+    if (r.ok && r.j.ok && r.j.url) return location.assign(r.j.url);
+    toast(r.j.error === "no_customer" ? "Aún no tienes una suscripción" : "No se pudo abrir la gestión de la suscripción");
+  },
+  async handleReturn() { // vuelta desde Stripe: se confirma en el servidor antes de mostrar nada
+    const q = new URLSearchParams(location.search), c = q.get("checkout"), sid = q.get("session_id"), portal = q.get("portal");
+    if (!c && !portal) return;
+    try { history.replaceState(null, "", location.pathname + location.hash); } catch {}
+    if (portal) { await billCheck(true); return toast("Suscripción actualizada"); }
+    if (c === "cancel") return this.onResult({ status: "canceled" });
+    if (c === "success" && sid) {
+      toast("Comprobando el pago…");
+      const r = await sendJSON("/api/billing", { op: "confirm", session_id: sid });
+      return this.onResult(r.ok && r.j.ok ? r.j : { status: r.j.status || "failed" });
+    }
+  },
   /* Punto de integración para el pago real. Se debe llamar con el resultado YA VERIFICADO por el servidor
      (por ejemplo, el webhook de Stripe guarda el plan en la cuenta y la app lo consulta).
      La animación nunca concede acceso: solo se muestra si el servidor ya confirma que el plan está activo. */
@@ -1809,7 +1847,7 @@ function lockedSheet(f) {
   const need = needOf(f);
   openSheet(`<div class="stack"><div class="plan-mini t-${need}"><span class="eyebrow">Función premium</span><h2>Disponible en ${PLANS[need].name}</h2></div>
     <p class="muted">${FEAT_TXT[f] ? esc(FEAT_TXT[f]) + ". " : ""}${ULTRA_ONLY.has(f) ? "Es exclusiva de Drop Ultra: no está en Pro ni en Elite." : `Forma parte de ${PLANS[need].name}${need !== "ultra" ? " y de los planes superiores" : ""}.`}</p>
-    <p class="small muted">Las suscripciones aún no están activas: puedes probarla con el selector de demostración de la sección Premium.</p>
+    <p class="small muted">${BILL.configured ? (BILL.mode === "test" ? "Pagos en modo de prueba: puedes suscribirte con una tarjeta de prueba, sin dinero real." : "Puedes suscribirte desde la sección Premium.") : "Las suscripciones aún no están activas: puedes probarla con el selector de demostración de la sección Premium."}</p>
     <button class="btn ${need === "ultra" ? "ultra-btn" : "pri"}" data-act="go-premium" data-v="${need}">${I.gem}Descubrir ${PLANS[need].short}</button></div>`);
 }
 function limitSheet(k, what) {
@@ -1838,7 +1876,7 @@ function onPlanChange() {
 function paintPlanBadge() {
   const b = $("#planbadge"); if (!b) return; const p = planId();
   b.hidden = p === "free"; b.className = "plan-badge t-" + p; b.textContent = p === "ultra" ? "ULTRA" : p === "elite" ? "ELITE" : "PRO";
-  b.title = PLANS[p].name + " (demostración)";
+  b.title = PLANS[p].name + (Entitlements.paid() === p ? "" : " (demostración)");
   const ai = $("#aibtn"); if (ai) ai.classList.toggle("locked", !can("ai"));
 }
 
@@ -1909,11 +1947,11 @@ function planCard(p) {
   const P = PLANS[p], cur = planId() === p;
   const tier = { free: "Lo esencial", pro: "Nivel de entrada", elite: "Nivel avanzado", ultra: "Nivel máximo" }[p];
   return `<article class="plan t-${p}" id="plan-${p}">
-    <div class="plan-top"><span class="plan-tier">${tier}</span>${cur ? `<span class="badge ok">${p === "free" ? "Tu plan" : "Activo en demostración"}</span>` : ""}</div>
+    <div class="plan-top"><span class="plan-tier">${tier}</span>${cur ? `<span class="badge ok">${p === "free" || Entitlements.paid() === p ? "Tu plan" : "Activo en demostración"}</span>` : ""}</div>
     <h2 class="plan-name">${p === "ultra" ? `<span class="ultra-word">Drop Ultra</span>` : P.name}</h2>
-    <div class="plan-price"><b>${p === "free" ? "0 €" : priceTxt(P.price)}</b><span>${p === "free" ? "siempre" : "/ mes"}</span></div><p class="plan-prov">${p === "free" ? "Sin registro obligatorio" : "Precio provisional · sin cobros"}</p>
+    <div class="plan-price"><b>${p === "free" ? "0 €" : priceTxt(P.price)}</b><span>${p === "free" ? "siempre" : "/ mes"}</span></div><p class="plan-prov">${p === "free" ? "Sin registro obligatorio" : BILL.configured ? (BILL.mode === "test" ? "Modo de prueba · sin dinero real" : "IVA incluido · cancela cuando quieras") : "Precio provisional · sin cobros"}</p>
     <ul class="perks">${PLAN_PERKS[p].map(x => `<li>${I.check}<span>${x}</span></li>`).join("")}</ul>
-    ${p === "free" ? (cur ? "" : `<button class="btn" data-act="demo-plan" data-v="free">Volver a Gratis</button>`) : TEST_UNLOCK ? (cur ? `<p class="small muted" style="text-align:center">Activo en modo prueba</p>` : `<button class="btn ${p === "ultra" ? "ultra-btn" : "pri"}" data-act="test-unlock" data-v="${p}">${I.gem}Desbloquear ${p === "ultra" ? "Drop Ultra" : P.short} · prueba sin pago</button>`) : `<button class="btn ${p === "ultra" ? "ultra-btn" : "pri"}" data-act="plan-choose" data-v="${p}">${p === "ultra" ? I.gem + "Quiero Drop Ultra" : "Elegir " + P.short}</button>`}
+    ${p === "free" ? (cur || !demoAllowed() || Entitlements.demo() === "free" ? "" : `<button class="btn" data-act="demo-plan" data-v="free">Volver a Gratis</button>`) : BILL.configured ? (Entitlements.paid() === p ? `<button class="btn" data-act="manage-sub">Gestionar suscripción</button>` : `<button class="btn ${p === "ultra" ? "ultra-btn" : "pri"}" data-act="plan-choose" data-v="${p}">${p === "ultra" ? I.gem : ""}${Entitlements.paid() !== "free" ? "Cambiar a " + P.short : "Suscribirme"} · ${priceTxt(P.price)}/mes</button>`) : TEST_UNLOCK ? (cur ? `<p class="small muted" style="text-align:center">Activo en modo prueba</p>` : `<button class="btn ${p === "ultra" ? "ultra-btn" : "pri"}" data-act="test-unlock" data-v="${p}">${I.gem}Desbloquear ${p === "ultra" ? "Drop Ultra" : P.short} · prueba sin pago</button>`) : `<button class="btn ${p === "ultra" ? "ultra-btn" : "pri"}" data-act="plan-choose" data-v="${p}">${p === "ultra" ? I.gem + "Quiero Drop Ultra" : "Elegir " + P.short}</button>`}
   </article>`;
 }
 /* filas: [texto, gratis, pro, elite, ultra] · true = incluido, false = no, texto = valor concreto */
@@ -1941,13 +1979,16 @@ VIEWS.premium = v => {
   const p = planId();
   v.innerHTML = `<div class="page">
     <div class="prem-hero"><span class="eyebrow">DropStats Premium</span><h1>Cuatro niveles, de menos a más</h1><p class="muted">Gratis tiene lo esencial. Pro y Elite amplían estadísticas, mapa, catálogo y favoritos. Widgets y Drop AI son exclusivos de Drop Ultra.</p></div>
-    <div class="note warn">${I.info}<p><b>Aún no hay suscripciones.</b> Los precios son provisionales, no se cobra nada y ningún plan está contratado. Para probar cada plan usa el selector de demostración.</p></div>
-    <section class="sec demo-box"><div class="sh"><div><h2>Selector de demostración</h2><p class="sub">Cambia los permisos al instante. Tus datos y ajustes se conservan. No es una suscripción.</p></div></div>
+    ${!BILL.configured ? `<div class="note warn">${I.info}<p><b>Aún no hay suscripciones.</b> Los precios son provisionales, no se cobra nada y ningún plan está contratado. Para probar cada plan usa el selector de demostración.</p></div>`
+      : BILL.mode === "test" ? `<div class="note warn">${I.info}<p><b>Pagos en modo de prueba (Stripe).</b> No se cobra dinero real. Para probar, usa la tarjeta <b class="num">4242 4242 4242 4242</b>, cualquier fecha futura y cualquier CVC.</p></div>` : ""}
+    ${BILL.configured && ACC.user && Entitlements.paid() !== "free" ? `<section class="sec"><div class="panel sub-box"><div class="grow"><span class="eyebrow">Tu suscripción</span><h2>${PLANS[Entitlements.paid()].name}</h2><p class="small muted">${BILL.cancelAtPeriodEnd ? "Se cancela" : "Se renueva"} el ${BILL.periodEnd ? fmtDay(BILL.periodEnd) : "—"}${BILL.mode === "test" ? " · modo de prueba" : ""}</p></div><button class="btn" data-act="manage-sub">Gestionar</button></div></section>` : ""}
+    ${BILL.configured && !ACC.user ? `<div class="note">${I.user}<p>Para suscribirte, <button class="link" data-go="account">inicia sesión o crea tu cuenta</button>. La suscripción queda guardada en tu cuenta.</p></div>` : ""}
+    ${demoAllowed() ? `<section class="sec demo-box"><div class="sh"><div><h2>Selector de demostración</h2><p class="sub">Cambia los permisos al instante. Tus datos y ajustes se conservan. No es una suscripción.</p></div></div>
       <div class="segtabs four" role="radiogroup" aria-label="Plan de demostración">${PLAN_IDS.map(k => `<button type="button" class="${p === k ? "on" : ""}" role="radio" aria-checked="${p === k}" data-act="demo-plan" data-v="${k}">${PLANS[k].short}</button>`).join("")}</div>
       <p class="small muted">Plan simulado ahora: <b style="color:var(--fg)">${PLANS[p].name}</b>.</p>
       <div class="stack" style="gap:8px"><span class="small muted">Vista previa de la animación de desbloqueo (no es una compra y no cambia tu plan):</span>
         <div class="row">${PAID.map(k => `<button type="button" class="btn sm" data-act="unlock-preview" data-v="${k}">${I.spark}${PLANS[k].short}</button>`).join("")}</div></div>
-    </section>
+    </section>` : ""}
     <div class="plans">${PLAN_IDS.map(planCard).join("")}</div>
     <section class="sec"><h2>Comparativa completa</h2><div class="tblwrap"><table class="cmp"><thead><tr><th>Función</th>${PLAN_IDS.map(k => `<th class="th-${k}">${PLANS[k].short}</th>`).join("")}</tr></thead><tbody>
       ${CMP_GROUPS.map(([g, rows]) => `<tr class="grp ${g.startsWith("Exclusivo") ? "u" : ""}"><td colspan="5">${g}</td></tr>` + rows.map(r => `<tr><td>${r[0]}</td>${r.slice(1).map((x, k) => `<td>${cmpCell(x, k)}</td>`).join("")}</tr>`).join("")).join("")}
@@ -2269,6 +2310,7 @@ function mdLite(t) {
   close(); flushT(); return html;
 }
 const AI_ERR = {
+  not_ultra: "Drop AI necesita una suscripción activa a Drop Ultra.",
   not_configured: "Drop AI aún no tiene un modelo de IA configurado en el servidor.", no_store: "Falta la base de datos del servidor, necesaria para aplicar los límites de uso.",
   no_session: "Inicia sesión en tu cuenta de DropStats para usar Drop AI.", rate_limited: "Has llegado al límite diario de mensajes de Drop AI. Vuelve mañana.",
   provider_rate: "El servicio de IA gratuito está saturado ahora mismo (límite por minuto o por día). Espera un minuto y vuelve a intentarlo.", provider_config: "El proveedor de IA ha rechazado la petición: revisa el modelo configurado.", provider_key: "El proveedor de IA no acepta la clave configurada en el servidor.",
@@ -2673,6 +2715,7 @@ async function accCheck() {
   try { const j = await fetchJSON("/api/auth", 8000); ACC.configured = !!j.configured; ACC.user = j.user || null; }
   catch { ACC.configured = null; ACC.user = null; }
   ACC.checked = true; paintAcc(); rerender("home");
+  await billCheck(); await Billing.handleReturn();
   if (ACC.user) await syncPull();
 }
 function paintAcc() {
@@ -2760,7 +2803,7 @@ document.addEventListener("click", async e => {
     case "auth-mode": UI.authMode = a.dataset.v; ACC.err = ""; return render();
     case "acc-recheck": ACC.checked = false; render(); return accCheck();
     case "sync-now": return syncPull();
-    case "logout": { await sendJSON("/api/auth", { action: "logout" }); ACC.user = null; ACC.status = "idle"; ACC.lastAt = 0; store.set("syncAt", 0); paintAcc(); toast("Sesión cerrada · tus datos siguen en este dispositivo"); return render(); }
+    case "logout": { await sendJSON("/api/auth", { action: "logout" }); BILL.plan = null; setTimeout(onPlanChange); ACC.user = null; ACC.status = "idle"; ACC.lastAt = 0; store.set("syncAt", 0); paintAcc(); toast("Sesión cerrada · tus datos siguen en este dispositivo"); return render(); }
     case "unfavplayer": S.favPlayers.splice(i, 1); save("favPlayers"); return render();
     case "clear-history": S.history = []; save("history"); return render();
     case "export": {
@@ -2791,7 +2834,12 @@ document.addEventListener("click", async e => {
     case "unlock-skip": return Unlock.skip();
     case "unlock-close": return Unlock.close();
     case "test-unlock": { const pv = a.dataset.v; if (!TEST_UNLOCK || !PAID.includes(pv)) return; closeSheet(); Entitlements.setDemo(pv); return Unlock.play(pv, { test: true }); }
-    case "plan-choose": { const pv = a.dataset.v; const r = await Billing.checkout(pv); if (r.ok) return Billing.onResult(r); if (!r.ok) openSheet(`<div class="stack"><div class="plan-mini t-${pv}"><span class="eyebrow">${PLANS[pv].name}</span><h2>Todavía no está a la venta</h2></div><p class="muted">Las suscripciones de DropStats aún no están activas, así que no se cobra nada y ningún plan queda contratado. El precio de ${priceTxt(PLANS[pv].price)} al mes es provisional.</p><p class="muted">Mientras tanto puedes probar todas sus funciones con el selector de demostración.</p><button class="btn pri" data-act="demo-plan" data-v="${pv}">Probar ${PLANS[pv].short} en demostración</button></div>`); return; }
+    case "manage-sub": return Billing.portal();
+    case "plan-choose": { const pv = a.dataset.v; a.disabled = true; const r = await Billing.checkout(pv); a.disabled = false; if (r.ok) return Billing.onResult(r);
+      if (r.status === "redirect") return;
+      if (r.status === "login") return openSheet(`<div class="stack"><div class="plan-mini t-${pv}"><span class="eyebrow">${PLANS[pv].name}</span><h2>Inicia sesión para suscribirte</h2></div><p class="muted">La suscripción se guarda en tu cuenta de DropStats, así la tienes en todos tus dispositivos.</p><button class="btn pri" data-go="account">Iniciar sesión o crear cuenta</button></div>`);
+      if (r.status === "error") return toast(r.error === "stripe" ? "Stripe ha rechazado la operación: " + (r.detail || "") : "No se pudo iniciar el pago. Inténtalo de nuevo.");
+      if (!r.ok) openSheet(`<div class="stack"><div class="plan-mini t-${pv}"><span class="eyebrow">${PLANS[pv].name}</span><h2>Todavía no está a la venta</h2></div><p class="muted">Las suscripciones de DropStats aún no están activas, así que no se cobra nada y ningún plan queda contratado. El precio de ${priceTxt(PLANS[pv].price)} al mes es provisional.</p><p class="muted">Mientras tanto puedes probar todas sus funciones con el selector de demostración.</p><button class="btn pri" data-act="demo-plan" data-v="${pv}">Probar ${PLANS[pv].short} en demostración</button></div>`); return; }
     case "theme": { const t = THEMES.find(x => x.id === a.dataset.v); if (!t) return; if (!themeOk(t)) return lockedSheet({ pro: "themesPro", elite: "themesElite", ultra: "themesUltra" }[t.need]); S.look.theme = t.id; save("look"); applyLook(); return render(); }
     case "look-accent-clear": S.look.accent = ""; save("look"); applyLook(); return render();
     case "look-reset": S.look = { theme: "base", density: "comfy", accent: "", radius: 16, scale: 1, fx: true, anim: true }; save("look"); applyLook(); toast("Apariencia restablecida"); return render();
@@ -2879,7 +2927,7 @@ document.addEventListener("submit", e => {
     const email = $("#au-email").value.trim(), password = $("#au-pass").value, action = UI.authMode === "register" ? "register" : "login";
     const btn = $("#au-go"); btn.disabled = true; btn.textContent = action === "register" ? "Creando cuenta…" : "Entrando…";
     sendJSON("/api/auth", { action, email, password }).then(async r => {
-      if (r.ok && r.j.user) { ACC.user = r.j.user; ACC.err = ""; ACC.lastAt = 0; store.set("syncAt", 0); paintAcc(); render(); await syncPull(); toast(action === "register" ? "Cuenta creada · datos guardados" : "Sesión iniciada · datos sincronizados"); }
+      if (r.ok && r.j.user) { ACC.user = r.j.user; ACC.err = ""; ACC.lastAt = 0; store.set("syncAt", 0); paintAcc(); billCheck(true); render(); await syncPull(); toast(action === "register" ? "Cuenta creada · datos guardados" : "Sesión iniciada · datos sincronizados"); }
       else { ACC.err = r.j.error || "No se pudo completar. Inténtalo de nuevo."; render(); const em = $("#au-email"); if (em) em.value = email; }
     });
   }

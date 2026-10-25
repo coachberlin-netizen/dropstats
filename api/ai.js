@@ -10,6 +10,7 @@
 // POST /api/ai { messages:[{role,content}], context:{...} } → { ok, text, remaining, model }
 // POST /api/ai { …, stream:true } → streaming real en NDJSON (Groq); con otros proveedores responde en JSON como siempre
 import { storeReady, redis, send, sameOrigin, readJSON, currentUser, clientIp, tooMany } from "./_lib.js";
+import { billingMode, verifiedPlan } from "./billing.js";
 
 const GROQ_URL = "https://api.groq.com/openai/v1";
 function provider() {
@@ -78,7 +79,7 @@ function wikiExtract(w) { // ficha del arma + estadísticas del parche actual (p
     .replace(/\{\{Rarity Text\|(\w+)\|([^}]+)\}\}/g, "$2 ($1)").replace(/\{\{(Common|Uncommon|Rare|Epic|Legendary|Mythic|Exotic)\}\}/g, "$1").replace(/\{\{Ammunition\|([^}]+)\}\}/g, "$1")
     .replace(/\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g, "$1").replace(/<br\s*\/?>/g, " / ").replace(/\n{3,}/g, "\n\n");
   const box = t => t.replace(/\{\{Minibox Weapons[^\n]*\n([\s\S]*?)\n\}\}/g, (_, b) => { const f = Object.fromEntries(b.split("\n").map(l => l.replace(/^\|/, "").split("=")).filter(a => a.length > 1).map(([k, ...v]) => [k.trim(), v.join("=").trim()])); const r = f.Rarity || ""; delete f.Rarity; delete f.Image; delete f.Name; return `- ${r}: ${Object.entries(f).map(([k, v]) => `${k} ${v}`).join(", ")}`; });
-  const ib = (w.match(/\{\{Infobox Weaponry[\s\S]*?\n\}\}/) || [""])[0];
+  const ib = (w.match(/\{\{Infobox[^\n]*\n[\s\S]*?\n\}\}/) || [""])[0];
   let st = ""; const i = w.indexOf("==Stats==");
   if (i >= 0) {
     st = w.slice(i); const end = st.slice(10).search(/\n==[^=]/); if (end > 0) st = st.slice(0, end + 10);   // solo la sección «Stats»
@@ -88,7 +89,7 @@ function wikiExtract(w) { // ficha del arma + estadísticas del parche actual (p
   return clean(box(ib + "\n" + st + "\n" + fall)).split("\n").filter((l, k, arr) => !(l.startsWith("- ") && arr.indexOf(l) < k)).join("\n").replace(/\n{3,}/g, "\n\n").slice(0, 4500);
 }
 async function wikiLookup(term, signal) {
-  const ck = "wiki2:" + term.toLowerCase();
+  const ck = "wiki3:" + term.toLowerCase();
   try { const c = await redis("GET", ck); if (c) return JSON.parse(c); } catch {}
   const sr = await fetch(`${WIKI}/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srlimit=6&format=json`, { headers: UA, signal }).then(r => r.json()).catch(() => null);
   const hits = sr?.query?.search || [];
@@ -101,7 +102,7 @@ async function wikiLookup(term, signal) {
   try { await redis("SET", ck, JSON.stringify(out), "EX", 6 * 3600); } catch {}
   return out;
 }
-const WIKI_RULES = `\n\nFORTNITE WIKI: el CONTEXTO incluye "wikiFortnite", un extracto real de la Fortnite Wiki con la ficha del arma y sus estadísticas por rareza del parche actual (la pestaña indica el parche, p. ej. v42.10). Úsalo para responder con cifras: indica el parche y desglosa por rareza cuando la fuente lo da. Explica brevemente cómo leerlo si ayuda (daño por disparo, cadencia, cargador, recarga, multiplicador a la cabeza, caída de daño). Si la pregunta era genérica («la escopeta»), di de qué arma concreta son los datos. Termina con «Fuentes:» y el enlace [Fortnite Wiki – página](url). No inventes cifras que no estén en el extracto. DropStats no tiene una sección de armas ni muestra la wiki: si falta un dato, remite al enlace de la wiki.`;
+const WIKI_RULES = `\n\nFORTNITE WIKI: el CONTEXTO incluye "wikiFortnite", un extracto real de la Fortnite Wiki con la ficha del arma y sus estadísticas por rareza del parche actual (la pestaña indica el parche, p. ej. v42.10). Úsalo para responder con cifras: indica el parche y desglosa por rareza cuando la fuente lo da. Explica brevemente cómo leerlo si ayuda (daño por disparo, cadencia, cargador, recarga, multiplicador a la cabeza, caída de daño). Si la pregunta era genérica («la escopeta»), di de qué arma concreta son los datos. Si la wiki indica un «Max Damage Cap», es el máximo por disparo: el daño a la cabeza es el menor entre daño × multiplicador y ese tope (ejemplo: 87 × 2 = 174, con tope 165 → 165). Termina con «Fuentes:» y el enlace [Fortnite Wiki – página](url). No inventes cifras que no estén en el extracto. DropStats no tiene una sección de armas ni muestra la wiki: si falta un dato, remite al enlace de la wiki.`;
 function buildSystem(context) {
   const c = context && typeof context === "object" ? context : {};
   const have = Object.keys(INFO_KEYS).filter(k => k in c && !(k === "torneos" && typeof c.torneos === "string")).map(k => INFO_KEYS[k]);
@@ -264,7 +265,8 @@ export default async function handler(req, res) {
   try {
     const u = await currentUser(req);
     if (!u) return send(res, 200, { ok: false, error: "no_session" });
-    // Cuando existan suscripciones reales, aquí se comprobará en el servidor que la cuenta tiene Drop Ultra.
+    // Con pagos reales (o BILLING_ENFORCE=on) el servidor exige Drop Ultra verificado con Stripe
+    if (billingMode() === "live" || (billingMode() && process.env.BILLING_ENFORCE === "on")) { const bp = await verifiedPlan(u.id); if (bp?.plan !== "ultra") return send(res, 200, { ok: false, error: "not_ultra" }); }
     const b = await readJSON(req, 60_000);
     let messages = (Array.isArray(b.messages) ? b.messages : []).slice(-12)
       .filter(m => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.trim())
