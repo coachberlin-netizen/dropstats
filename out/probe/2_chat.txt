@@ -1,0 +1,50 @@
+===  ¿Cuánto daño hace la escopeta a la cabeza? [('status', 'wiki', 0.9), ('d', 2.36), ('done', {'pagina': 'Pump Shotgun', 'url': 'https://fortnite.fandom.com/wiki/Pump_Shotgun'}, 3.12)] · deltas 366
+**Daño a la cabeza de la **Pump Shotgun** (según el extracto de la Fortnite Wiki, parche v42.10)**  
+
+| Rareza | Daño base | Multiplicador cabeza 2× | Max Damage Cap | Daño cabeza real* |
+|--------|-----------|------------------------|----------------|-------------------|
+| Common | 87 | 174 | 165 | **165** |
+| Uncommon | 95 | 190 | 175 | **175** |
+| Rare | 103 | 206 | 185 | **185** |
+| Epic | 111 | 222 | 195 | **195** |
+| Legendary | 119 | 238 | 205 | **205** |
+
+\*El daño a la cabeza se calcula como `daño base × 2`, pero no puede superar el **Max Damage Cap** indicado para cada rareza. Por eso el valor real es el menor entre esos dos números.
+
+**Cómo leer la tabla**  
+- **Daño base**: daño que inflige un disparo a la zona del cuerpo.  
+- **Multiplicador cabeza 2×**: la escopeta duplica el daño cuando el disparo impacta en la cabeza.  
+- **Max Damage Cap**: límite máximo que puede alcanzar el daño por disparo (incluye el headshot).  
+- **Daño cabeza real**: daño efectivo a la cabeza después de aplicar el multiplicador y el límite.
+
+**Fuentes:**  
+[Fortnite Wiki – Pump Shotgun](https://fortnite.fandom.com/wiki/Pump_Shotgun) (extracto del parche v42.10).
+
+===  ¿Qué tal la escopeta táctica legendaria? [('status', 'wiki', 0.58), ('d', 2.19), ('done', {'pagina': 'Tactical Shotgun', 'url': 'https://fortnite.fandom.com/wiki/Tactical_Shotgun'}, 3.28)] · deltas 530
+**Tactical Shotgun – Rareza Legendaria**  
+
+| Estadística | Valor (Legendario) |
+|-------------|-------------------|
+| Daño base por disparo | **97** |
+| Daño estructural | 61 |
+| DPS (daño por segundo) | **145.5** |
+| Cadencia de tiro | 1.5 disparos / s |
+| Tamaño del cargador | 8 balas |
+| Tiempo de recarga | **5.13 s** |
+| Daño crítico (cabeza) | **140** (multiplicador × 1.75) |
+| Caída de daño (damage falloff) | • Empieza a disminuir a 8.5 m (1.7 baldosas)  <br>• 90 % del daño máximo a 10 m (2 baldosas)  <br>• 70 % del daño máximo a 15 m (3 baldosas)  <br>• Sigue infligiendo daño hasta 30 m (6 baldosas) |
+
+**Cómo leer los datos**  
+- **Daño base** es el daño que inflige un disparo a la zona del cuerpo.  
+- **Daño crítico** se calcula multiplicando el daño base por el multiplicador de cabeza (1.75×). En este caso, 97 × 1.75 ≈ 170, pero la wiki indica el valor final de 140, por lo que ese es el daño máximo a la cabeza.  
+- **DPS** = daño por disparo × cadencia (97 × 1.5 ≈ 145.5).  
+- **Falloff** indica cómo el daño se reduce a medida que la distancia aumenta; la escopeta sigue siendo útil hasta 30 m, aunque con menos potencia.
+
+**Resumen práctico**  
+- La versión legendaria de la Tactical Shotgun es la más potente, con 97 de daño base y 140 de daño crítico.  
+- Su recarga de 5.13 s es razonable para una escopeta de 8 balas.  
+- Es ideal para combates a corta distancia (≤ 8.5 m) donde el daño está al máximo; a mayor distancia el daño cae progresivamente, pero sigue siendo viable hasta 30 m.
+
+**Fuentes:**  
+[Fortnite Wiki – Tactical Shotgun](https://fortnite.fandom.com/wiki/Tactical_Shotgun) (extracto del parche actual).
+
