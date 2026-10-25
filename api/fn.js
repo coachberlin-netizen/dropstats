@@ -1,5 +1,7 @@
 // Proxy de solo lectura hacia fortnite-api.com (fuente no oficial y gratuita).
 // Solo permite rutas públicas concretas; añade caché en el borde de Vercel.
+// Cuando se pide la tienda, aprovecha para registrar sus precios en la base compartida.
+import { recordShop } from "./_prices.js";
 const ALLOW = [
   /^v2\/shop$/,
   /^v1\/map$/,
@@ -23,6 +25,7 @@ export default async function handler(req, res) {
   try {
     const r = await fetch(`https://fortnite-api.com/${p}${qs.size ? "?" + qs : ""}`, { headers });
     const body = await r.text();
+    if (p === "v2/shop" && r.ok) { try { await recordShop(JSON.parse(body)); } catch {} }
     res.setHeader("Cache-Control", p === "v2/shop" ? "s-maxage=120, stale-while-revalidate=60" : "s-maxage=3600, stale-while-revalidate=600");
     return res.status(r.status).send(body);
   } catch {

@@ -189,7 +189,7 @@ label.lbl .inp,label.lbl .sel{color:var(--fg);font-weight:400}
 .info{display:flex;flex-direction:column;gap:3px;padding:10px 11px 11px;border-top:3px solid var(--rc,#4a4a63);flex:1}
 .info .nm{font-family:var(--display);font-weight:600;font-size:15px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.4em;overflow-wrap:anywhere}
 .info .mt{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.info .pr{margin-top:auto;padding-top:3px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.info .pr{min-height:24px;margin-top:auto;padding-top:3px;display:flex;align-items:center;justify-content:space-between;gap:6px}
 .vb{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-variant-numeric:tabular-nums;font-size:14.5px;white-space:nowrap}
 .vb i{width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e0f1ff,#6fb3f5 50%,#2457b8);display:inline-block;box-shadow:inset 0 0 0 1.5px #ffffff4d}
 .vb s{color:var(--faint);font-weight:500;font-size:12px}
@@ -492,7 +492,13 @@ function art(src, name, rarity, { c1, c2, tags = "" } = {}) {
 
 /* =================== objetos conocidos =================== */
 const KNOWN = new Map(); // id → objeto mínimo (para favoritos y fichas)
-const mini = it => ({ id: it.id, name: it.name, type: it.type?.value || "other", typeName: it.type?.displayValue || "", rarity: it.rarity?.value || "common", rarityName: it.rarity?.displayValue || "", series: it.series?.value || "", img: it.images?.icon || it.images?.smallIcon || "", set: it.set?.text || it.set?.value || "", added: it.added || null, desc: it.description || "", intro: it.introduction?.text || "" });
+/* Origen del objeto según sus etiquetas oficiales (Cosmetics.Source.*) y última aparición en tienda. */
+const SRC = [[/ItemShop/i, "Tienda"], [/BattlePass/i, "Pase de batalla"], [/Crew|Subscription/i, "Club de Fortnite"], [/Promo|Twitch|Prime|Reward/i, "Promoción"], [/Starter|Founder/i, "Lote de inicio"], [/Event|Tournament|Cup/i, "Evento"]];
+function srcOf(tags) { const t = (tags || []).filter(x => /^Cosmetics\.Source\./i.test(x)).join(" "); if (!t) return ""; for (const [re, l] of SRC) if (re.test(t)) return l; return ""; }
+function lastSeenOf(h) { if (!Array.isArray(h) || !h.length) return null; const d = new Date(); const today = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); const past = h.map(x => Date.parse(x)).filter(x => x < today); return past.length ? new Date(Math.max(...past)).toISOString() : null; }
+let GP = store.get("gprices", {}); // precios compartidos registrados por el servidor (id en minúsculas)
+const priceOf = id => S.prices[id] ?? GP[String(id).toLowerCase()] ?? null;
+const mini = it => ({ lastSeen: lastSeenOf(it.shopHistory), seenN: Array.isArray(it.shopHistory) ? it.shopHistory.length : null, src: srcOf(it.gameplayTags), id: it.id, name: it.name, type: it.type?.value || "other", typeName: it.type?.displayValue || "", rarity: it.rarity?.value || "common", rarityName: it.rarity?.displayValue || "", series: it.series?.value || "", img: it.images?.icon || it.images?.smallIcon || "", set: it.set?.text || it.set?.value || "", added: it.added || null, desc: it.description || "", intro: it.introduction?.text || "" });
 const remember = it => { if (it?.id) KNOWN.set(it.id, Object.assign(KNOWN.get(it.id) || {}, it)); return it; };
 Object.values(S.favs).forEach(remember);
 
@@ -570,11 +576,12 @@ function entryTile(e) {
 }
 function itemTile(it) {
   const inShop = SHOP.byItem.get(it.id);
-  const p = inShop && inShop.items.length === 1 ? inShop.price : S.prices[it.id];
+  const p = inShop && inShop.items.length === 1 ? inShop.regular : priceOf(it.id);
+  const alt = it.lastSeen ? `En tienda: ${fmtD(it.lastSeen, { day: "numeric", month: "short", year: "2-digit" })}` : it.src && it.src !== "Tienda" ? it.src : "";
   return `<button class="tile fade" data-act="item" data-id="${esc(it.id)}">
     ${art(it.img, it.name, it.rarity, { tags: (inShop ? `<span class="tag today">Hoy en tienda</span>` : "") + (S.favs[it.id] ? `<span class="fv">${I.starF}</span>` : "") })}
     <span class="info"><span class="nm">${esc(it.name)}</span><span class="mt">${esc([it.typeName || it.type, it.rarityName].filter(Boolean).join(" · "))}</span>
-    <span class="pr">${p != null ? vb(p) : `<span class="small faint">Precio no verificado</span>`}</span></span></button>`;
+    <span class="pr">${p != null ? vb(p) : alt ? `<span class="small faint">${esc(alt)}</span>` : ""}</span></span></button>`;
 }
 const skelTiles = n => `<div class="grid">${`<div class="skel tilesk"></div>`.repeat(n)}</div>`;
 const chips = (name, opts, cur) => `<div class="chips" role="tablist">${opts.map(([v, l, c]) => `<button class="chip ${v === cur ? "on" : ""}" role="tab" aria-selected="${v === cur}" data-chip="${name}" data-v="${esc(v)}">${esc(l)}${c != null ? `<span class="c">${c}</span>` : ""}</button>`).join("")}</div>`;
@@ -724,19 +731,22 @@ function entrySheet(key) {
 function itemSheet(id) {
   const it = KNOWN.get(id); if (!it) return;
   const inShop = SHOP.byItem.get(id);
-  const p = S.prices[id];
+  const p = priceOf(id);
+  const noPrice = it.src && it.src !== "Tienda" && !it.lastSeen ? `No se vende en la tienda · ${esc(it.src)}` : it.lastSeen ? "Se registrará cuando vuelva a la tienda" : "Sin apariciones registradas en la tienda";
   openSheet(`<div class="stack" data-sheet="${esc(id)}">
     <div class="dart">${art(it.img, it.name, it.rarity)}</div>
     <div class="stack" style="gap:8px"><div class="row"><span class="badge rar ${rarCls(it.rarity)}">${esc(it.typeName || it.type)}</span>${it.rarityName ? `<span class="badge">${esc(it.rarityName)}</span>` : ""}${inShop ? `<span class="badge ok">Hoy en tienda</span>` : ""}</div>
       <h1>${esc(it.name)}</h1>${it.desc ? `<p class="muted">${esc(it.desc)}</p>` : ""}</div>
     <dl class="kv">
-      <dt>Precio original</dt><dd>${p != null ? vb(p) : `<span class="muted">No verificado</span>`}</dd>
+      <dt>Precio original</dt><dd>${p != null ? vb(p) : `<span class="muted" style="font-weight:500">${noPrice}</span>`}</dd>
+      ${it.src ? `<dt>Origen</dt><dd>${esc(it.src)}</dd>` : ""}
+      ${it.lastSeen ? `<dt>Última vez en tienda</dt><dd>${fmtDay(it.lastSeen)}</dd>` : ""}
       ${inShop ? `<dt>Precio hoy</dt><dd>${vb(inShop.price, inShop.items.length === 1 ? inShop.regular : null)}${inShop.items.length > 1 ? `<br><span class="small muted">dentro de «${esc(inShop.name)}»</span>` : ""}</dd>` : ""}
       ${it.set ? `<dt>Conjunto</dt><dd>${esc(it.set)}</dd>` : ""}
       ${it.intro ? `<dt>Introducido</dt><dd>${esc(it.intro)}</dd>` : ""}
       ${it.added ? `<dt>Añadido a los archivos</dt><dd>${fmtDay(it.added)}</dd>` : ""}
     </dl>
-    ${p == null ? `<p class="small faint">El precio solo se muestra cuando DropStats ha visto el objeto a la venta por separado en la tienda. No se estima.</p>` : ""}
+    ${p == null && it.lastSeen ? `<p class="small faint">DropStats registra el precio original de cada objeto que sale a la venta por separado en la tienda. Este todavía no ha vuelto desde que empezó el registro; los precios no se estiman.</p>` : ""}
     <div id="hist"></div>
     <div class="row">${favBtn(id)}${inShop ? `<button class="btn" data-act="entry" data-id="${esc(inShop.key)}">${I.shop}Ver oferta</button>` : ""}</div>
   </div>`);
@@ -1148,7 +1158,7 @@ VIEWS.settings = v => {
 /* =================== CUENTA Y SINCRONIZACIÓN =================== */
 /* Cuenta propia de DropStats (correo y contraseña), independiente de Epic Games.
    Sincroniza favoritos, jugadores, historial, rutas, marcadores, recordatorios, precios y preferencias. */
-const SYNC_KEYS = ["favs", "favPlayers", "history", "routes", "markers", "events", "prices", "prefs", "myPlayer"];
+const SYNC_KEYS = ["favs", "favPlayers", "history", "routes", "markers", "events", "prefs", "myPlayer"];
 const ACC = { checked: false, configured: null, user: null, status: "idle", lastAt: store.get("syncAt", 0), dirty: store.get("dirty", false), busy: false, err: "" };
 async function sendJSON(url, body, method = "POST") {
   const ac = new AbortController(), t = setTimeout(() => ac.abort(), 15000);
@@ -1267,7 +1277,7 @@ const armed = {};
 function arm(btn, key) { if (armed[key]) { armed[key] = 0; return true; } armed[key] = 1; const t = btn.textContent; btn.textContent = "¿Seguro?"; setTimeout(() => { armed[key] = 0; if (btn.isConnected) btn.textContent = t; }, 3000); return false; }
 function toggleFav(id) {
   const it = KNOWN.get(id); if (!it) return;
-  if (S.favs[id]) delete S.favs[id]; else S.favs[id] = { id: it.id, name: it.name, type: it.type, typeName: it.typeName, rarity: it.rarity, rarityName: it.rarityName, img: it.img, set: it.set || "" };
+  if (S.favs[id]) delete S.favs[id]; else S.favs[id] = { id: it.id, name: it.name, type: it.type, typeName: it.typeName, rarity: it.rarity, rarityName: it.rarityName, img: it.img, set: it.set || "", lastSeen: it.lastSeen || null, src: it.src || "" };
   save("favs"); toast(S.favs[id] ? "Añadido a favoritos" : "Quitado de favoritos");
   $$(`#sheet [data-act=fav][data-id="${CSS.escape(id)}"]`).forEach(b => b.outerHTML = favBtn(id));
   rerender("home", "shop", "catalog", "favs"); updateFavCount();
@@ -1409,5 +1419,8 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && SH
 /* =================== arranque =================== */
 go(VIEWS[(location.hash || "").slice(1)] ? location.hash.slice(1) : "home");
 accCheck();
+(async function loadPrices() { // base de precios compartida del servidor
+  try { const j = await fetchJSON("/api/prices", 10000); if (j && j.prices && Object.keys(j.prices).length) { GP = j.prices; store.set("gprices", GP); rerender("catalog", "favs"); } } catch {}
+})();
 </script>
 </body></html>
