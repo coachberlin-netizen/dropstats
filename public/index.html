@@ -2300,8 +2300,8 @@ VIEWS.ai = v => { // solo llega aquí con Drop Ultra: render() muestra la pantal
 };
 /* burbuja de respuesta: mientras llega texto se marca como «en directo» y se actualiza sola, sin volver a dibujar la pantalla */
 function aiBubble(m, k) {
-  if (m.live && !m.content) return `<div class="msg bot typing ${m.searching ? "searching" : ""}" data-live role="status">${m.searching ? `<span class="srch">${I.search}Buscando en fuentes fiables…</span>` : `<span></span><span></span><span></span>`}<span class="sr">Drop AI está preparando la respuesta…</span></div>`;
-  return `<div class="msg bot ${m.live ? "live" : ""}" ${m.live ? "data-live" : ""}><div class="md">${mdLite(m.content)}</div>${m.live ? "" : `<div class="msg-tools"><button class="link small" data-act="ai-copy" data-i="${k}">${I.copy}Copiar</button>${m.stopped ? `<span class="small faint">Respuesta detenida</span>` : ""}${m.reveal ? `<span class="small faint">Mostrada poco a poco (sin streaming)</span>` : ""}${m.web ? `<span class="small faint">${I.search}Con búsqueda web</span>` : ""}${m.noweb ? `<span class="small faint">Sin búsqueda web (servicio saturado)</span>` : ""}${m.ctx ? `<span class="small faint">Con tus datos de DropStats</span>` : ""}</div>`}</div>`;
+  if (m.live && !m.content) return `<div class="msg bot typing ${m.searching ? "searching" : ""}" data-live role="status">${m.searching ? `<span class="srch">${I.search}Buscando ${m.searching === true ? "en fuentes fiables" : m.searching}…</span>` : `<span></span><span></span><span></span>`}<span class="sr">Drop AI está preparando la respuesta…</span></div>`;
+  return `<div class="msg bot ${m.live ? "live" : ""}" ${m.live ? "data-live" : ""}><div class="md">${mdLite(m.content)}</div>${m.live ? "" : `<div class="msg-tools"><button class="link small" data-act="ai-copy" data-i="${k}">${I.copy}Copiar</button>${m.stopped ? `<span class="small faint">Respuesta detenida</span>` : ""}${m.reveal ? `<span class="small faint">Mostrada poco a poco (sin streaming)</span>` : ""}${m.web ? `<span class="small faint">${I.search}Con búsqueda web</span>` : ""}${m.wiki ? `<span class="small faint">${I.search}Datos de la Fortnite Wiki · ${esc(m.wiki)}</span>` : ""}${m.noweb ? `<span class="small faint">Sin búsqueda web (servicio saturado)</span>` : ""}${m.ctx ? `<span class="small faint">Con tus datos de DropStats</span>` : ""}</div>`}</div>`;
 }
 AI.follow = true; AI.ctl = null;
 const aiView = () => $("#view");
@@ -2358,7 +2358,7 @@ async function aiSend(text) {
           const ln = buf.slice(0, i); buf = buf.slice(i + 1); if (!ln.trim()) continue;
           let o; try { o = JSON.parse(ln); } catch { continue; }
           if (o.t === "delta") { m.content += o.d; aiPaint(m); } else if (o.t === "done") done = o; else if (o.t === "error") err = o.error;
-          else if (o.t === "status") { if (o.d === "search") { m.searching = true; const el = $("#chat [data-live]"); if (el && !m.content) el.outerHTML = aiBubble(m, 0); } else if (o.d === "nosearch") { m.searching = false; m.noweb = true; } }
+          else if (o.t === "status") { if (o.d === "search" || o.d === "wiki") { m.searching = o.d === "wiki" ? "en la Fortnite Wiki" : "en fuentes fiables"; const el = $("#chat [data-live]"); if (el && !m.content) el.outerHTML = aiBubble(m, 0); } else if (o.d === "nosearch") { m.searching = false; m.noweb = true; } }
         }
       }
       if (!done && !err) err = "network";
@@ -2371,7 +2371,7 @@ async function aiSend(text) {
   clearTimeout(to); clearTimeout(aiPaint.t); aiPaint.t = 0; AI.ctl = null; AI.busy = false;
   delete m.live; delete m.searching;
   if (done?.remaining != null) AI.remaining = done.remaining;
-  if (done?.web) m.web = true;
+  if (done?.web) m.web = true; if (done?.wiki) m.wiki = done.wiki.pagina;
   if (err) {
     AI.err = AI_ERR[err] || AI_ERR.server;
     if (err === "no_session") { ACC.user = null; paintAcc(); } if (err === "rate_limited") AI.remaining = 0;

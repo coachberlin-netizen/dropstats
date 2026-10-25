@@ -43,7 +43,7 @@ Reglas:
 - No pidas ni aceptes contraseñas, y no ayudes con trampas, cuentas compartidas, compraventa de cuentas ni nada contra las normas de Epic.`;
 
 // Le dice al modelo exactamente qué datos de DropStats tiene en esta conversación, para que no atribuya a la app nada más
-const INFO_KEYS = { misEstadisticas: "estadísticas del usuario", jugadorConsultado: "un jugador consultado", estrategias: "estrategias guardadas", mapaSinGuardar: "mapa sin guardar", lugaresDelMapa: "lugares del mapa", tiendaHoy: "tienda de hoy", torneos: "torneos del usuario", novedadesOficiales: "novedades oficiales", favoritos: "favoritos" };
+const INFO_KEYS = { wikiFortnite: "extracto de la Fortnite Wiki sobre el arma", misEstadisticas: "estadísticas del usuario", jugadorConsultado: "un jugador consultado", estrategias: "estrategias guardadas", mapaSinGuardar: "mapa sin guardar", lugaresDelMapa: "lugares del mapa", tiendaHoy: "tienda de hoy", torneos: "torneos del usuario", novedadesOficiales: "novedades oficiales", favoritos: "favoritos" };
 // Búsqueda web (herramienta browser_search de Groq, solo modelos gpt-oss): se activa para preguntas sobre armas o datos actuales
 const WEB_RE = /(da[ñn]o|dps|cadencia|cargador|recarga|headshot|cabeza|nerf|buff|parche|actualizaci[oó]n|temporada actual|esta temporada|ahora mismo|actualmente|\bmeta\b|qu[eé] arma|mejor(es)? arma|armas?\b|bot[ií]n|loot|vault|escopeta|rifle|subfusil|\bsmg\b|francotirador|sniper|pistola|lanzacohetes|ballesta|minigun)/i;
 const needsWeb = messages => process.env.AI_WEB_SEARCH !== "off" && WEB_RE.test(messages[messages.length - 1]?.content || "");
@@ -54,6 +54,42 @@ const WEB_RULES = `\n\nBÚSQUEDA WEB: en esta pregunta tienes una herramienta de
 - Si no encuentras un dato en una fuente fiable, dilo claramente: no inventes cifras.
 - Termina con una línea «Fuentes:» y los enlaces que has usado en formato markdown [título](url). No uses marcas de cita como 【1】.`;
 const NO_WEB = `\n\nBÚSQUEDA WEB NO DISPONIBLE ahora (límite del servicio gratuito). Si te piden cifras actuales, di que no has podido buscarlas y que vuelvan a intentarlo en un minuto; habla solo en términos generales.`;
+/* ---- Fortnite Wiki (fortnite.fandom.com, en inglés): API pública y gratuita, datos por parche y rareza ---- */
+const WIKI = "https://fortnite.fandom.com";
+const UA = { "User-Agent": "DropStats/1.0 (+https://dropstats.vercel.app)" };
+async function weaponTerm(p, question, signal) { // nombre oficial en inglés del arma de la pregunta (modelo pequeño y barato)
+  if (p.id !== "groq") return null;
+  const r = await fetch(p.url + "/chat/completions", { method: "POST", signal, headers: { "Content-Type": "application/json", Authorization: `Bearer ${p.key}` },
+    body: JSON.stringify({ model: process.env.AI_HELPER_MODEL || "llama-3.1-8b-instant", temperature: 0, max_tokens: 30, messages: [
+      { role: "system", content: "Devuelve SOLO el nombre oficial en inglés del arma u objeto de Fortnite Battle Royale por el que pregunta el usuario, tal como aparece en la Fortnite Wiki (por ejemplo: Pump Shotgun, Assault Rifle, Hand Cannon). Si pregunta por «la escopeta» sin más, responde Pump Shotgun. Si no pregunta por un arma u objeto concreto, responde NONE." },
+      { role: "user", content: question.slice(0, 300) }] }) }).catch(() => null);
+  if (!r?.ok) return null;
+  const j = await r.json().catch(() => ({})); const t = String(j.choices?.[0]?.message?.content || "").trim().replace(/^["'«]|["'».]$/g, "");
+  return !t || /^none$/i.test(t) || t.length > 60 ? null : t;
+}
+function wikiExtract(w) { // ficha del arma + estadísticas del parche actual (primera pestaña), sin imágenes
+  const clean = x => x.replace(/<gallery>[\s\S]*?<\/gallery>/g, "").replace(/\|\s*Image=[^\n]*/g, "").replace(/\[\[(?:File|Image):[^\]]*\]\]/g, "").replace(/<!--[\s\S]*?-->/g, "").replace(/\n{3,}/g, "\n\n");
+  const ib = (w.match(/\{\{Infobox Weaponry[\s\S]*?\n\}\}/) || [""])[0];
+  let st = ""; const i = w.indexOf("==Stats==");
+  if (i >= 0) { st = w.slice(i, i + 9000); const k = st.indexOf("\n|-|", st.indexOf("|-|") + 3); if (k > 0) st = st.slice(0, k); const e = st.indexOf("\n==", 10); if (e > 0) st = st.slice(0, e); }
+  const fall = (w.match(/'''Damage falloff'''[\s\S]*?\n\n/) || [""])[0];
+  return clean(ib + "\n" + st + "\n" + fall).slice(0, 5000);
+}
+async function wikiLookup(term, signal) {
+  const ck = "wiki:" + term.toLowerCase();
+  try { const c = await redis("GET", ck); if (c) return JSON.parse(c); } catch {}
+  const sr = await fetch(`${WIKI}/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srlimit=6&format=json`, { headers: UA, signal }).then(r => r.json()).catch(() => null);
+  const hits = sr?.query?.search || [];
+  const hit = hits.find(h => h.title.toLowerCase() === term.toLowerCase()) || hits.find(h => !h.title.includes("/")) || hits[0];
+  if (!hit) return null;
+  const pj = await fetch(`${WIKI}/api.php?action=parse&page=${encodeURIComponent(hit.title)}&prop=wikitext&redirects=1&format=json&formatversion=2`, { headers: UA, signal }).then(r => r.json()).catch(() => null);
+  const w = pj?.parse?.wikitext; if (!w) return null;
+  const ext = wikiExtract(w); if (ext.length < 80) return null;
+  const out = { fuente: "Fortnite Wiki (fortnite.fandom.com)", pagina: pj.parse.title, url: `${WIKI}/wiki/${encodeURIComponent(pj.parse.title.replace(/ /g, "_"))}`, editadaEl: hit.timestamp, extracto: ext };
+  try { await redis("SET", ck, JSON.stringify(out), "EX", 6 * 3600); } catch {}
+  return out;
+}
+const WIKI_RULES = `\n\nFORTNITE WIKI: el CONTEXTO incluye "wikiFortnite", un extracto real de la Fortnite Wiki con la ficha del arma y sus estadísticas por rareza del parche actual (la pestaña indica el parche, p. ej. v42.10). Úsalo para responder con cifras: indica el parche y desglosa por rareza cuando la fuente lo da. Explica brevemente cómo leerlo si ayuda (daño por disparo, cadencia, cargador, recarga, multiplicador a la cabeza, caída de daño). Si la pregunta era genérica («la escopeta»), di de qué arma concreta son los datos. Termina con «Fuentes:» y el enlace [Fortnite Wiki – página](url). No inventes cifras que no estén en el extracto.`;
 function buildSystem(context) {
   const c = context && typeof context === "object" ? context : {};
   const have = Object.keys(INFO_KEYS).filter(k => k in c && !(k === "torneos" && typeof c.torneos === "string")).map(k => INFO_KEYS[k]);
@@ -121,13 +157,20 @@ async function openStream(p, model, sys, messages, maxTokens, signal, web) {
   return { reader: r.body.getReader() };
 }
 async function streamReply(req, res, p, messages, context, onFail, onOk) {
-  const sys = buildSystem(context), web = needsWeb(messages);
+  let web = needsWeb(messages), wiki = null;
   const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 58000);
   let closed = false; res.on("close", () => { if (!res.writableEnded) { closed = true; ctl.abort(); } }); // el usuario ha pulsado «Detener» o se ha ido
   res.statusCode = 200;
   res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8"); res.setHeader("Cache-Control", "no-store, no-transform"); res.setHeader("X-Accel-Buffering", "no");
   res.flushHeaders?.();
   const line = o => { if (!closed) res.write(JSON.stringify(o) + "\n"); };
+  if (web) { // 1) Fortnite Wiki: barato y fiable. 2) si no hay datos, búsqueda web de Groq (limitada al día)
+    line({ t: "status", d: "wiki" });
+    try { const term = await weaponTerm(p, messages[messages.length - 1].content, ctl.signal); if (term) wiki = await wikiLookup(term, ctl.signal); } catch {}
+    if (wiki) { context = { ...context, wikiFortnite: wiki }; web = false; }
+    else { const day = new Date().toISOString().slice(0, 10); if (await tooMany(`ai:web:${day}`, Math.max(0, +process.env.AI_WEB_DAILY || 5), 90000)) web = false; }
+  }
+  const sys = buildSystem(context) + (wiki ? WIKI_RULES : "");
   // intentos: primero con búsqueda web (si hace falta), después sin ella con los modelos de reserva
   const tries = [];
   if (web) p.models.filter(m => canSearch(p, m)).forEach(m => tries.push([m, true]));
@@ -143,7 +186,7 @@ async function streamReply(req, res, p, messages, context, onFail, onOk) {
     }
   } catch (e) { clearTimeout(to); if (!closed) { await onFail(); line({ t: "error", error: e.name === "AbortError" ? "timeout" : "unreachable" }); } return res.end(); }
   if (!opened?.reader) { clearTimeout(to); await onFail(); line({ t: "error", error: opened?.err || "provider_error" }); return res.end(); }
-  if (web && !usedWeb) line({ t: "status", d: "nosearch" });
+  if ((web && !usedWeb) || (needsWeb(messages) && !wiki && !web)) line({ t: "status", d: "nosearch" });
   const dec = new TextDecoder(); let buf = "", text = "", finish = null;
   try {
     while (true) {
@@ -164,7 +207,7 @@ async function streamReply(req, res, p, messages, context, onFail, onOk) {
   clearTimeout(to);
   if (closed) { if (!text) await onFail(); return; }               // detenida por el usuario: si ya llegó texto, cuenta como mensaje usado
   if (!text.trim()) { await onFail(); line({ t: "error", error: "empty" }); return res.end(); }
-  line({ t: "done", model, finish, web: usedWeb, webFailed: web && !usedWeb ? webFailed || true : undefined, remaining: await onOk(), stream: true });
+  line({ t: "done", model, finish, web: usedWeb, wiki: wiki ? { pagina: wiki.pagina, url: wiki.url } : undefined, webFailed: web && !usedWeb ? webFailed || true : undefined, remaining: await onOk(), stream: true });
   res.end();
 }
 // Recorta el historial para que cada petición quepa en los límites por minuto del nivel gratuito
@@ -178,13 +221,18 @@ function trimMessages(list) {
 export default async function handler(req, res) {
   const p = provider();
   if (req.method === "GET") {
-    if (req.query.op !== "ping" && req.query.op !== "web") return send(res, 200, { configured: !!p, provider: p?.id || null, model: p?.models[0] || null, limit: LIMIT(), needsLogin: storeReady() });
+    if (!["ping", "web", "wiki"].includes(req.query.op)) return send(res, 200, { configured: !!p, provider: p?.id || null, model: p?.models[0] || null, limit: LIMIT(), needsLogin: storeReady() });
     // prueba real mínima: confirma que la clave y el modelo funcionan; no devuelve datos de nadie
     if (!p) return send(res, 200, { ok: false, error: "not_configured" });
     if (!storeReady()) return send(res, 200, { ok: false, error: "no_store" });
     const day = new Date().toISOString().slice(0, 10);
     if (await tooMany(`ai:ping:${day}`, Math.max(1, +process.env.AI_PING_LIMIT || 20), 90000)) return send(res, 200, { ok: false, error: "ping_limit" });
     const t0 = Date.now();
+    if (req.query.op === "wiki") { // prueba real: nombre del arma + extracto de la wiki (sin datos de nadie)
+      const q = String(req.query.q || "¿Cuánto daño hace la escopeta?").slice(0, 200);
+      const term = await weaponTerm(p, q); const wk = term ? await wikiLookup(term) : null;
+      return send(res, 200, { ok: !!wk, term, pagina: wk?.pagina, url: wk?.url, editadaEl: wk?.editadaEl, chars: wk?.extracto.length, extracto: wk?.extracto.slice(0, 1500), ms: Date.now() - t0 });
+    }
     if (req.query.op === "web") { // prueba real de la búsqueda web (sin datos de nadie)
       const model = p.models.find(m => canSearch(p, m)); if (!model) return send(res, 200, { ok: false, error: "no_search_model" });
       const body = { model, temperature: 0.2, max_completion_tokens: 1600, reasoning_effort: "low", include_reasoning: false, tools: [{ type: "browser_search" }], tool_choice: "required",
