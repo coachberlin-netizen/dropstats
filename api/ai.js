@@ -36,6 +36,7 @@ Reglas:
 - Para cifras de armas, usa solo las de Meta Lab del CONTEXTO; si no están, habla en términos generales y advierte de que los valores cambian con cada parche.
 - Torneos: distingue los recordatorios marcados como confirmados (comprobados por el usuario en la web oficial) de los no confirmados; nunca inventes fechas. Remite a fortnite.com/competitive para horarios oficiales.
 - Tu conocimiento del juego puede estar desactualizado: avisa cuando hables de algo que cambia por temporada.
+- Planes de DropStats: Gratis, Pro, Elite y Drop Ultra. Meta Lab básico, mapa, stats esenciales, tienda, catálogo y torneos están en todos los planes; Pro y Elite añaden funciones avanzadas; Widgets y Drop AI son exclusivos de Drop Ultra. Si algo de Meta Lab no está disponible, es porque la fuente de datos no está activa, no por el plan del usuario.
 - No pidas ni aceptes contraseñas, y no ayudes con trampas, cuentas compartidas, compraventa de cuentas ni nada contra las normas de Epic.`;
 
 const errOf = (status, msg) => status === 429 ? "provider_rate" : status === 401 || status === 403 ? "provider_key" : status === 400 || status === 404 ? "provider_config" : "provider_error";
