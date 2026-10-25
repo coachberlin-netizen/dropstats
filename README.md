@@ -4,7 +4,7 @@ Tienda diaria, catálogo de cosméticos, mapa interactivo, estadísticas de juga
 
 DropStats es un proyecto independiente. No está afiliado, patrocinado ni aprobado por Epic Games. Fortnite y los nombres e imágenes de sus objetos son marcas de Epic Games, Inc.
 
-Versión del 25 de octubre de 2026.
+Versión del 25 de octubre de 2026 (rediseño, planes premium, Ultra Widgets y mapa táctico).
 
 ---
 
@@ -23,6 +23,38 @@ Versión del 25 de octubre de 2026.
 
 Favoritos, preferencias, filtros, rutas, marcadores y recordatorios se guardan en el navegador y se mantienen al recargar.
 
+
+## DropStats Premium (Pro, Elite y Drop Ultra)
+
+Tres planes en orden ascendente, con precios **provisionales** (2,99 €, 5,99 € y 9,99 € al mes). No hay cobros ni suscripciones activas: el botón de cada plan explica que aún no está a la venta.
+
+- **Pro:** métricas extra en Stats, filtros avanzados del catálogo (precio, orden, «solo hoy»), favoritos por categorías, temas Noche morada y Medianoche, accesos rápidos personalizables. Sin widgets.
+- **Elite:** todo lo de Pro + gráficas de evolución, total y temporada lado a lado, comparar jugadores, análisis competitivo por modo, etiquetas de estrategias, temas Aurora y Cobalto, modo compacto. Sin widgets.
+- **Drop Ultra (nivel máximo):** todo lo anterior + **Ultra Widgets**, personalización total (color de acento, esquinas, tamaño de texto), temas Ultravioleta y Holográfico, efectos visuales, carpetas y estrategias fijadas, insignia Ultra y tarjeta holográfica.
+
+**Permisos:** todo pasa por una única función, `can()`. Los widgets solo existen con Drop Ultra: el panel no se dibuja en otros planes, la ruta `#widgets` muestra una pantalla de bloqueo y cada acción (añadir, quitar, ordenar, cambiar tamaño o diseño, ocultar datos) vuelve a comprobar el plan.
+
+**Selector de demostración:** en Premium → «Selector de demostración» se simula Gratis, Pro, Elite o Ultra para probar los permisos. Es una herramienta de desarrollo, guardada solo en el navegador.
+
+**Suscripción real (futuro):** `Entitlements.plan()` es el único sitio que decide el plan. Para cobrar de verdad habría que añadir una pasarela (por ejemplo Stripe) en una función del servidor, guardar el plan verificado de cada cuenta en la base de datos y hacer que `Entitlements.plan()` lo lea de `/api/auth` en lugar del selector. `Billing.checkout()` ya está preparado para conectarse.
+
+## Ultra Widgets
+
+11 tipos: estadísticas del jugador, victorias, eliminaciones, % de victorias, evolución, tienda actual, cosméticos favoritos, próximos torneos confirmados, acceso rápido al mapa, estrategias guardadas y novedades oficiales del juego. Cada widget se puede añadir, quitar, reordenar, cambiar de tamaño (pequeño, mediano, grande) y de diseño (cristal, sólido, holográfico), y ocultar datos concretos. «Restaurar diseño original» vuelve a la configuración inicial. Si falta información, cada widget muestra un estado vacío explicativo.
+
+- Los datos de jugador salen de tu cuenta marcada con «Es mi cuenta» en Stats.
+- La evolución usa mediciones reales guardadas por DropStats (una al día cada vez que se consultan las estadísticas). No se rellena con datos inventados.
+- Las novedades son las noticias oficiales del juego (fortnite-api.com, `/v2/news/br`).
+- Los torneos «confirmados» son los recordatorios en los que has marcado que comprobaste la fecha en la web oficial.
+
+## Mapa táctico
+
+- **Modo planificación:** pulsa «Planificar» para editar; fuera de ese modo el mapa solo se mira y al tocar un marcador ves su nota.
+- **Marcadores con tipo:** aterrizaje, cofre, punto estratégico, rotación y nota. Cada uno tiene nombre, nota, color y una leyenda que permite ocultarlos por tipo.
+- **Rutas:** se dibujan con el dedo o el ratón. Cada una tiene nombre y color, y se puede ocultar, duplicar o borrar.
+- **Deshacer y rehacer,** borrar todo y encuadrar.
+- **Estrategias:** guardar, guardar como nueva, cargar, duplicar, fijar, notas, etiqueta (Elite), carpeta (Ultra), compartir con un código e importarlo, y exportar como imagen PNG. Para exportar, la imagen del mapa pasa por `/api/img`, así el navegador puede dibujarla en un lienzo.
+
 ## 2. Estructura
 
 ```
@@ -35,6 +67,8 @@ dropstats/
   api/auth.js           Cuentas: crear, entrar, salir, eliminar
   api/sync.js           Datos sincronizados de cada cuenta
   api/_lib.js           Redis, contraseñas, sesiones y protección de peticiones
+  api/prices.js         Base de precios compartida (y api/collect.js, tarea diaria)
+  api/img.js            Proxy de imágenes de fortnite-api.com para exportar estrategias
   scripts/snapshot.py   Copia de tienda, mapa y novedades con sus imágenes (public/data/)
   vercel.json           Configuración de despliegue
 ```

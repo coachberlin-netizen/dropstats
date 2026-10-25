@@ -38,7 +38,7 @@ a{color:var(--violet2)}
 svg{flex:none}
 
 /* ---------- estructura ---------- */
-#app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"top" "main" "nav";max-width:1360px;margin:0 auto}
+#app{height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"top" "main" "nav";max-width:1360px;margin:0 auto}
 .top{grid-area:top;display:flex;align-items:center;gap:6px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 main{grid-area:main;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line2) transparent;
   padding-block:2px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
@@ -66,6 +66,8 @@ main.full{padding:0;overflow:hidden;display:flex;flex-direction:column}
 .logo{display:flex;align-items:center;gap:9px;margin-right:auto;background:none;border:0;padding:4px 0;font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:.07em}
 .mark{width:28px;height:28px;border-radius:8px;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:12.5px;letter-spacing:.02em;box-shadow:0 0 0 1px #ffffff1f inset,0 4px 18px #8b5cf640}
 .logo b{color:var(--violet2);font-weight:700}
+.logo{position:relative;min-width:0}
+.logo .plan-badge{position:absolute;left:37px;bottom:-8px;height:15px;padding:0 6px;font-size:8.5px;border-radius:5px;letter-spacing:.12em}
 .ibtn{width:40px;height:40px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);transition:transform .12s,background .2s,color .2s,border-color .2s;position:relative}
 .ibtn svg{width:19px;height:19px}
 .ibtn:active{transform:scale(.93);background:var(--raise)}
@@ -284,6 +286,7 @@ th:first-child,td:first-child{text-align:left;font-weight:600}
 .drawer{max-height:40%;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-block:10px 12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 @media (min-width:960px){.drawer{padding-inline:28px}}
 .swatch{width:12px;height:12px;border-radius:4px;flex:none}
+.drawer>*{flex-shrink:0}
 .poilist{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;color:var(--muted)}
 
 /* hoja de detalle */
@@ -311,12 +314,146 @@ th:first-child,td:first-child{text-align:left;font-weight:600}
 @keyframes fd{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 details>summary{cursor:pointer;list-style:none;color:var(--violet2);font-weight:600;font-size:14px}
 details>summary::-webkit-details-marker{display:none}
+
+/* ---------- premium ---------- */
+@property --ang{syntax:"<angle>";inherits:false;initial-value:0deg}
+.plan-badge{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:6px;font:700 10.5px/1 var(--display);letter-spacing:.1em;color:#fff;background:#3a2a6e;white-space:nowrap}
+.plan-badge.t-pro{background:linear-gradient(135deg,#7c3aed,#4c1d95)}
+.plan-badge.t-elite{background:linear-gradient(135deg,#6d28d9,#2563eb)}
+.plan-badge.t-ultra{background:linear-gradient(110deg,#a855f7,#22d3ee,#f0abfc,#7c3aed);background-size:300% 100%;animation:holo 6s linear infinite;color:#0b0613;text-shadow:0 1px 0 #ffffff55}
+@keyframes holo{to{background-position:300% 0}}
+.lock-tag{display:inline-flex;align-items:center;gap:4px;margin-left:6px;font-size:11px;font-weight:700;color:var(--violet2);vertical-align:middle}
+.lock-tag svg{width:12px;height:12px}
+.prem-hero{display:flex;flex-direction:column;gap:6px}
+.prem-hero h1{font-size:34px}
+.plans{display:grid;gap:14px}
+@media (min-width:900px){.plans{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}}
+.plan{position:relative;border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--line);background:var(--surface);overflow:hidden;isolation:isolate}
+.plan.t-pro{background:radial-gradient(120% 80% at 100% 0%,#7c3aed33,transparent 60%),#0f0c19;border-color:#5b3fb5}
+.plan.t-elite{background:radial-gradient(120% 90% at 100% 0%,#3b82f63d,transparent 60%),radial-gradient(90% 80% at 0% 100%,#8b5cf633,transparent 60%),#0c0f1f;border-color:#4f6fe0}
+.plan.t-ultra{border:0;background:radial-gradient(120% 70% at 50% -10%,#a855f755,transparent 60%),radial-gradient(90% 70% at 100% 100%,#22d3ee26,transparent 60%),#07050d;box-shadow:0 20px 60px -20px #a855f7aa}
+.plan.t-ultra::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;background:conic-gradient(from var(--ang),#a855f7,#22d3ee,#f0abfc,#7c3aed,#a855f7);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spinang 6s linear infinite;z-index:-1}
+.plan.t-ultra::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,#ffffff14 47%,transparent 60%);background-size:260% 100%;animation:sheen 5s ease-in-out infinite;pointer-events:none;z-index:-1}
+@keyframes spinang{to{--ang:360deg}}
+@keyframes sheen{0%{background-position:130% 0}60%,100%{background-position:-60% 0}}
+.plan-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.plan-tier{font-size:11.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:700}
+.plan.t-ultra .plan-tier{color:#f0abfc}
+.plan-name{font-size:26px}
+.ultra-word{background:linear-gradient(100deg,#f5d0fe,#a855f7 40%,#22d3ee 70%,#f0abfc);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:holo 8s linear infinite}
+.plan-price{display:flex;align-items:baseline;gap:6px}
+.plan-price b{font:700 34px/1 var(--display)}
+.plan-price span{color:var(--muted)}
+.plan-prov{font-size:12px;color:var(--faint);margin-top:-6px}
+.perks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;flex:1}
+.perks li{display:flex;gap:9px;align-items:flex-start;font-size:14.5px}
+.perks svg{width:17px;height:17px;margin-top:2px;color:var(--ok)}
+.plan.t-ultra .perks svg{color:#f0abfc}
+.ultra-btn{background:linear-gradient(110deg,#a855f7,#6d28d9 40%,#0ea5e9);border:0;color:#fff;box-shadow:0 10px 30px -10px #a855f7}
+.segtabs.four{grid-template-columns:repeat(4,1fr)}
+.demo-box{border:1px dashed var(--line2);border-radius:var(--r);padding:16px}
+table.cmp td{text-align:center}
+table.cmp td:first-child{text-align:left;white-space:normal;min-width:150px;font-weight:500}
+table.cmp .yes svg{width:18px;height:18px;color:var(--ok)}
+table.cmp .yes.u svg{color:#f0abfc}
+table.cmp .no{color:var(--faint)}
+.plan-mini{border-radius:16px;padding:16px;background:radial-gradient(120% 120% at 100% 0%,#8b5cf640,transparent 60%),var(--surface2);border:1px solid var(--line2)}
+.plan-mini.t-ultra{background:radial-gradient(120% 120% at 100% 0%,#a855f760,transparent 60%),radial-gradient(90% 90% at 0% 100%,#22d3ee30,transparent 60%),#0a0712}
+.prem-banner{display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--r);border:1px solid #6d4bd0;background:radial-gradient(120% 100% at 100% 0%,#a855f733,transparent 60%),var(--surface);text-align:left;width:100%;color:var(--fg)}
+.prem-banner .av{background:var(--grad);color:#fff}
+.ultra-av{background:linear-gradient(135deg,#a855f7,#22d3ee)!important;color:#fff!important}
+/* bloqueo de widgets */
+.ultra-lock{position:relative;overflow:hidden;border-radius:26px;padding:26px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;background:#07050d;isolation:isolate}
+.ultra-lock::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;background:conic-gradient(from var(--ang),#a855f7,#22d3ee,#f0abfc,#7c3aed,#a855f7);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spinang 6s linear infinite;z-index:-1}
+.ul-glow{position:absolute;inset:-40% -20% auto;height:70%;background:radial-gradient(closest-side,#a855f755,transparent);z-index:-1}
+.ultra-lock h1{font-size:34px}
+.ultra-lock p{max-width:46ch;color:var(--muted)}
+.ultra-lock .perks{text-align:left;max-width:420px}
+.ul-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%;max-width:420px;filter:saturate(1.1)}
+.ulp{border-radius:14px;padding:10px;text-align:left;background:linear-gradient(160deg,#ffffff12,#ffffff05);border:1px solid #ffffff1f;display:flex;flex-direction:column;gap:7px;min-height:74px}
+.ulp span{font-size:11.5px;color:#e9d5ff;font-weight:700;letter-spacing:.04em}
+.ulp i{display:block;height:8px;border-radius:4px;background:#ffffff1c}
+.ulp i+i{width:60%}
+.ulp-0{grid-column:span 2;min-height:96px;background:linear-gradient(135deg,#a855f733,#22d3ee22)}
+/* widgets */
+.wgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (min-width:900px){.wgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.wg{border-radius:var(--r);padding:13px;display:flex;flex-direction:column;gap:8px;min-width:0;border:1px solid var(--line);background:var(--surface)}
+.wg-s{grid-column:span 1}.wg-m{grid-column:span 2}.wg-l{grid-column:1/-1}
+.wg header span{font-size:11.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:700}
+.wg-glass{background:linear-gradient(160deg,#ffffff10,#ffffff04);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-color:#ffffff1c}
+.wg-solid{background:var(--surface2)}
+.wg-holo{position:relative;border:0;background:radial-gradient(120% 90% at 100% 0%,#a855f740,transparent 60%),radial-gradient(90% 80% at 0% 100%,#22d3ee24,transparent 60%),#0a0712;isolation:isolate}
+.wg-holo::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;background:conic-gradient(from var(--ang),#a855f7,#22d3ee,#f0abfc,#7c3aed,#a855f7);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spinang 8s linear infinite;z-index:-1}
+.wg-holo header span{color:#f0abfc}
+.w-big{font:700 32px/1 var(--display);font-variant-numeric:tabular-nums}
+.w-mid{font:700 22px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.w-lbl{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.w-sub{font-size:12.5px;color:var(--muted)}
+.w-row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end}
+.w-kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px}
+.w-kv div{background:#0000002e;border-radius:10px;padding:8px}
+.w-kv span{display:block;font-size:11px;color:var(--muted);font-weight:600}
+.w-kv b{font:700 19px var(--display);font-variant-numeric:tabular-nums}
+.w-items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.w-items .tile{border:0;border-radius:12px}
+.w-items .art .ini{font-size:16px}
+.w-items .tag{font-size:9.5px;padding:2px 6px;top:5px;left:5px}
+.w-empty{display:flex;flex-direction:column;gap:8px;align-items:flex-start;color:var(--muted);font-size:13.5px}
+.w-evo{display:grid;grid-template-columns:90px minmax(0,1fr) auto;align-items:center;gap:8px;font-size:13px}
+.w-evo b{font:700 15px var(--display)}
+.spark{width:100%;height:40px}
+.w-news{display:flex;flex-direction:column;gap:8px}
+.w-new{display:flex;gap:10px;align-items:flex-start}
+.w-new img{width:72px;height:44px;object-fit:cover;border-radius:8px;flex:none}
+.w-new b{display:block;font-size:14px}
+.w-new p{font-size:12.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.w-edit{display:flex;flex-direction:column;gap:10px;padding:12px 14px;border-top:1px solid var(--line)}
+.w-edit:first-child{border-top:0}
+.w-edit .ibtn{width:36px;height:36px}
+/* temas: tarjetas de selección */
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.theme-opt{display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:14px;border:1px solid var(--line);background:var(--surface);text-align:left;color:var(--fg);position:relative}
+.theme-opt.on{border-color:var(--violet2);box-shadow:0 0 0 2px #ffffff14 inset}
+.theme-opt .sw{height:34px;border-radius:9px}
+.theme-opt .nm{font-weight:600;font-size:13.5px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.theme-opt[aria-disabled=true]{opacity:.62}
+.rangerow{display:grid;grid-template-columns:120px minmax(0,1fr) 46px;align-items:center;gap:10px;font-size:14px}
+.rangerow input[type=range]{width:100%;accent-color:var(--violet)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14.5px}
+.switch input{width:22px;height:22px;accent-color:var(--violet)}
+/* mapa táctico */
+.maptools{flex-direction:column;align-items:stretch;gap:6px}
+.tools-row{display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none}
+.tools-row::-webkit-scrollbar{display:none}
+.tools-row>*{flex:none}
+.seg button svg{width:17px;height:17px}
+@media (max-width:420px){.hide-xs{display:none}}
+/* estadísticas avanzadas */
+.chart{width:100%;height:150px}
+.chart text{fill:var(--muted);font-size:11px;font-family:var(--body)}
+.cmp2 td.win{color:var(--ok);font-weight:700}
+.bar-row{display:grid;grid-template-columns:110px minmax(0,1fr) 52px;gap:10px;align-items:center;font-size:13.5px}
+.bar-row .bar{height:10px;border-radius:5px;background:var(--surface2);overflow:hidden}
+.bar-row .bar i{display:block;height:100%;background:var(--grad);border-radius:5px}
+.countdown{font-variant-numeric:tabular-nums;color:var(--violet2);font-weight:700}
+/* densidad y animaciones */
+:root[data-density=compact] .page{gap:18px}
+:root[data-density=compact] .grid{gap:8px}
+:root[data-density=compact] .info{padding:8px 9px 9px}
+:root[data-density=compact] .li{padding:9px 12px}
+:root[data-anim=off] *,:root[data-anim=off] *::before,:root[data-anim=off] *::after{animation:none!important;transition:none!important}
+:root[data-fx=on] .hero,:root[data-fx=on] .tile{box-shadow:0 0 0 1px #ffffff08,0 18px 40px -26px var(--violet)}
+:root[data-fx=on] .btn.pri{box-shadow:0 8px 26px -8px var(--violet)}
+:root[data-holo=on] .btn.pri,:root[data-holo=on] .nav button.on .ic{background:linear-gradient(110deg,#a855f7,#22d3ee,#f0abfc,#7c3aed);background-size:300% 100%;animation:holo 6s linear infinite;color:#0b0613}
+@media (prefers-reduced-motion:reduce){.plan.t-ultra::before,.plan.t-ultra::after,.plan-badge.t-ultra,.ultra-word,.wg-holo::before,.ultra-lock::before{animation:none}}
+
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 
 <div id="app">
   <header class="top">
-    <button class="logo" data-go="home" aria-label="DropStats, inicio"><span class="mark">DS</span>DROP<b>STATS</b></button>
+    <button class="logo" data-go="home" aria-label="DropStats, inicio"><span class="mark">DS</span>DROP<b>STATS</b><span id="planbadge" class="plan-badge" hidden></span></button>
     <button class="ibtn" data-go="events" aria-label="Torneos" title="Torneos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/></svg></button>
     <button class="ibtn" data-go="favs" aria-label="Favoritos" title="Favoritos" id="favbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></button>
     <button class="ibtn" data-go="account" aria-label="Mi cuenta" title="Mi cuenta" id="accbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>
@@ -373,12 +510,14 @@ const S = {
   routes: store.get("routes", []), markers: store.get("markers", []), events: store.get("events", []),
   prices: store.get("prices", {}),
   prefs: Object.assign({ lang: "es", platform: "epic", window: "lifetime" }, store.get("prefs", {})),
-  myPlayer: store.get("myPlayer", null)
+  myPlayer: store.get("myPlayer", null),
+  strategies: store.get("strategies", []), curStrat: store.get("curStrat", null)
 };
 const save = k => { store.set(k, S[k]); onLocalChange(k); };
-const UI = Object.assign({ shopType: "all", shopSort: "section", shopPrice: "", shopQ: "", catType: "all", catRar: "", catQ: "", favTab: "items", mapMode: "pan", mapLayer: "pois", mapGrid: true, drawer: "routes" }, store.get("ui", {}));
+const UI = Object.assign({ shopType: "all", shopSort: "section", shopPrice: "", shopQ: "", catType: "all", catRar: "", catQ: "", catPrice: "", catSort: "new", catToday: false, favTab: "items", favCat: "all", evRegion: "", mapMode: "pan", mapLayer: "pois", mapGrid: true, mapPlan: false, pinType: "land", hideTypes: {}, stratTag: "", stratFolder: "", premFocus: "", evoMetric: "wins", drawer: "strats" }, store.get("ui", {}));
+if (UI.drawer === "routes" && !store.get("ui2", false)) { UI.drawer = "strats"; store.set("ui2", true); }
 UI.shopQ = ""; UI.catQ = UI.catQ || ""; UI.authMode = "login";
-const saveUI = () => store.set("ui", { shopType: UI.shopType, shopSort: UI.shopSort, shopPrice: UI.shopPrice, catType: UI.catType, catRar: UI.catRar, catQ: UI.catQ, favTab: UI.favTab, mapLayer: UI.mapLayer, mapGrid: UI.mapGrid, drawer: UI.drawer });
+const saveUI = () => store.set("ui", { shopType: UI.shopType, shopSort: UI.shopSort, shopPrice: UI.shopPrice, catType: UI.catType, catRar: UI.catRar, catQ: UI.catQ, catPrice: UI.catPrice, catSort: UI.catSort, catToday: UI.catToday, favTab: UI.favTab, favCat: UI.favCat, evRegion: UI.evRegion, mapLayer: UI.mapLayer, mapGrid: UI.mapGrid, mapPlan: UI.mapPlan, pinType: UI.pinType, hideTypes: UI.hideTypes, evoMetric: UI.evoMetric, drawer: UI.drawer });
 
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2200); }
 async function copyText(txt) { try { await navigator.clipboard.writeText(txt); toast("Copiado"); return true; } catch { return false; } }
@@ -407,6 +546,19 @@ const I = {
   plus: sv('<path d="M12 5v14M5 12h14"/>', 2.2), minus: sv('<path d="M5 12h14"/>', 2.2),
   fit: sv('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
   user: sv('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
+  lock: sv('<rect x="5" y="11" width="14" height="10" rx="2.2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
+  check: sv('<path d="m5 12.5 4.5 4.5L19 7.5"/>', 2.4),
+  gem: sv('<path d="M6 3h12l3 6-9 12L3 9zM3 9h18M9 3l3 6 3-6M12 21 9 9M12 21l3-12"/>'),
+  pen: sv('<path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/>'),
+  undo: sv('<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>'),
+  redo: sv('<path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/>'),
+  folder: sv('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
+  copy: sv('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>'),
+  share: sv('<path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>'),
+  image: sv('<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>'),
+  widgets: sv('<rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="17" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/>'),
+  up: sv('<path d="m6 15 6-6 6 6"/>'), down: sv('<path d="m6 9 6 6 6-6"/>'),
+  trash: sv('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'),
   clock: sv('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>')
 };
 /* Símbolo de paVos: el icono oficial que publica la fuente de la tienda; si no carga, una moneda dibujada aquí. */
@@ -482,7 +634,8 @@ function explain(e) {
 }
 const embedHint = () => EMBEDDED ? `<p class="hint">Estás viendo DropStats dentro de Claude. Por seguridad, este visor bloquea las conexiones y las imágenes de otras webs, así que aquí no puede pedir datos en directo. En la versión publicada (instrucciones en el README) se cargan solas.</p>` : "";
 function stateErr(title, e, retryAct) {
-  return `<div class="state err fade"><span class="si">${I.plug}</span><h3>${esc(title)}</h3><p>${esc(explain(e))} No se muestra nada inventado en su lugar.</p>
+  const auto = retryAct === "retry-shop" && SHOP.retryAt > Date.now();
+  return `<div class="state err fade"><span class="si">${I.plug}</span><h3>${esc(title)}</h3><p>${esc(explain(e))} No se muestra nada inventado en su lugar.${auto ? ` Reintento automático en ${Math.ceil((SHOP.retryAt - Date.now()) / 1000)} s.` : ""}</p>
   <div class="row"><button class="btn pri" data-act="${retryAct}">${I.refresh}Reintentar</button></div>${embedHint()}</div>`;
 }
 const stateEmpty = (title, text, btn = "") => `<div class="state fade"><span class="si">${I.search}</span><h3>${esc(title)}</h3><p>${text}</p>${btn}</div>`;
@@ -550,8 +703,9 @@ function applyShop({ j, via, at }) {
 const lastResetUTC = () => { const d = new Date(); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); };
 const nextResetUTC = () => lastResetUTC() + 864e5;
 function scheduleReset() { clearTimeout(scheduleReset.t); const ms = nextResetUTC() - Date.now() + 90e3; if (ms > 0 && ms < 2 ** 31) scheduleReset.t = setTimeout(() => loadShop(true), ms); }
-async function loadShop(force) {
+async function loadShop(force, auto) {
   if (SHOP.status === "loading") return;
+  if (force && !auto) { SHOP.retries = 0; clearTimeout(SHOP.retryT); SHOP.retryAt = 0; }
   if (!force && SHOP.status === "error") return; // sin reintentos automáticos
   if (!force && SHOP.status === "ok" && Date.now() - SHOP.at < 10 * 60e3 && SHOP.at >= lastResetUTC()) return;
   SHOP.status = "loading"; SHOP.error = null; paintShop();
@@ -560,7 +714,13 @@ async function loadShop(force) {
     if (r.j.status !== 200 || !r.j.data) throw Object.assign(new Error(`La fuente respondió con el código ${r.j.status}.`), { kind: "http" });
     if (r.via === "snapshot" && r.at < lastResetUTC()) throw r.err; // copia de una tienda anterior: no se presenta como actual
     applyShop(r);
-  } catch (e) { SHOP.status = "error"; SHOP.error = e; }
+  } catch (e) {
+    SHOP.status = "error"; SHOP.error = e;
+    // reintentos controlados: como máximo 2, con espera creciente; nunca en bucle ni dentro del visor de Claude
+    SHOP.retries = SHOP.retries || 0;
+    if (!EMBEDDED && SHOP.retries < 2) { const wait = [4000, 15000][SHOP.retries++]; SHOP.retryAt = Date.now() + wait; SHOP.retryT = setTimeout(() => loadShop(true, true), wait); }
+    else SHOP.retryAt = 0;
+  }
   paintShop();
 }
 function paintShop() { rerender("home", "shop", "favs", "catalog"); }
@@ -634,14 +794,11 @@ VIEWS.home = v => {
   else hero = `<div class="hero"><div class="row" style="justify-content:space-between"><span class="eyebrow">Tienda de hoy</span>${shopLine()}</div><div class="strip">${`<div class="skel" style="aspect-ratio:1"></div>`.repeat(4)}</div><div class="skel" style="height:44px"></div></div>`;
   v.innerHTML = `<div class="page">
     <section class="sec">${hero}</section>
+    ${widgetsPanel()}
     <section class="sec">
       <form class="field" data-form="homesearch" role="search">${I.search}<input id="homeq" placeholder="Nombre o ID de jugador" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button class="btn sm pri">Buscar</button></form>
-      <div class="quick">
-        <button class="qa" data-go="catalog"><span class="qi">${I.grid}</span><span>Catálogo<small>Todos los cosméticos</small></span></button>
-        <button class="qa" data-go="map"><span class="qi">${I.map}</span><span>Mapa<small>Marcadores y rutas</small></span></button>
-        <button class="qa" data-go="stats"><span class="qi">${I.stats}</span><span>Stats<small>Busca jugadores</small></span></button>
-        <button class="qa" data-go="events"><span class="qi">${I.trophy}</span><span>Torneos<small>FNCS y Cash Cups</small></span></button>
-      </div>
+      <div class="quick">${quickTiles()}</div>
+      ${can("quickEdit") ? `<button class="link" data-act="quick-edit" style="align-self:flex-start">Editar accesos rápidos</button>` : ""}
     </section>
     ${feat.length ? `<section class="sec"><div class="sh"><div><h2>Destacados de hoy</h2><p class="sub">${outfits.length >= 4 ? "Atuendos a la venta ahora" : "Ofertas a la venta ahora"}</p></div><button class="link" data-go="shop">Ver todo</button></div><div class="hscroll">${feat.map(entryTile).join("")}</div></section>` : ""}
     ${favToday.length ? `<section class="sec"><div class="sh"><div><h2>Tus favoritos en la tienda</h2><p class="sub">Disponibles hoy</p></div></div><div class="hscroll">${favToday.map(f => entryTile(SHOP.byItem.get(f.id))).join("")}</div></section>` : ""}
@@ -658,6 +815,7 @@ VIEWS.home = v => {
         ${ACC.checked && ACC.configured && !ACC.user ? `<button class="li list" data-go="account" style="border:1px solid var(--line)"><span class="av">${I.user}</span><span class="grow"><span class="t">Inicia sesión</span><span class="s">Guarda todo y recupéralo en cualquier dispositivo</span></span>${I.chev}</button>` : ""}
       </section>
     </div>
+    ${planId() !== "ultra" ? `<section class="sec"><button class="prem-banner" data-go="premium"><span class="av">${I.gem}</span><span class="grow"><span class="t" style="font-weight:700">DropStats Premium</span><span class="s">${planId() === "free" ? "Pro, Elite y Drop Ultra · descubre los planes" : "Sube a Drop Ultra: Ultra Widgets y personalización total"}</span></span>${I.chev}</button></section>` : ""}
   </div>`;
 };
 
@@ -807,25 +965,27 @@ async function loadCatalog(force) {
 }
 VIEWS.catalog = v => {
   queueMicrotask(() => { loadCatalog(); loadShop(); });
-  const shown = CAT.items.slice(0, CAT.limit);
+  const list = CAT.status === "ok" ? catFiltered() : [];
+  const shown = list.slice(0, CAT.limit);
   const todayN = CAT.status === "ok" ? CAT.items.filter(i => SHOP.byItem.has(i.id)).length : 0;
   let body;
   if (CAT.status === "error") body = stateErr("No se puede consultar el catálogo", CAT.error, "retry-cat");
   else if (CAT.status !== "ok") body = skelTiles(8);
-  else if (!CAT.items.length) body = stateEmpty("Sin resultados", "No hay cosméticos que coincidan. Prueba con otro nombre o quita algún filtro.", `<button class="btn" data-act="clear-cat">Quitar filtros</button>`);
-  else body = `<p class="small muted">${CAT.mode === "new" ? `Últimos cosméticos añadidos a los archivos del juego${CAT.date ? ` (actualización del ${fmtDay(CAT.date)})` : ""}${CAT.via === "snapshot" ? " · copia publicada" : ""}. ` : ""}${fmtN(CAT.items.length)} resultados${todayN ? ` · <b style="color:var(--ok)">${todayN} a la venta hoy</b>` : ""}.</p>
+  else if (!list.length) body = stateEmpty("Sin resultados", "No hay cosméticos que coincidan. Prueba con otro nombre o quita algún filtro.", `<button class="btn" data-act="clear-cat">Quitar filtros</button>`);
+  else body = `<p class="small muted">${CAT.mode === "new" ? `Últimos cosméticos añadidos a los archivos del juego${CAT.date ? ` (actualización del ${fmtDay(CAT.date)})` : ""}${CAT.via === "snapshot" ? " · copia publicada" : ""}. ` : ""}${fmtN(list.length)} resultados${todayN ? ` · <b style="color:var(--ok)">${todayN} a la venta hoy</b>` : ""}.</p>
     <div class="grid">${shown.map(itemTile).join("")}</div>
-    ${CAT.items.length > CAT.limit ? `<button class="btn" data-act="more-cat">Mostrar más (${fmtN(CAT.items.length - CAT.limit)} restantes)</button>` : ""}`;
+    ${list.length > CAT.limit ? `<button class="btn" data-act="more-cat">Mostrar más (${fmtN(list.length - CAT.limit)} restantes)</button>` : ""}`;
   v.innerHTML = `<div class="page">
     <div class="ph"><h1>Catálogo</h1><p class="small muted">Archivo histórico de cosméticos de Battle Royale. No indica qué se vende hoy: los objetos a la venta llevan la etiqueta <span class="badge ok" style="height:20px">Hoy en tienda</span></p></div>
     <div class="sec">
       <form class="field" data-form="catq" role="search">${I.search}<input id="catq" placeholder="Buscar por nombre" value="${esc(UI.catQ)}" autocomplete="off" enterkeyhint="search">${UI.catQ ? `<button type="button" class="btn sm ghost" data-act="clear-catq" aria-label="Borrar búsqueda">${I.x}</button>` : ""}<button class="btn sm pri">Buscar</button></form>
       ${chips("catType", CAT_TYPES, UI.catType)}
       <select class="sel" id="catRar" aria-label="Rareza">${RARITIES.map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</select>
+      ${catProControls()}
       ${UI.catType !== "all" && !UI.catQ && CAT.status === "loading" ? `<p class="small faint">Descargando todos los objetos de este tipo; puede tardar unos segundos.</p>` : ""}
     </div>
     ${body}</div>`;
-  $("#catRar").value = UI.catRar;
+  $("#catRar").value = UI.catRar; const cp = $("#catPrice"); if (cp) { cp.value = UI.catPrice; $("#catSort").value = UI.catSort; }
 };
 
 /* =================== ESTADÍSTICAS =================== */
@@ -843,6 +1003,9 @@ async function loadStats(q, type, win) {
       Object.assign(ST, { status: "ok", data: j.data });
       if (byId) ST.type = "epic";
       S.history = [{ name: j.data.account.name, type: ST.type, id: j.data.account.id, at: Date.now() }, ...S.history.filter(h => h.name.toLowerCase() !== j.data.account.name.toLowerCase())].slice(0, 12); save("history");
+      recordSnap(j.data); if (ST.cmp?.data?.account?.id === j.data.account.id) ST.cmp = null;
+      if (S.myPlayer && S.myPlayer.id === j.data.account.id) { MY.data = j.data; MY.status = "ok"; MY.at = Date.now(); }
+      ST.other = null; if (can("seasonCompare")) loadOther(params, win === "season" ? "lifetime" : "season");
     } else {
       ST.status = "error";
       const who = byId ? "con ese ID de cuenta" : `${type === "epic" ? "de Epic" : type === "psn" ? "de PlayStation" : "de Xbox"} con ese nombre`;
@@ -905,11 +1068,12 @@ function statsBlock(d) {
     : `<div class="note warn">${I.warn}<p>Esta cuenta no tiene estadísticas generales en este periodo.</p></div>`}
   ${modes.length ? `<h2>Por modo</h2>${statTable(modes.map(([l, k]) => [l, d.stats.all[k]]))}` : ""}
   ${inputs.length ? `<h2>Por control</h2>${statTable(inputs.map(([l, k]) => [l, d.stats[k].overall]))}` : ""}
-  ${o?.lastModified ? `<p class="small faint">Datos actualizados por la fuente el ${fmtD(o.lastModified)}.</p>` : ""}</section>`;
+  ${o?.lastModified ? `<p class="small faint">Datos actualizados por la fuente el ${fmtD(o.lastModified)}.</p>` : ""}</section>
+  ${statsExtras(d)}`;
 }
 const statTable = rows => `<div class="tblwrap"><table><thead><tr><th>Modo</th><th>Vict.</th><th>Elim.</th><th>Partidas</th><th>K/D</th><th>% V</th></tr></thead><tbody>${rows.map(([l, s]) => `<tr><td>${l}</td><td>${fmtN(s.wins)}</td><td>${fmtN(s.kills)}</td><td>${fmtN(s.matches)}</td><td>${s.kd == null ? "—" : (+s.kd).toFixed(2)}</td><td>${s.winRate == null ? "—" : (+s.winRate).toFixed(1)}</td></tr>`).join("")}</tbody></table></div>`;
 
-/* =================== MAPA =================== */
+/* =================== MAPA TÁCTICO =================== */
 const MAP = { status: "idle", img: {}, pois: [], at: null, via: null, error: null, imgState: "none" };
 async function loadMap(force) {
   if (MAP.status === "loading" || (!force && MAP.status !== "idle")) return;
@@ -923,32 +1087,63 @@ async function loadMap(force) {
 }
 const mapReady = () => MAP.status === "ok" && MAP.imgState === "ok";
 function mapImgState(s) { MAP.imgState = s; if (s === "error") MAP.error = { kind: "network" }; paintMap(); }
-function paintMap() { if (ROUTE !== "map") return; mapApplyLayer(); renderMapStatus(); renderMapEmpty(); renderDrawer(); $$("[data-mode],[data-layer],[data-act=grid]").forEach(b => b.disabled = !mapReady()); }
 const COLORS = ["#b7a2ff", "#62c8ff", "#f472b6", "#fbbf24", "#3ddc97", "#fb923c"];
+/* Tipos de marcador (leyenda). Iconos en coordenadas de un círculo de radio 8 centrado en (0,-21). */
+const MT = {
+  land: { n: "Aterrizaje", c: "#3ddc97", ic: '<path d="M0-27v9M-4-22l4 4 4-4" stroke="#08080d" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' },
+  chest: { n: "Cofre", c: "#fbbf24", ic: '<rect x="-5.5" y="-25" width="11" height="8" rx="1.5" fill="none" stroke="#08080d" stroke-width="2.2"/><path d="M-5.5-21.5h11" stroke="#08080d" stroke-width="1.8"/>' },
+  point: { n: "Punto estratégico", c: "#62c8ff", ic: '<path d="m0-27.5 1.9 4 4.3.5-3.2 2.9.9 4.3L0-18l-3.9 2.2.9-4.3-3.2-2.9 4.3-.5z" fill="#08080d"/>' },
+  rotate: { n: "Rotación", c: "#f472b6", ic: '<path d="M4.5-19.5a5 5 0 1 1-1.4-5.6M4-28v3.6H.4" stroke="#08080d" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' },
+  note: { n: "Nota", c: "#b7a2ff", ic: '<path d="M0-24.5v.01M0-21.5v4" stroke="#08080d" stroke-width="2.6" stroke-linecap="round"/>' }
+};
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+(function migrateMap() { // marcadores y rutas antiguos: tipo, id
+  let ch = false;
+  S.markers.forEach(m => { if (!m.id) { m.id = uid("m"); ch = true; } if (!m.t) { m.t = "point"; ch = true; } });
+  S.routes.forEach(r => { if (!r.id) { r.id = uid("r"); ch = true; } });
+  if (ch) { store.set("markers", S.markers); store.set("routes", S.routes); }
+})();
+/* Deshacer / rehacer: instantáneas de marcadores y rutas */
+const HIST = { past: [], future: [] };
+const mapSnap = () => JSON.stringify({ m: S.markers, r: S.routes });
+function pushHist() { HIST.past.push(mapSnap()); if (HIST.past.length > 60) HIST.past.shift(); HIST.future = []; }
+function restoreSnap(s) { const o = JSON.parse(s); S.markers = o.m; S.routes = o.r; save("markers"); save("routes"); renderOverlay(); renderDrawer(); paintTools(); }
+function undo() { if (!HIST.past.length) return; HIST.future.push(mapSnap()); restoreSnap(HIST.past.pop()); toast("Deshecho"); }
+function redo() { if (!HIST.future.length) return; HIST.past.push(mapSnap()); restoreSnap(HIST.future.pop()); toast("Rehecho"); }
+
+function paintMap() { if (ROUTE !== "map") return; mapApplyLayer(); renderMapStatus(); renderMapEmpty(); renderDrawer(); paintTools(); }
 const MV = { x: 0, y: 0, k: 1, pts: new Map(), g: null, drawing: null, dragM: null };
+const curStrat = () => S.strategies.find(s => s.id === S.curStrat) || null;
 VIEWS.map = v => {
   v.className = "full";
   queueMicrotask(() => loadMap());
   v.innerHTML = `
-  <div class="maptools">
-    <div class="seg" role="group" aria-label="Herramienta">
-      <button data-mode="pan" class="${UI.mapMode === "pan" ? "on" : ""}">${I.move}Mover</button>
-      <button data-mode="pin" class="${UI.mapMode === "pin" ? "on" : ""}">${I.pin}Marcador</button>
-      <button data-mode="draw" class="${UI.mapMode === "draw" ? "on" : ""}">${I.route}Ruta</button>
-    </div>
-    <div class="seg" role="group" aria-label="Capa"><button data-layer="pois" class="${UI.mapLayer === "pois" ? "on" : ""}">Con nombres</button><button data-layer="blank" class="${UI.mapLayer === "blank" ? "on" : ""}">Limpio</button></div>
-    <div class="seg"><button data-act="grid" class="${UI.mapGrid ? "on" : ""}">Cuadrícula</button></div>
-  </div>
+  <div class="maptools" id="maptools"></div>
   <div class="mapwrap" id="mapwrap">
     <div class="stage" id="stage"><img id="mapimg" alt="Mapa actual de Battle Royale" hidden><svg id="ov" viewBox="0 0 1000 1000"></svg></div>
     <div class="mapstatus" id="mapstatus"></div>
-    <div class="mapfab"><button class="ibtn" data-act="zin" aria-label="Acercar">${I.plus}</button><button class="ibtn" data-act="zout" aria-label="Alejar">${I.minus}</button><button class="ibtn" data-act="zfit" aria-label="Encuadrar">${I.fit}</button></div>
+    <div class="mapfab"><button class="ibtn" data-act="zin" aria-label="Acercar">${I.plus}</button><button class="ibtn" data-act="zout" aria-label="Alejar">${I.minus}</button><button class="ibtn" data-act="zfit" aria-label="Encuadrar el mapa">${I.fit}</button></div>
     <div class="mapempty" id="mapempty" hidden></div>
   </div>
   <div class="drawer" id="drawer"></div>`;
   bindMap(); paintMap();
   requestAnimationFrame(mapFit);
 };
+function paintTools() {
+  const el = $("#maptools"); if (!el) return;
+  const ok = mapReady(), plan = UI.mapPlan, dis = ok ? "" : "disabled";
+  el.innerHTML = `<div class="tools-row">
+    <button class="btn sm ${plan ? "pri" : ""}" data-act="mplan" ${dis} aria-pressed="${plan}">${plan ? I.check + "Planificando" : I.route + "Planificar"}</button>
+    ${plan ? `<div class="seg" role="group" aria-label="Herramienta">
+      <button data-mode="pan" class="${UI.mapMode === "pan" ? "on" : ""}" ${dis}>${I.move}<span class="hide-xs">Mover</span></button>
+      <button data-mode="pin" class="${UI.mapMode === "pin" ? "on" : ""}" ${dis}>${I.pin}<span class="hide-xs">Marcador</span></button>
+      <button data-mode="draw" class="${UI.mapMode === "draw" ? "on" : ""}" ${dis}>${I.pen}<span class="hide-xs">Ruta</span></button></div>
+      <div class="seg"><button data-act="undo" ${HIST.past.length && ok ? "" : "disabled"} aria-label="Deshacer">${I.undo}</button><button data-act="redo" ${HIST.future.length && ok ? "" : "disabled"} aria-label="Rehacer">${I.redo}</button></div>` : ""}
+    <div class="seg" role="group" aria-label="Capa"><button data-layer="pois" class="${UI.mapLayer === "pois" ? "on" : ""}" ${dis}>Nombres</button><button data-layer="blank" class="${UI.mapLayer === "blank" ? "on" : ""}" ${dis}>Limpio</button></div>
+    <div class="seg"><button data-act="grid" class="${UI.mapGrid ? "on" : ""}" ${dis}>Cuadrícula</button></div>
+  </div>
+  ${plan && UI.mapMode === "pin" ? `<div class="tools-row">${Object.entries(MT).map(([k, t]) => `<button class="chip ${UI.pinType === k ? "on" : ""}" data-act="pintype" data-v="${k}"><span class="swatch" style="background:${t.c}"></span>${t.n}</button>`).join("")}</div>` : ""}`;
+}
 function mapApplyLayer() {
   const im = $("#mapimg"); if (!im) return;
   const src = MAP.status === "ok" ? (UI.mapLayer === "pois" ? (MAP.img.pois || MAP.img.blank) : (MAP.img.blank || MAP.img.pois)) : null;
@@ -963,14 +1158,15 @@ function mapApplyLayer() {
 function renderMapStatus() {
   const el = $("#mapstatus"); if (!el) return;
   el.hidden = !(MAP.status === "loading" || MAP.imgState === "loading" || mapReady());
-  el.innerHTML = mapReady() ? `<span class="pill"><span class="dot ok"></span>Mapa actual · ${MAP.via === "snapshot" ? "copia del " + fmtDay(MAP.at) : "obtenido " + fmtTime(MAP.at)}</span>`
+  const cs = curStrat();
+  el.innerHTML = mapReady() ? `<span class="pill"><span class="dot ok"></span>Mapa actual · ${MAP.via === "snapshot" ? "copia del " + fmtDay(MAP.at) : "obtenido " + fmtTime(MAP.at)}${cs ? ` · <b style="color:var(--fg)">${esc(cs.name)}</b>` : ""}</span>`
     : `<span class="pill"><span class="dot load"></span>Cargando mapa…</span>`;
 }
 function renderMapEmpty() {
   const el = $("#mapempty"); if (!el) return;
   const failed = MAP.status === "error" || MAP.imgState === "error";
   el.hidden = !failed;
-  if (failed) el.innerHTML = stateErr("No se puede cargar el mapa", MAP.error, "mapretry").replace("No se muestra nada inventado en su lugar.", "Tus rutas y marcadores siguen guardados.");
+  if (failed) el.innerHTML = stateErr("No se puede cargar el mapa", MAP.error, "mapretry").replace("No se muestra nada inventado en su lugar.", "Tus estrategias, rutas y marcadores siguen guardados.");
 }
 function mapFit() {
   const w = $("#mapwrap"); if (!w) return;
@@ -982,6 +1178,7 @@ function zoomAt(cx, cy, f) { const k = Math.min(8, Math.max(0.2, MV.k * f)); con
 const routeLen = pts => { let d = 0; for (let i = 1; i < pts.length; i++) d += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); return d / 100; };
 const fmtLen = c => c.toLocaleString("es-ES", { maximumFractionDigits: 1 }) + " casillas";
 const gridRef = (x, y) => "ABCDEFGHIJ"[Math.min(9, Math.max(0, Math.floor(x / 100)))] + (Math.min(9, Math.max(0, Math.floor(y / 100))) + 1);
+const pinSVG = (m, s, i) => { const t = MT[m.t] || MT.point, c = m.c || t.c; return `<g data-mk="${i}" transform="translate(${m.x},${m.y}) scale(${s})" style="cursor:pointer"><path d="M0 0c-2-7-11-12-11-21a11 11 0 0 1 22 0c0 9-9 14-11 21z" fill="${c}" stroke="#08080d" stroke-width="2"/><circle cy="-21" r="8" fill="#ffffffe6"/>${t.ic}${m.n ? `<text y="-38" text-anchor="middle" fill="#fff" stroke="#08080d" stroke-width="3" paint-order="stroke" font-size="13" font-weight="700" font-family="Barlow,sans-serif">${esc(m.n)}</text>` : ""}</g>`; };
 function renderOverlay(temp) {
   const ov = $("#ov"); if (!ov) return;
   if (!mapReady()) { ov.innerHTML = ""; return; }
@@ -993,7 +1190,7 @@ function renderOverlay(temp) {
   }
   S.routes.forEach((r, i) => { if (r.hidden) return; const c = r.c || COLORS[i % 6], pts = r.p.map(q => q.join(",")).join(" "); h += `<polyline points="${pts}" fill="none" stroke="#000" stroke-opacity=".55" stroke-width="${7 * s}" stroke-linecap="round" stroke-linejoin="round"/><polyline points="${pts}" fill="none" stroke="${c}" stroke-width="${4 * s}" stroke-linecap="round" stroke-linejoin="round"/>`; const a = r.p[0], e = r.p[r.p.length - 1]; h += `<circle cx="${a[0]}" cy="${a[1]}" r="${4 * s}" fill="#fff" stroke="${c}" stroke-width="${2 * s}"/><circle cx="${e[0]}" cy="${e[1]}" r="${6 * s}" fill="${c}" stroke="#000" stroke-width="${1.5 * s}"/>`; });
   if (temp && temp.length > 1) h += `<polyline points="${temp.map(q => q.join(",")).join(" ")}" fill="none" stroke="#fff" stroke-width="${4 * s}" stroke-dasharray="${8 * s} ${6 * s}" stroke-linecap="round"/>`;
-  S.markers.forEach((m, i) => { h += `<g data-mk="${i}" transform="translate(${m.x},${m.y}) scale(${s})" style="cursor:pointer"><path d="M0 0c-2-7-11-12-11-21a11 11 0 0 1 22 0c0 9-9 14-11 21z" fill="${m.c || COLORS[0]}" stroke="#08080d" stroke-width="2"/><circle cy="-21" r="4" fill="#08080d"/>${m.n ? `<text y="-38" text-anchor="middle" fill="#fff" stroke="#08080d" stroke-width="3" paint-order="stroke" font-size="13" font-weight="700" font-family="Barlow,sans-serif">${esc(m.n)}</text>` : ""}</g>`; });
+  S.markers.forEach((m, i) => { if (!UI.hideTypes[m.t]) h += pinSVG(m, s, i); });
   ov.innerHTML = h;
 }
 function bindMap() {
@@ -1013,8 +1210,8 @@ function bindMap() {
     }
     const mk = e.target.closest("[data-mk]");
     MV.g = { t: "pan", p0: p, x0: MV.x, y0: MV.y, moved: false, mk: mk ? +mk.dataset.mk : null };
-    if (UI.mapMode === "draw") MV.drawing = [clampS(toS(p))];
-    else if (UI.mapMode === "pin" && mk) MV.dragM = +mk.dataset.mk;
+    if (UI.mapPlan && UI.mapMode === "draw") MV.drawing = [clampS(toS(p))];
+    else if (UI.mapPlan && UI.mapMode === "pin" && mk) { MV.dragM = +mk.dataset.mk; MV.dragSnap = mapSnap(); }
   });
   w.addEventListener("pointermove", e => {
     if (!MV.pts.has(e.pointerId)) return;
@@ -1037,26 +1234,59 @@ function bindMap() {
     if (g && g.t === "pinch") { if (!MV.pts.size) MV.g = null; else { const [q] = [...MV.pts.values()]; MV.g = { t: "pan", p0: q, x0: MV.x, y0: MV.y, moved: true }; } return; }
     MV.g = null;
     if (MV.drawing) { const d = MV.drawing; MV.drawing = null; if (d.length > 2 && routeLen(d) > 0.05) newRouteSheet(d); else renderOverlay(); return; }
-    if (MV.dragM != null) { const i = MV.dragM; MV.dragM = null; save("markers"); renderDrawer(); if (!g?.moved) markerSheet(i); return; }
+    if (MV.dragM != null) {
+      const i = MV.dragM; MV.dragM = null;
+      if (g?.moved) { HIST.past.push(MV.dragSnap); HIST.future = []; save("markers"); renderDrawer(); paintTools(); } else markerSheet(i);
+      return;
+    }
     if (g && !g.moved) {
-      if (g.mk != null) return markerSheet(g.mk);
-      if (UI.mapMode === "pin") { const [x, y] = toS(p); if (x >= 0 && y >= 0 && x <= 1000 && y <= 1000) { S.markers.push({ x, y, n: "", c: COLORS[S.markers.length % 6] }); save("markers"); renderOverlay(); UI.drawer = "markers"; renderDrawer(); toast("Marcador añadido · arrástralo para moverlo"); } }
+      if (g.mk != null) return UI.mapPlan ? markerSheet(g.mk) : markerInfo(g.mk);
+      if (UI.mapPlan && UI.mapMode === "pin") {
+        const [x, y] = toS(p);
+        if (x >= 0 && y >= 0 && x <= 1000 && y <= 1000) { pushHist(); const t = UI.pinType; S.markers.push({ id: uid("m"), x, y, n: "", c: MT[t].c, t, note: "" }); save("markers"); renderOverlay(); UI.drawer = "markers"; renderDrawer(); paintTools(); toast(`${MT[t].n} añadido · arrástralo para moverlo`); }
+      }
     }
   };
   w.addEventListener("pointerup", end); w.addEventListener("pointercancel", end);
 }
+function stratTagsAll() { return [...new Set(S.strategies.map(s => s.tag).filter(Boolean))].sort(); }
+function stratFoldersAll() { return [...new Set(S.strategies.map(s => s.folder).filter(Boolean))].sort(); }
 function renderDrawer() {
   const d = $("#drawer"); if (!d) return;
   const tab = UI.drawer;
   const names = [...new Set(MAP.pois.map(p => p.name))].sort((a, b) => a.localeCompare(b, "es"));
-  d.innerHTML = chips("drawer", [["routes", "Rutas", S.routes.length], ["markers", "Marcadores", S.markers.length], ["places", "Lugares", names.length || null], ["info", "Info"]], tab) +
-  (tab === "routes" ? (S.routes.length ? `<div class="list">${S.routes.map((r, i) => `<button class="li" data-act="route" data-i="${i}"><span class="swatch" style="background:${r.c || COLORS[i % 6]};${r.hidden ? "opacity:.35" : ""}"></span><span class="grow"><span class="t">${esc(r.n)}${r.hidden ? " (oculta)" : ""}</span><span class="s">${fmtLen(routeLen(r.p))} · ${gridRef(...r.p[0])} → ${gridRef(...r.p[r.p.length - 1])}</span></span>${I.chev}</button>`).join("")}</div>`
-      : `<p class="small muted">Elige «Ruta» y dibuja con un dedo sobre el mapa. Con dos dedos te mueves y haces zoom.</p>`) + `<div class="row"><button class="btn sm" data-act="route-import">Importar ruta</button></div>` : "") +
-  (tab === "markers" ? (S.markers.length ? `<div class="list">${S.markers.map((m, i) => `<button class="li" data-act="marker" data-i="${i}"><span class="swatch" style="background:${m.c}"></span><span class="grow"><span class="t">${esc(m.n || "Marcador " + (i + 1))}</span><span class="s">Casilla ${gridRef(m.x, m.y)}</span></span>${I.chev}</button>`).join("")}</div>`
-      : `<p class="small muted">Elige «Marcador» y toca el mapa. Arrastra un marcador para moverlo; tócalo para renombrarlo o borrarlo.</p>`) : "") +
-  (tab === "places" ? (names.length ? `<p class="small muted">Ubicaciones con nombre en el mapa actual. Aparecen rotuladas en la capa «Con nombres».</p><div class="poilist">${names.map(n => `<span>${esc(n)}</span>`).join("")}</div>`
-      : `<p class="small muted">${MAP.status === "ok" ? "La fuente no ha devuelto ubicaciones." : "Las ubicaciones llegan con el mapa."}</p>`) : "") +
-  (tab === "info" ? `<p class="small muted">Imagen oficial del mapa de Battle Royale que publica fortnite-api.com con cada actualización del juego${mapReady() ? `; esta copia se obtuvo ${fmtD(MAP.at)}` : ""}. Distancias en casillas de la cuadrícula (A–J, 1–10); la escala en metros cambia cada temporada, así que no se estima. No hay vista 3D: no existe una fuente pública autorizada del terreno. Rutas y marcadores se guardan en este dispositivo.</p>` : "");
+  const cs = curStrat();
+  let body = "";
+  if (tab === "strats") {
+    let list = S.strategies.slice().sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.updated - a.updated);
+    if (UI.stratTag && can("stratTags")) list = list.filter(s => s.tag === UI.stratTag);
+    if (UI.stratFolder && can("stratFolders")) list = list.filter(s => s.folder === UI.stratFolder);
+    const tags = can("stratTags") ? stratTagsAll() : [], folders = can("stratFolders") ? stratFoldersAll() : [];
+    body = `<div class="panel" style="padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+        <div class="row" style="justify-content:space-between"><div style="min-width:0"><span class="eyebrow">Estrategia actual</span><div class="t" style="font-weight:700;overflow-wrap:anywhere">${cs ? esc(cs.name) : "Sin guardar"}</div><span class="small muted">${S.markers.length} marcadores · ${S.routes.length} rutas${cs && JSON.stringify({ m: cs.markers, r: cs.routes }) !== mapSnap() ? " · cambios sin guardar" : ""}</span></div></div>
+        <div class="row"><button class="btn sm pri" data-act="strat-save">${cs ? "Guardar cambios" : "Guardar estrategia"}</button>${cs ? `<button class="btn sm" data-act="strat-saveas">Guardar como nueva</button>` : ""}<button class="btn sm" data-act="strat-new">Nueva</button></div></div>
+      ${folders.length ? `<div class="chips">${[["", "Todas las carpetas"], ...folders.map(f => [f, f])].map(([v, l]) => `<button class="chip ${UI.stratFolder === v ? "on" : ""}" data-act="strat-folder-f" data-v="${esc(v)}">${I.folder}${esc(l)}</button>`).join("")}</div>` : ""}
+      ${tags.length ? `<div class="chips">${[["", "Todas"], ...tags.map(t => [t, "#" + t])].map(([v, l]) => `<button class="chip ${UI.stratTag === v ? "on" : ""}" data-act="strat-tag-f" data-v="${esc(v)}">${esc(l)}</button>`).join("")}</div>` : ""}
+      ${list.length ? `<div class="list">${list.map(s => `<button class="li" data-act="strat" data-id="${s.id}"><span class="av" style="${s.id === S.curStrat ? "background:var(--grad);color:#fff" : ""}">${s.pinned ? I.starF : I.route}</span><span class="grow"><span class="t">${esc(s.name)}</span><span class="s">${s.markers.length} marcadores · ${s.routes.length} rutas${s.folder && can("stratFolders") ? " · " + esc(s.folder) : ""}${s.tag && can("stratTags") ? " · #" + esc(s.tag) : ""} · ${fmtD(s.updated, { day: "numeric", month: "short" })}</span></span>${I.chev}</button>`).join("")}</div>`
+        : `<p class="small muted">${S.strategies.length ? "Ninguna estrategia con este filtro." : "Prepara tu partida: pulsa «Planificar», marca aterrizaje, cofres y rotaciones, dibuja la ruta y guárdala como estrategia."}</p>`}
+      <div class="row"><button class="btn sm" data-act="strat-import">Importar código</button></div>`;
+  } else if (tab === "routes") {
+    body = (S.routes.length ? `<div class="list">${S.routes.map((r, i) => `<button class="li" data-act="route" data-i="${i}"><span class="swatch" style="background:${r.c || COLORS[i % 6]};${r.hidden ? "opacity:.35" : ""}"></span><span class="grow"><span class="t">${esc(r.n)}${r.hidden ? " (oculta)" : ""}</span><span class="s">${fmtLen(routeLen(r.p))} · ${gridRef(...r.p[0])} → ${gridRef(...r.p[r.p.length - 1])}</span></span>${I.chev}</button>`).join("")}</div>`
+      : `<p class="small muted">Pulsa «Planificar», elige «Ruta» y dibuja con un dedo. Con dos dedos te mueves y haces zoom.</p>`);
+  } else if (tab === "markers") {
+    body = (S.markers.length ? `<div class="list">${S.markers.map((m, i) => { const t = MT[m.t] || MT.point; return `<button class="li" data-act="marker" data-i="${i}"><span class="swatch" style="background:${m.c || t.c}"></span><span class="grow"><span class="t">${esc(m.n || t.n)}</span><span class="s">${t.n} · casilla ${gridRef(m.x, m.y)}${m.note ? " · " + esc(m.note.slice(0, 40)) : ""}</span></span>${I.chev}</button>`; }).join("")}</div>`
+      : `<p class="small muted">Pulsa «Planificar», elige «Marcador», el tipo (aterrizaje, cofre, punto estratégico, rotación o nota) y toca el mapa.</p>`)
+      + (S.markers.length || S.routes.length ? `<div class="row"><button class="btn sm danger" data-act="map-clear">Borrar marcadores y rutas</button></div>` : "");
+  } else if (tab === "legend") {
+    body = `<div class="list">${Object.entries(MT).map(([k, t]) => { const n = S.markers.filter(m => m.t === k).length; return `<div class="li"><svg viewBox="-12 -36 24 38" width="26" height="40" aria-hidden="true"><path d="M0 0c-2-7-11-12-11-21a11 11 0 0 1 22 0c0 9-9 14-11 21z" fill="${t.c}" stroke="#08080d" stroke-width="2"/><circle cy="-21" r="8" fill="#ffffffe6"/>${t.ic}</svg><span class="grow"><span class="t">${t.n}</span><span class="s">${n} en el mapa</span></span><button class="btn sm" data-act="legend-toggle" data-v="${k}">${UI.hideTypes[k] ? "Mostrar" : "Ocultar"}</button></div>`; }).join("")}
+      <div class="li"><svg viewBox="0 0 40 12" width="40" height="12" aria-hidden="true"><path d="M2 6h36" stroke="${COLORS[1]}" stroke-width="4" stroke-linecap="round"/></svg><span class="grow"><span class="t">Ruta</span><span class="s">Punto blanco: salida · punto de color: llegada</span></span></div></div>`;
+  } else if (tab === "places") {
+    body = names.length ? `<p class="small muted">Ubicaciones con nombre en el mapa actual. Aparecen rotuladas en la capa «Nombres».</p><div class="poilist">${names.map(n => `<span>${esc(n)}</span>`).join("")}</div>`
+      : `<p class="small muted">${MAP.status === "ok" ? "La fuente no ha devuelto ubicaciones." : "Las ubicaciones llegan con el mapa."}</p>`;
+  } else {
+    body = `<p class="small muted">Imagen oficial del mapa de Battle Royale que publica fortnite-api.com con cada actualización del juego${mapReady() ? `; esta copia se obtuvo ${fmtD(MAP.at)}` : ""}. Distancias en casillas de la cuadrícula (A–J, 1–10); la escala en metros cambia cada temporada, así que no se estima. No hay vista 3D: no existe una fuente pública autorizada del terreno. Las estrategias se guardan en este dispositivo y en tu cuenta si has iniciado sesión.</p>`;
+  }
+  d.innerHTML = chips("drawer", [["strats", "Estrategias", S.strategies.length], ["markers", "Marcadores", S.markers.length], ["routes", "Rutas", S.routes.length], ["legend", "Leyenda"], ["places", "Lugares", names.length || null], ["info", "Info"]], tab) + body;
 }
 function newRouteSheet(pts) {
   renderOverlay(pts); newRouteSheet.pts = pts;
@@ -1069,26 +1299,160 @@ function routeSheet(i) {
   const r = S.routes[i];
   openSheet(`<form class="stack" data-form="editroute" data-i="${i}"><h1>${esc(r.n)}</h1><p class="muted">${fmtLen(routeLen(r.p))} · ${gridRef(...r.p[0])} → ${gridRef(...r.p[r.p.length - 1])}</p>
   <label class="lbl">Nombre<input class="inp" id="rname" value="${esc(r.n)}" maxlength="40"></label>${colorRow("rcolor", i, r.c)}
-  <div class="row"><button class="btn pri grow">Guardar</button><button type="button" class="btn" data-act="rhide" data-i="${i}">${r.hidden ? "Mostrar" : "Ocultar"}</button></div>
-  <div class="row"><button type="button" class="btn grow" data-act="rshare" data-i="${i}">Compartir</button><button type="button" class="btn danger" data-act="rdel" data-i="${i}">Borrar</button></div><div id="sharebox"></div></form>`);
+  <div class="row"><button class="btn pri grow">Guardar</button><button type="button" class="btn" data-act="rhide" data-i="${i}">${r.hidden ? "Mostrar" : "Ocultar"}</button><button type="button" class="btn" data-act="rdup" data-i="${i}">Duplicar</button></div>
+  <div class="row"><button type="button" class="btn danger" data-act="rdel" data-i="${i}">Borrar ruta</button></div></form>`);
 }
 function markerSheet(i) {
-  const m = S.markers[i];
-  openSheet(`<form class="stack" data-form="editmarker" data-i="${i}"><h1>Marcador</h1><p class="muted">Casilla ${gridRef(m.x, m.y)}</p>
-  <label class="lbl">Nombre<input class="inp" id="mname" value="${esc(m.n)}" maxlength="30" placeholder="Por ejemplo: aterrizaje"></label>${colorRow("mcolor", i, m.c)}
+  const m = S.markers[i]; if (!m) return;
+  openSheet(`<form class="stack" data-form="editmarker" data-i="${i}"><h1>${esc(m.n || (MT[m.t] || MT.point).n)}</h1><p class="muted">Casilla ${gridRef(m.x, m.y)}</p>
+  <div class="chips" style="flex-wrap:wrap;margin:0;padding:0">${Object.entries(MT).map(([k, t]) => `<button type="button" class="chip ${m.t === k ? "on" : ""}" data-act="mtype" data-v="${k}" data-i="${i}"><span class="swatch" style="background:${t.c}"></span>${t.n}</button>`).join("")}</div>
+  <label class="lbl">Nombre<input class="inp" id="mname" value="${esc(m.n)}" maxlength="30" placeholder="Por ejemplo: caída principal"></label>
+  <label class="lbl">Nota<textarea class="inp" id="mnote" rows="3" maxlength="300" placeholder="Qué hacer aquí, cuándo rotar, qué hay cerca…">${esc(m.note || "")}</textarea></label>
+  ${colorRow("mcolor", i, m.c)}
   <div class="row"><button class="btn pri grow">Guardar</button><button type="button" class="btn danger" data-act="mdel" data-i="${i}">Borrar</button></div></form>`);
 }
-const encodeRoute = r => "DS1:" + btoa(unescape(encodeURIComponent(JSON.stringify({ n: r.n, c: r.c, p: r.p }))));
-function decodeRoute(t) { const m = String(t).trim().match(/DS1:([A-Za-z0-9+/=]+)/); if (!m) return null; try { const o = JSON.parse(decodeURIComponent(escape(atob(m[1])))); if (!Array.isArray(o.p) || o.p.length < 2 || o.p.length > 5000 || !o.p.every(q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite))) return null; return { n: String(o.n || "Ruta importada").slice(0, 40), c: COLORS.includes(o.c) ? o.c : COLORS[0], p: o.p.map(q => q.map(v => Math.max(0, Math.min(1000, Math.round(v))))) }; } catch { return null; } }
+function markerInfo(i) {
+  const m = S.markers[i]; if (!m) return; const t = MT[m.t] || MT.point;
+  openSheet(`<div class="stack"><div class="row"><span class="badge" style="background:${m.c || t.c};color:#08080d">${t.n}</span><span class="small muted">Casilla ${gridRef(m.x, m.y)}</span></div><h1>${esc(m.n || t.n)}</h1>
+    ${m.note ? `<p style="white-space:pre-wrap">${esc(m.note)}</p>` : `<p class="muted">Sin nota.</p>`}
+    <button class="btn" data-act="mplan-edit" data-i="${i}">${I.pen}Editar en modo planificación</button></div>`);
+}
+/* Estrategias */
+function stratSheet(id) {
+  const s = S.strategies.find(x => x.id === id); if (!s) return;
+  openSheet(`<form class="stack" data-form="strat" data-id="${s.id}"><h1>${esc(s.name)}</h1><p class="muted">${s.markers.length} marcadores · ${s.routes.length} rutas · actualizada ${fmtD(s.updated)}</p>
+    <div class="row"><button type="button" class="btn pri grow" data-act="strat-load" data-id="${s.id}">${I.map}Cargar en el mapa</button><button type="button" class="btn" data-act="strat-pin" data-id="${s.id}">${s.pinned ? I.starF : I.star}${s.pinned ? "Fijada" : "Fijar"}</button></div>
+    <label class="lbl">Nombre<input class="inp" id="st-name" value="${esc(s.name)}" maxlength="40" required></label>
+    <label class="lbl">Plan de juego<textarea class="inp" id="st-notes" rows="3" maxlength="600" placeholder="Aterrizaje, botín, rotación al primer círculo…">${esc(s.notes || "")}</textarea></label>
+    <div class="row" style="align-items:flex-start">
+      <label class="lbl grow">Etiqueta ${can("stratTags") ? "" : lockTag("elite")}<input class="inp" id="st-tag" value="${esc(s.tag || "")}" maxlength="20" placeholder="Zero Build, Ranked…" ${can("stratTags") ? "" : "disabled"}></label>
+      <label class="lbl grow">Carpeta ${can("stratFolders") ? "" : lockTag("ultra")}<input class="inp" id="st-folder" value="${esc(s.folder || "")}" maxlength="20" placeholder="Temporada, torneo…" ${can("stratFolders") ? "" : "disabled"}></label>
+    </div>
+    <button class="btn">Guardar datos</button>
+    <div class="row"><button type="button" class="btn grow" data-act="strat-dup" data-id="${s.id}">${I.copy}Duplicar</button><button type="button" class="btn grow" data-act="strat-share" data-id="${s.id}">${I.share}Compartir</button><button type="button" class="btn grow" data-act="strat-img" data-id="${s.id}">${I.image}Imagen</button></div>
+    <div id="sharebox"></div>
+    <button type="button" class="btn danger" data-act="strat-del" data-id="${s.id}">Eliminar estrategia</button>
+  </form>`);
+}
+function saveStrategy(asNew, name) {
+  const cs = asNew ? null : curStrat();
+  const data = { markers: JSON.parse(JSON.stringify(S.markers)), routes: JSON.parse(JSON.stringify(S.routes)), updated: Date.now() };
+  if (cs) Object.assign(cs, data);
+  else { const s = { id: uid("s"), name: name || `Estrategia ${S.strategies.length + 1}`, notes: "", tag: "", folder: "", pinned: false, ...data }; S.strategies.push(s); S.curStrat = s.id; save("curStrat"); }
+  save("strategies"); renderDrawer(); renderMapStatus(); rerender("home");
+}
+const encodeStrat = s => "DS2:" + btoa(unescape(encodeURIComponent(JSON.stringify({ n: s.name, no: s.notes, m: s.markers.map(m => [m.x, m.y, m.t, m.n, m.note, m.c]), r: s.routes.map(r => [r.n, r.c, r.p]) }))));
+function decodeStrat(t) {
+  const m = String(t).trim().match(/DS2:([A-Za-z0-9+/=]+)/); if (!m) return null;
+  try {
+    const o = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+    const cl = v => Math.max(0, Math.min(1000, Math.round(+v || 0)));
+    const markers = (o.m || []).slice(0, 300).map(a => ({ id: uid("m"), x: cl(a[0]), y: cl(a[1]), t: MT[a[2]] ? a[2] : "point", n: String(a[3] || "").slice(0, 30), note: String(a[4] || "").slice(0, 300), c: /^#[0-9a-f]{6}$/i.test(a[5]) ? a[5] : "" }));
+    const routes = (o.r || []).slice(0, 50).filter(a => Array.isArray(a[2]) && a[2].length > 1).map(a => ({ id: uid("r"), n: String(a[0] || "Ruta").slice(0, 40), c: COLORS.includes(a[1]) ? a[1] : COLORS[0], p: a[2].slice(0, 5000).map(q => [cl(q[0]), cl(q[1])]) }));
+    return { id: uid("s"), name: String(o.n || "Estrategia importada").slice(0, 40), notes: String(o.no || "").slice(0, 600), tag: "", folder: "", pinned: false, markers, routes, updated: Date.now() };
+  } catch { return null; }
+}
+function decodeRoute(t) { const m = String(t).trim().match(/DS1:([A-Za-z0-9+/=]+)/); if (!m) return null; try { const o = JSON.parse(decodeURIComponent(escape(atob(m[1])))); if (!Array.isArray(o.p) || o.p.length < 2 || o.p.length > 5000 || !o.p.every(q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite))) return null; return { id: uid("r"), n: String(o.n || "Ruta importada").slice(0, 40), c: COLORS.includes(o.c) ? o.c : COLORS[0], p: o.p.map(q => q.map(v => Math.max(0, Math.min(1000, Math.round(v))))) }; } catch { return null; } }
+/* Exportar estrategia como imagen (PNG): mapa + rutas + marcadores + leyenda */
+async function exportStratImage(s) {
+  const src = MAP.status === "ok" ? (MAP.img.pois || MAP.img.blank) : null;
+  if (!src) return toast("Carga primero el mapa para exportar la imagen");
+  const url = API.proxy ? "/api/img?u=" + encodeURIComponent(src) : src;
+  const img = new Image(); img.crossOrigin = "anonymous"; img.decoding = "async";
+  try { await new Promise((ok, ko) => { img.onload = ok; img.onerror = ko; img.src = url; }); } catch { return toast("No se pudo preparar la imagen del mapa"); }
+  const N = 1400, P = 1400 / 1000, foot = 170;
+  const cv = document.createElement("canvas"); cv.width = N; cv.height = N + foot; const g = cv.getContext("2d");
+  try {
+    g.fillStyle = "#08080d"; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, 0, 0, N, N);
+    s.routes.forEach((r, i) => { if (r.hidden) return; g.lineCap = g.lineJoin = "round"; g.beginPath(); r.p.forEach(([x, y], k) => k ? g.lineTo(x * P, y * P) : g.moveTo(x * P, y * P)); g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 12; g.stroke(); g.strokeStyle = r.c || COLORS[i % 6]; g.lineWidth = 7; g.stroke(); });
+    s.markers.forEach(m => { const t = MT[m.t] || MT.point; const x = m.x * P, y = m.y * P; g.beginPath(); g.arc(x, y - 26, 16, 0, Math.PI * 2); g.fillStyle = m.c || t.c; g.fill(); g.lineWidth = 3; g.strokeStyle = "#08080d"; g.stroke(); g.beginPath(); g.moveTo(x - 9, y - 16); g.lineTo(x, y); g.lineTo(x + 9, y - 16); g.fillStyle = m.c || t.c; g.fill(); if (m.n) { g.font = "700 22px Barlow, sans-serif"; g.textAlign = "center"; g.lineWidth = 5; g.strokeStyle = "#08080d"; g.strokeText(m.n, x, y - 50); g.fillStyle = "#fff"; g.fillText(m.n, x, y - 50); } });
+    g.fillStyle = "#111119"; g.fillRect(0, N, N, foot);
+    g.fillStyle = "#f2f0ff"; g.font = "700 44px 'Chakra Petch', sans-serif"; g.textAlign = "left"; g.fillText(s.name, 40, N + 66);
+    g.font = "600 24px Barlow, sans-serif"; g.fillStyle = "#a6a3c2"; let lx = 40;
+    Object.values(MT).forEach(t => { g.fillStyle = t.c; g.beginPath(); g.arc(lx + 10, N + 112, 10, 0, Math.PI * 2); g.fill(); g.fillStyle = "#a6a3c2"; g.fillText(t.n, lx + 28, N + 120); lx += g.measureText(t.n).width + 70; });
+    g.textAlign = "right"; g.fillStyle = "#b7a2ff"; g.font = "700 30px 'Chakra Petch', sans-serif"; g.fillText("DROPSTATS", N - 40, N + 66);
+  } catch { return toast("No se pudo dibujar la imagen"); }
+  let blob; try { blob = await new Promise(r => cv.toBlob(r, "image/png")); } catch { blob = null; }
+  if (!blob) return toast("El navegador no permite exportar esta imagen aquí");
+  const file = new File([blob], (s.name || "estrategia").replace(/[^\w\- ]+/g, "").trim() + ".png", { type: "image/png" });
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: s.name }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  toast("Imagen descargada");
+}
+/* Acciones del mapa */
+async function mapAction(act, a) {
+  const i = +a.dataset.i, id = a.dataset.id;
+  switch (act) {
+    case "mplan": UI.mapPlan = !UI.mapPlan; if (!UI.mapPlan) UI.mapMode = "pan"; saveUI(); paintTools(); toast(UI.mapPlan ? "Modo planificación: coloca marcadores y dibuja rutas" : "Vista del mapa"); return true;
+    case "mplan-edit": closeSheet(); UI.mapPlan = true; saveUI(); paintTools(); setTimeout(() => markerSheet(i), 300); return true;
+    case "pintype": UI.pinType = a.dataset.v; saveUI(); paintTools(); return true;
+    case "undo": undo(); return true;
+    case "redo": redo(); return true;
+    case "zin": case "zout": { if (!mapReady()) return true; const r = $("#mapwrap").getBoundingClientRect(); zoomAt(r.width / 2, r.height / 2, act === "zin" ? 1.4 : 1 / 1.4); return true; }
+    case "zfit": mapFit(); return true;
+    case "grid": UI.mapGrid = !UI.mapGrid; saveUI(); a.classList.toggle("on", UI.mapGrid); renderOverlay(); return true;
+    case "mapretry": MAP.status = "idle"; MAP.error = null; $("#mapimg")?.removeAttribute("src"); loadMap(true); return true;
+    case "legend-toggle": UI.hideTypes[a.dataset.v] = !UI.hideTypes[a.dataset.v]; saveUI(); renderOverlay(); renderDrawer(); return true;
+    case "map-clear": if (!arm(a, "mclear")) return true; pushHist(); S.markers = []; S.routes = []; save("markers"); save("routes"); renderOverlay(); renderDrawer(); paintTools(); toast("Mapa vacío · puedes deshacer"); return true;
+    case "route": routeSheet(i); return true;
+    case "marker": UI.mapPlan ? markerSheet(i) : markerInfo(i); return true;
+    case "discard-route": closeSheet(); renderOverlay(); return true;
+    case "rcolor": pushHist(); S.routes[i].c = a.dataset.c; save("routes"); renderOverlay(); renderDrawer(); routeSheet(i); return true;
+    case "mcolor": pushHist(); S.markers[i].c = a.dataset.c; save("markers"); renderOverlay(); renderDrawer(); markerSheet(i); return true;
+    case "mtype": pushHist(); S.markers[i].t = a.dataset.v; S.markers[i].c = MT[a.dataset.v].c; save("markers"); renderOverlay(); renderDrawer(); markerSheet(i); return true;
+    case "rhide": S.routes[i].hidden = !S.routes[i].hidden; save("routes"); renderOverlay(); renderDrawer(); routeSheet(i); return true;
+    case "rdup": pushHist(); S.routes.push({ ...JSON.parse(JSON.stringify(S.routes[i])), id: uid("r"), n: S.routes[i].n + " (copia)" }); save("routes"); closeSheet(); renderOverlay(); renderDrawer(); toast("Ruta duplicada"); return true;
+    case "rdel": if (!arm(a, "r" + i)) return true; pushHist(); S.routes.splice(i, 1); save("routes"); closeSheet(); renderOverlay(); renderDrawer(); paintTools(); return true;
+    case "mdel": pushHist(); S.markers.splice(i, 1); save("markers"); closeSheet(); renderOverlay(); renderDrawer(); paintTools(); return true;
+    case "strat": stratSheet(id); return true;
+    case "strat-save": { const cs = curStrat(); if (cs) { saveStrategy(false); toast("Estrategia guardada"); return true; } }
+    // fallthrough: guardar por primera vez
+    case "strat-saveas": openSheet(`<form class="stack" data-form="strat-new"><h1>Guardar estrategia</h1><p class="muted">${S.markers.length} marcadores y ${S.routes.length} rutas del mapa actual.</p><label class="lbl">Nombre<input class="inp" id="sn-name" maxlength="40" required value="${esc((curStrat()?.name ? curStrat().name + " (2)" : "Estrategia " + (S.strategies.length + 1)))}"></label><button class="btn pri">Guardar</button></form>`); return true;
+    case "strat-new": if (S.markers.length || S.routes.length) { if (!arm(a, "snew")) return true; } pushHist(); S.markers = []; S.routes = []; S.curStrat = null; ["markers", "routes", "curStrat"].forEach(save); renderOverlay(); renderDrawer(); renderMapStatus(); paintTools(); toast("Mapa listo para una estrategia nueva"); return true;
+    case "strat-load": { const s = S.strategies.find(x => x.id === id); if (!s) return true; pushHist(); S.markers = JSON.parse(JSON.stringify(s.markers)); S.routes = JSON.parse(JSON.stringify(s.routes)); S.curStrat = s.id; ["markers", "routes", "curStrat"].forEach(save); closeSheet(); if (ROUTE !== "map") go("map"); else { renderOverlay(); renderDrawer(); renderMapStatus(); paintTools(); } toast(`«${s.name}» cargada`); return true; }
+    case "strat-pin": { const s = S.strategies.find(x => x.id === id); s.pinned = !s.pinned; save("strategies"); stratSheet(id); renderDrawer(); return true; }
+    case "strat-dup": { const s = S.strategies.find(x => x.id === id); const c = { ...JSON.parse(JSON.stringify(s)), id: uid("s"), name: s.name + " (copia)", pinned: false, updated: Date.now() }; S.strategies.push(c); save("strategies"); closeSheet(); renderDrawer(); toast("Estrategia duplicada"); return true; }
+    case "strat-del": { if (!arm(a, "sdel" + id)) return true; S.strategies = S.strategies.filter(x => x.id !== id); if (S.curStrat === id) { S.curStrat = null; save("curStrat"); } save("strategies"); closeSheet(); renderDrawer(); renderMapStatus(); rerender("home"); toast("Estrategia eliminada"); return true; }
+    case "strat-share": { const s = S.strategies.find(x => x.id === id); const code = encodeStrat(s); const ok = await copyText(code); $("#sharebox").innerHTML = `<p class="small muted">${ok ? "Código copiado. Quien lo pegue en Mapa → Estrategias → Importar código verá tu estrategia." : "Copia este código y envíalo:"}</p><textarea class="inp mono" rows="3" readonly>${esc(code)}</textarea>`; return true; }
+    case "strat-img": exportStratImage(S.strategies.find(x => x.id === id)); return true;
+    case "strat-import": openSheet(`<form class="stack" data-form="strat-import"><h1>Importar</h1><p class="muted">Pega un código de estrategia (DS2:) o de ruta (DS1:).</p><textarea class="inp mono" id="simp" rows="4" placeholder="DS2:…"></textarea><button class="btn pri">Importar</button></form>`); return true;
+    case "strat-tag-f": UI.stratTag = a.dataset.v; renderDrawer(); return true;
+    case "strat-folder-f": UI.stratFolder = a.dataset.v; renderDrawer(); return true;
+  }
+  return false;
+}
+function mapSubmit(k, f) {
+  if (k === "newroute") { pushHist(); S.routes.push({ id: uid("r"), n: $("#rname").value.trim() || "Ruta", c: COLORS[S.routes.length % 6], p: newRouteSheet.pts, at: Date.now() }); save("routes"); closeSheet(); renderOverlay(); UI.drawer = "routes"; renderDrawer(); paintTools(); toast("Ruta guardada"); return true; }
+  if (k === "editroute") { pushHist(); S.routes[+f.dataset.i].n = $("#rname").value.trim() || "Ruta"; save("routes"); closeSheet(); renderDrawer(); toast("Ruta guardada"); return true; }
+  if (k === "editmarker") { pushHist(); const m = S.markers[+f.dataset.i]; m.n = $("#mname").value.trim(); m.note = $("#mnote").value.trim(); save("markers"); closeSheet(); renderOverlay(); renderDrawer(); paintTools(); return true; }
+  if (k === "strat-new") { saveStrategy(true, $("#sn-name").value.trim()); closeSheet(); UI.drawer = "strats"; renderDrawer(); toast("Estrategia guardada"); return true; }
+  if (k === "strat") {
+    const s = S.strategies.find(x => x.id === f.dataset.id); if (!s) return true;
+    s.name = $("#st-name").value.trim() || s.name; s.notes = $("#st-notes").value.trim();
+    if (can("stratTags")) s.tag = $("#st-tag").value.trim();
+    if (can("stratFolders")) s.folder = $("#st-folder").value.trim();
+    s.updated = Date.now(); save("strategies"); closeSheet(); renderDrawer(); renderMapStatus(); toast("Datos de la estrategia guardados"); return true;
+  }
+  if (k === "strat-import") {
+    const txt = $("#simp").value; const s = decodeStrat(txt);
+    if (s) { S.strategies.push(s); save("strategies"); closeSheet(); UI.drawer = "strats"; renderDrawer(); toast(`«${s.name}» importada`); return true; }
+    const r = decodeRoute(txt);
+    if (r) { pushHist(); S.routes.push(r); save("routes"); closeSheet(); renderOverlay(); UI.drawer = "routes"; renderDrawer(); toast("Ruta importada"); return true; }
+    toast("Ese código no es de DropStats"); return true;
+  }
+  return false;
+}
 
 /* =================== TORNEOS =================== */
 function eventLi(e) {
   const d = new Date(e.when), past = d < Date.now();
-  return `<button class="li" data-act="event" data-id="${esc(e.id)}"><span class="av cal" style="${past ? "opacity:.5" : ""}">${d.getDate()}<small>${fmtD(d, { month: "short" }).replace(".", "")}</small></span><span class="grow"><span class="t">${esc(e.name)}</span><span class="s">${fmtD(d, { weekday: "short", hour: "2-digit", minute: "2-digit" })} · ${esc(e.region)}${e.mode ? " · " + esc(e.mode) : ""}</span></span>${I.chev}</button>`;
+  return `<button class="li" data-act="event" data-id="${esc(e.id)}"><span class="av cal" style="${past ? "opacity:.5" : ""}">${d.getDate()}<small>${fmtD(d, { month: "short" }).replace(".", "")}</small></span><span class="grow"><span class="t">${esc(e.name)}${e.confirmed ? ` <span class="badge ok" style="height:18px;font-size:10.5px">Confirmado</span>` : ""}</span><span class="s">${fmtD(d, { weekday: "short", hour: "2-digit", minute: "2-digit" })} · ${esc(e.region)}${e.mode ? " · " + esc(e.mode) : ""}${past ? (e.result ? " · " + esc(e.result) : "") : ` · <span class="countdown">en ${until(d - Date.now())}</span>`}</span></span>${I.chev}</button>`;
 }
 VIEWS.events = v => {
-  const up = S.events.filter(e => new Date(e.when) >= Date.now()).sort((a, b) => new Date(a.when) - new Date(b.when));
-  const past = S.events.filter(e => new Date(e.when) < Date.now()).sort((a, b) => new Date(b.when) - new Date(a.when));
+  const regs = [...new Set(S.events.map(e => e.region))].sort();
+  const evs = UI.evRegion ? S.events.filter(e => e.region === UI.evRegion) : S.events;
+  const up = evs.filter(e => new Date(e.when) >= Date.now()).sort((a, b) => new Date(a.when) - new Date(b.when));
+  const past = evs.filter(e => new Date(e.when) < Date.now()).sort((a, b) => new Date(b.when) - new Date(a.when));
   v.innerHTML = `<div class="page">
     <div class="ph"><h1>Torneos</h1><p class="small muted">FNCS, Cash Cups y eventos competitivos</p></div>
     <section class="sec"><h2>Fuentes oficiales</h2>
@@ -1098,7 +1462,8 @@ VIEWS.events = v => {
       </div>
       <div class="note">${I.info}<p>No hay una fuente pública y autorizada con el calendario competitivo: Epic lo publica en el juego (pestaña «Competir») y en su web. Por eso DropStats no muestra horarios ni clasificaciones automáticos ni inventados.</p></div>
     </section>
-    <section class="sec"><div class="sh"><div><h2>Tus recordatorios</h2><p class="sub">Torneos que añades tú con la fecha oficial; se muestran en tu hora local</p></div><button class="btn sm pri" data-act="event-new">${I.plus}Añadir</button></div>
+    <section class="sec"><div class="sh"><div><h2>Tus recordatorios</h2><p class="sub">Torneos que añades tú con la fecha oficial; se muestran en tu hora local con cuenta atrás</p></div><button class="btn sm pri" data-act="event-new">${I.plus}Añadir</button></div>
+      ${regs.length > 1 ? chips("evRegion", [["", "Todas las regiones"], ...regs.map(r => [r, r])], UI.evRegion) : ""}
       ${up.length ? `<div class="list">${up.map(eventLi).join("")}</div>` : `<div class="state compact"><span class="si">${I.clock}</span><p class="small muted">No tienes torneos próximos guardados.</p></div>`}
     </section>
     ${past.length ? `<section class="sec"><h2>Pasados</h2><div class="list">${past.map(eventLi).join("")}</div></section>` : ""}
@@ -1115,12 +1480,24 @@ function eventSheet(id) {
     <label class="lbl">Formato y requisitos<textarea class="inp" id="ev-format" rows="2" maxlength="300">${esc(e.format)}</textarea></label>
     <label class="lbl">Enlace oficial<input class="inp" type="url" id="ev-link" value="${esc(e.link)}" placeholder="https://www.fortnite.com/competitive/…"></label>
     <label class="lbl">Resultado o puesto<input class="inp" id="ev-result" value="${esc(e.result)}" maxlength="60"></label>
+    <label class="switch"><span>He comprobado la fecha en la web oficial</span><input type="checkbox" id="ev-confirmed" ${e.confirmed ? "checked" : ""}></label>
     <div class="row"><button class="btn pri grow">Guardar</button>${e.id ? `<button type="button" class="btn danger" data-act="event-del" data-id="${esc(e.id)}">Borrar</button>` : ""}</div>
     ${e.link ? `<a class="btn" href="${esc(e.link)}" target="_blank" rel="noopener">${I.ext}Abrir enlace oficial</a>` : ""}
   </form>`);
 }
 
 /* =================== FAVORITOS =================== */
+const FAV_CATS = [["all", "Todas"], ["outfit", "Atuendos"], ["pickaxe", "Picos"], ["backpack", "Mochilas"], ["emote", "Gestos"], ["glider", "Planeadores"], ["wrap", "Envoltorios"], ["contrail", "Estelas"], ["other", "Otros"]];
+function favGrid(items) {
+  const order = l => [...l.filter(i => SHOP.byItem.has(i.id)), ...l.filter(i => !SHOP.byItem.has(i.id))];
+  if (!can("favCats")) return `<div class="grid">${order(items).map(itemTile).join("")}</div><div style="margin-top:12px">${lockRow("favCats", "Organiza tus favoritos por categorías")}</div>`;
+  const cat = i => MAIN_TYPES.has(i.type) && i.type !== "bundle" && i.type !== "track" ? i.type : "other";
+  const counts = {}; items.forEach(i => counts[cat(i)] = (counts[cat(i)] || 0) + 1);
+  const opts = FAV_CATS.filter(([k]) => k === "all" || counts[k]).map(([k, l]) => [k, l, k === "all" ? items.length : counts[k]]);
+  const sel = counts[UI.favCat] || UI.favCat === "all" ? UI.favCat : "all";
+  const groups = sel === "all" ? FAV_CATS.slice(1).filter(([k]) => counts[k]) : FAV_CATS.filter(([k]) => k === sel);
+  return chips("favCat", opts, sel) + groups.map(([k, l]) => `<section class="sec" style="margin-top:14px"><div class="sh"><h2>${l}</h2><span class="small muted num">${counts[k]}</span></div><div class="grid">${order(items.filter(i => cat(i) === k)).map(itemTile).join("")}</div></section>`).join("");
+}
 VIEWS.favs = v => {
   queueMicrotask(() => loadShop());
   const t = UI.favTab, items = Object.values(S.favs);
@@ -1129,7 +1506,7 @@ VIEWS.favs = v => {
   ${chips("favTab", [["items", "Cosméticos", items.length], ["players", "Jugadores", S.favPlayers.length]], t)}
   ${t === "players" ? (S.favPlayers.length ? `<div class="list">${S.favPlayers.map((p, i) => `<div class="li"><span class="av">${esc(initials(p.name))}</span><button class="grow" style="background:none;border:0;text-align:left;padding:0;min-width:0" data-act="player" data-name="${esc(p.name)}" data-type="${esc(p.type)}"><span class="t">${esc(p.name)}</span><span class="s">${esc(p.type.toUpperCase())} · ver estadísticas</span></button><button class="btn sm danger" data-act="unfavplayer" data-i="${i}">Quitar</button></div>`).join("")}</div>`
       : stateEmpty("Sin jugadores favoritos", "Busca un jugador en Stats y pulsa la estrella.", `<button class="btn" data-go="stats">Ir a Stats</button>`))
-    : items.length ? `${today.length ? `<div class="note">${I.shop}<p><b>${today.length} ${today.length === 1 ? "favorito está" : "favoritos están"} hoy en la tienda.</b></p></div>` : SHOP.status === "ok" ? `<p class="small muted">Ninguno de tus favoritos está hoy en la tienda.</p>` : ""}<div class="grid">${[...today, ...items.filter(i => !SHOP.byItem.has(i.id))].map(itemTile).join("")}</div>`
+    : items.length ? `${today.length ? `<div class="note">${I.shop}<p><b>${today.length} ${today.length === 1 ? "favorito está" : "favoritos están"} hoy en la tienda.</b></p></div>` : SHOP.status === "ok" ? `<p class="small muted">Ninguno de tus favoritos está hoy en la tienda.</p>` : ""}${favGrid(items)}`
       : stateEmpty("Aún no tienes favoritos", "Abre cualquier cosmético de la tienda o del catálogo y pulsa «Añadir a favoritos». Aquí verás si vuelve a la tienda.", `<button class="btn" data-go="catalog">Explorar el catálogo</button>`)}
   </div>`;
 };
@@ -1139,6 +1516,20 @@ VIEWS.settings = v => {
   const p = S.prefs;
   v.innerHTML = `<div class="page"><div class="ph"><h1>Ajustes</h1></div>
   <section class="sec"><h2>Cuenta</h2><div class="list"><button class="li" data-go="account"><span class="av">${I.user}</span><span class="grow"><span class="t">${ACC.user ? esc(ACC.user.email) : "Iniciar sesión o crear cuenta"}</span><span class="s">${ACC.user ? "Sincronización activa" : "Guarda tus datos en la nube"}</span></span>${I.chev}</button></div></section>
+  <section class="sec"><h2>DropStats Premium</h2><div class="list"><button class="li" data-go="premium"><span class="av ${planId() === "ultra" ? "ultra-av" : ""}">${I.gem}</span><span class="grow"><span class="t">${PLANS[planId()].name}${planId() !== "free" ? " · demostración" : ""}</span><span class="s">Pro, Elite y Drop Ultra · precios y selector de demostración</span></span>${I.chev}</button>
+    <button class="li" data-go="widgets"><span class="av ultra-av">${I.widgets}</span><span class="grow"><span class="t">Ultra Widgets</span><span class="s">${can("widgets") ? "Personaliza tu panel de inicio" : "Exclusivo de Drop Ultra"}</span></span>${I.chev}</button></div></section>
+  <section class="sec"><h2>Apariencia</h2>
+    <div class="themes">${THEMES.map(t => { const ok = themeOk(t), on = (S.look.theme === t.id && ok) || (t.id === "base" && !THEMES.some(x => x.id === S.look.theme && themeOk(x))); return `<button class="theme-opt ${on ? "on" : ""}" data-act="theme" data-v="${t.id}" aria-disabled="${!ok}"><span class="sw" style="background:linear-gradient(135deg,${t.v[0]},${t.v[2]})"></span><span class="nm">${t.name}${t.need && !ok ? lockTag(t.need) : on ? I.check : ""}</span></button>`; }).join("")}</div>
+    <label class="switch"><span>Animaciones</span><input type="checkbox" id="look-anim" ${S.look.anim !== false ? "checked" : ""}></label>
+    <label class="switch"><span>Modo compacto ${can("density") ? "" : lockTag("elite")}</span><input type="checkbox" id="look-density" ${S.look.density === "compact" ? "checked" : ""} ${can("density") ? "" : "disabled"}></label>
+    <label class="switch"><span>Efectos visuales ${can("fx") ? "" : lockTag("ultra")}</span><input type="checkbox" id="look-fx" ${S.look.fx !== false ? "checked" : ""} ${can("fx") ? "" : "disabled"}></label>
+    ${can("customUI") ? `<div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:12px"><span class="eyebrow">Personalización Ultra</span>
+      <div class="rangerow"><span>Color de acento</span><input type="color" id="look-accent" value="${/^#[0-9a-f]{6}$/i.test(S.look.accent) ? S.look.accent : "#8b5cf6"}" style="width:100%;height:36px;border:0;background:none"><button class="btn sm" data-act="look-accent-clear">Tema</button></div>
+      <div class="rangerow"><span>Esquinas</span><input type="range" id="look-radius" min="6" max="24" value="${S.look.radius || 16}"><b class="num" id="look-radius-v">${S.look.radius || 16}</b></div>
+      <div class="rangerow"><span>Tamaño de texto</span><input type="range" id="look-scale" min="90" max="115" value="${Math.round((S.look.scale || 1) * 100)}"><b class="num" id="look-scale-v">${Math.round((S.look.scale || 1) * 100)}%</b></div>
+      <button class="btn sm" data-act="look-reset" style="align-self:flex-start">Restablecer apariencia</button></div>` : lockRow("customUI", "Personalización total: color de acento, esquinas y tamaño de texto")}
+    ${can("quickEdit") ? `<button class="btn sm" data-act="quick-edit" style="align-self:flex-start">Editar accesos rápidos</button>` : ""}
+  </section>
   <section class="sec"><h2>Preferencias</h2>
     <label class="lbl">Idioma de los nombres de cosméticos<select class="sel" id="pref-lang"><option value="es">Español</option><option value="en">English</option><option value="de">Deutsch</option></select></label>
     <div class="row" style="align-items:flex-start"><label class="lbl grow">Plataforma por defecto<select class="sel" id="pref-platform"><option value="epic">Epic</option><option value="psn">PlayStation</option><option value="xbl">Xbox</option></select></label>
@@ -1154,7 +1545,7 @@ VIEWS.settings = v => {
     <div id="testout"></div>
   </section>
   <section class="sec"><h2>Datos guardados</h2>
-    <div class="list">${[["favs", "Cosméticos favoritos", Object.keys(S.favs).length], ["favPlayers", "Jugadores favoritos", S.favPlayers.length], ["history", "Historial de búsquedas", S.history.length], ["routes", "Rutas del mapa", S.routes.length], ["markers", "Marcadores", S.markers.length], ["events", "Recordatorios de torneos", S.events.length], ["prices", "Precios vistos en la tienda", Object.keys(S.prices).length]].map(([k, l, n]) => `<div class="li"><span class="grow"><span class="t">${l}</span><span class="s">${n} ${n === 1 ? "elemento" : "elementos"}</span></span><button class="btn sm danger" data-act="wipe" data-k="${k}" ${n ? "" : "disabled"}>Borrar</button></div>`).join("")}</div>
+    <div class="list">${[["favs", "Cosméticos favoritos", Object.keys(S.favs).length], ["favPlayers", "Jugadores favoritos", S.favPlayers.length], ["history", "Historial de búsquedas", S.history.length], ["routes", "Rutas del mapa", S.routes.length], ["markers", "Marcadores", S.markers.length], ["events", "Recordatorios de torneos", S.events.length], ["strategies", "Estrategias del mapa", S.strategies.length], ["snaps", "Historial de estadísticas", Object.keys(S.snaps).length], ["prices", "Precios vistos en la tienda", Object.keys(S.prices).length]].map(([k, l, n]) => `<div class="li"><span class="grow"><span class="t">${l}</span><span class="s">${n} ${n === 1 ? "elemento" : "elementos"}</span></span><button class="btn sm danger" data-act="wipe" data-k="${k}" ${n ? "" : "disabled"}>Borrar</button></div>`).join("")}</div>
     <div class="row"><button class="btn sm" data-act="export">Copia de seguridad</button><button class="btn sm" data-act="import">Restaurar copia</button></div>
   </section>
   <p class="small faint">DropStats es un proyecto independiente. No está afiliado, patrocinado ni aprobado por Epic Games. Fortnite y los nombres e imágenes de sus objetos son marcas de Epic Games, Inc. DropStats nunca pide tu contraseña de Epic ni hace compras.</p>
@@ -1162,10 +1553,365 @@ VIEWS.settings = v => {
   $("#pref-lang").value = p.lang; $("#pref-platform").value = p.platform; $("#pref-window").value = p.window;
 };
 
+/* =================== PLANES PREMIUM Y PERMISOS =================== */
+/* Un único punto de verdad: can(función). Hoy el plan viene del selector de demostración (local);
+   cuando exista una suscripción real, Entitlements.plan() leerá el plan verificado por el servidor. */
+const PLANS = {
+  free: { rank: 0, name: "Gratis", short: "Gratis" },
+  pro: { rank: 1, name: "DropStats Pro", short: "Pro", price: 2.99 },
+  elite: { rank: 2, name: "DropStats Elite", short: "Elite", price: 5.99 },
+  ultra: { rank: 3, name: "Drop Ultra", short: "Ultra", price: 9.99 }
+};
+const PAID = ["pro", "elite", "ultra"];
+const FEATURES = {
+  statsPlus: "pro", catFilters: "pro", favCats: "pro", themesPro: "pro", quickEdit: "pro",
+  statsCharts: "elite", seasonCompare: "elite", compare: "elite", compTools: "elite", stratTags: "elite", themesElite: "elite", density: "elite",
+  widgets: "ultra", themesUltra: "ultra", stratFolders: "ultra", fx: "ultra", customUI: "ultra", ultraBadge: "ultra"
+};
+const PLAN_PERKS = {
+  pro: ["Estadísticas mejoradas con métricas extra", "Filtros avanzados en el catálogo", "Favoritos organizados por categorías", "Temas Noche morada y Medianoche", "Accesos rápidos personalizables", "Interfaz premium en morado y negro"],
+  elite: ["Todo lo de DropStats Pro", "Gráficas de evolución de tus estadísticas", "Total y temporada, lado a lado", "Comparar dos jugadores", "Análisis competitivo por modo", "Etiquetas para tus estrategias del mapa", "Temas Aurora y Cobalto · modo compacto"],
+  ultra: ["Todo lo de Pro y Elite", "Ultra Widgets: tu panel de inicio a medida", "Personalización total: color, esquinas y texto", "Temas exclusivos Ultravioleta y Holográfico", "Efectos visuales opcionales", "Carpetas y estrategias fijadas en el mapa", "Insignia Ultra y tarjeta holográfica"]
+};
+const Entitlements = {
+  source: "demo", // "demo" ahora; "server" cuando se integre una suscripción real
+  plan() { const p = store.get("demoPlan", "free"); return PLANS[p] ? p : "free"; },
+  setDemo(p) { if (!PLANS[p]) return; store.set("demoPlan", p); onPlanChange(); }
+};
+const Billing = { // estructura preparada para una pasarela real (Stripe, App Store…); hoy no cobra nada
+  available: false,
+  async checkout(plan) { return { ok: false, reason: "not_available", plan }; }
+};
+const planId = () => Entitlements.plan();
+const planRank = () => PLANS[planId()].rank;
+function can(f) {
+  const need = FEATURES[f]; if (!need) return true;
+  if (f === "widgets") return planId() === "ultra"; // regla: widgets solo con Drop Ultra
+  return planRank() >= PLANS[need].rank;
+}
+const priceTxt = p => p.toLocaleString("es-ES", { minimumFractionDigits: 2 }) + " €";
+const lockTag = need => `<span class="lock-tag t-${need}">${I.lock}${PLANS[need].short}</span>`;
+function lockedSheet(f) {
+  const need = FEATURES[f] || "pro";
+  openSheet(`<div class="stack"><div class="plan-mini t-${need}"><span class="eyebrow">Función premium</span><h2>Disponible en ${PLANS[need].name}</h2></div>
+    <p class="muted">Esta función forma parte de ${PLANS[need].name}${need !== "ultra" ? " y de los planes superiores" : ", el nivel máximo de DropStats"}. Las suscripciones aún no están activas: puedes probarla con el selector de demostración de la sección Premium.</p>
+    <button class="btn pri" data-act="go-premium" data-v="${need}">${I.gem}Ver planes</button></div>`);
+}
+function onPlanChange() {
+  applyLook(); paintPlanBadge();
+  if (ROUTE === "widgets" || ROUTE === "premium") render(); else rerender(ROUTE);
+}
+function paintPlanBadge() {
+  const b = $("#planbadge"); if (!b) return; const p = planId();
+  b.hidden = p === "free"; b.className = "plan-badge t-" + p; b.textContent = p === "ultra" ? "ULTRA" : p === "elite" ? "ELITE" : "PRO";
+  b.title = PLANS[p].name + " (demostración)";
+}
+
+/* =================== TEMAS Y PERSONALIZACIÓN =================== */
+const THEMES = [
+  { id: "base", name: "DropStats", need: null, v: ["#8b5cf6", "#b7a2ff", "#3b82f6"] },
+  { id: "noche", name: "Noche morada", need: "pro", v: ["#a855f7", "#d8b4fe", "#6d28d9"] },
+  { id: "medianoche", name: "Medianoche", need: "pro", v: ["#6366f1", "#a5b4fc", "#0ea5e9"] },
+  { id: "aurora", name: "Aurora", need: "elite", v: ["#8b5cf6", "#c4b5fd", "#22d3ee"] },
+  { id: "cobalto", name: "Cobalto", need: "elite", v: ["#3b82f6", "#93c5fd", "#06b6d4"] },
+  { id: "ultravioleta", name: "Ultravioleta", need: "ultra", v: ["#c026d3", "#f0abfc", "#7c3aed"] },
+  { id: "holo", name: "Holográfico", need: "ultra", v: ["#a855f7", "#e9d5ff", "#22d3ee"], holo: true }
+];
+const themeOk = t => !t.need || can({ pro: "themesPro", elite: "themesElite", ultra: "themesUltra" }[t.need]);
+S.look = Object.assign({ theme: "base", density: "comfy", accent: "", radius: 16, scale: 1, fx: true, anim: true }, store.get("look", {}));
+function applyLook() {
+  const L = S.look, root = document.documentElement;
+  const th = THEMES.find(t => t.id === L.theme && themeOk(t)) || THEMES[0];
+  let [v1, v2, b] = th.v;
+  if (can("customUI") && /^#[0-9a-f]{6}$/i.test(L.accent)) { v1 = L.accent; v2 = L.accent + "cc"; }
+  root.style.setProperty("--violet", v1); root.style.setProperty("--violet2", v2); root.style.setProperty("--blue", b);
+  root.style.setProperty("--grad", `linear-gradient(135deg,${v1},${b})`);
+  root.style.setProperty("--r", (can("customUI") ? Math.min(24, Math.max(6, +L.radius || 16)) : 16) + "px");
+  root.dataset.density = can("density") && L.density === "compact" ? "compact" : "comfy";
+  root.dataset.anim = L.anim === false ? "off" : "on";
+  root.dataset.fx = can("fx") && L.fx !== false ? "on" : "off";
+  root.dataset.holo = th.holo ? "on" : "off";
+  const view = $("#view"); if (view) view.style.zoom = can("customUI") ? Math.min(1.15, Math.max(0.9, +L.scale || 1)) : "";
+}
+
+/* =================== ACCESOS RÁPIDOS (Pro) =================== */
+const QUICK = {
+  catalog: ["Catálogo", "Todos los cosméticos", "grid"], map: ["Mapa", "Estrategias y rutas", "map"], stats: ["Stats", "Busca jugadores", "stats"],
+  events: ["Torneos", "FNCS y Cash Cups", "trophy"], favs: ["Favoritos", "Tus skins guardadas", "star"], shop: ["Tienda", "Ofertas de hoy", "shop"], premium: ["Premium", "Pro, Elite y Ultra", "gem"]
+};
+S.quick = (store.get("quick", null) || ["catalog", "map", "stats", "events"]).filter(k => QUICK[k]).slice(0, 4);
+const quickTiles = () => (can("quickEdit") ? S.quick : ["catalog", "map", "stats", "events"]).map(k => { const [t, s, ic] = QUICK[k]; return `<button class="qa" data-go="${k}"><span class="qi">${I[ic]}</span><span>${t}<small>${s}</small></span></button>`; }).join("");
+function quickSheet() {
+  if (!can("quickEdit")) return lockedSheet("quickEdit");
+  openSheet(`<form class="stack" data-form="quick"><h1>Accesos rápidos</h1><p class="muted">Elige hasta 4 accesos para el inicio, en el orden en que los marques.</p>
+    <div class="list">${Object.entries(QUICK).map(([k, [t, s, ic]]) => `<label class="li"><span class="av">${I[ic]}</span><span class="grow"><span class="t">${t}</span><span class="s">${s}</span></span><input type="checkbox" name="q" value="${k}" ${S.quick.includes(k) ? "checked" : ""} style="width:22px;height:22px"></label>`).join("")}</div>
+    <p class="formerr" id="q-err"></p><button class="btn pri">Guardar</button></form>`);
+}
+
+/* =================== SECCIÓN PREMIUM =================== */
+function planCard(p) {
+  const P = PLANS[p], cur = planId() === p;
+  return `<article class="plan t-${p}" id="plan-${p}">
+    <div class="plan-top"><span class="plan-tier">${p === "ultra" ? "Nivel máximo" : p === "elite" ? "Nivel avanzado" : "Nivel de entrada"}</span>${cur ? `<span class="badge ok">Activo en demostración</span>` : ""}</div>
+    <h2 class="plan-name">${p === "ultra" ? `<span class="ultra-word">Drop Ultra</span>` : P.name}</h2>
+    <div class="plan-price"><b>${priceTxt(P.price)}</b><span>/ mes</span></div><p class="plan-prov">Precio provisional · sin cobros</p>
+    <ul class="perks">${PLAN_PERKS[p].map(x => `<li>${I.check}<span>${x}</span></li>`).join("")}</ul>
+    <button class="btn ${p === "ultra" ? "ultra-btn" : "pri"}" data-act="plan-choose" data-v="${p}">${p === "ultra" ? I.gem + "Quiero Drop Ultra" : "Elegir " + P.short}</button>
+  </article>`;
+}
+const CMP_ROWS = [
+  ["Tienda, catálogo, mapa, stats y torneos", 1, 1, 1, 1], ["Cuenta y sincronización", 1, 1, 1, 1],
+  ["Estadísticas mejoradas", 0, 1, 1, 1], ["Filtros avanzados del catálogo", 0, 1, 1, 1], ["Favoritos por categorías", 0, 1, 1, 1], ["Accesos rápidos personalizables", 0, 1, 1, 1],
+  ["Gráficas de evolución", 0, 0, 1, 1], ["Comparar jugadores", 0, 0, 1, 1], ["Análisis competitivo", 0, 0, 1, 1], ["Etiquetas de estrategias", 0, 0, 1, 1],
+  ["Ultra Widgets", 0, 0, 0, 1], ["Personalización total", 0, 0, 0, 1], ["Carpetas de estrategias", 0, 0, 0, 1], ["Temas y efectos exclusivos", 0, 0, 0, 1]
+];
+VIEWS.premium = v => {
+  const p = planId();
+  v.innerHTML = `<div class="page">
+    <div class="prem-hero"><span class="eyebrow">DropStats Premium</span><h1>Sube de nivel</h1><p class="muted">Tres planes, de menos a más. Drop Ultra es el nivel máximo y el único con Ultra Widgets.</p></div>
+    <div class="note warn">${I.info}<p><b>Aún no hay suscripciones.</b> Los precios son provisionales, no se cobra nada y ningún plan está contratado. Para probar las funciones usa el selector de demostración de abajo.</p></div>
+    <div class="plans">${PAID.map(planCard).join("")}</div>
+    <section class="sec"><h2>Comparativa</h2><div class="tblwrap"><table class="cmp"><thead><tr><th>Función</th><th>Gratis</th><th>Pro</th><th>Elite</th><th>Ultra</th></tr></thead><tbody>
+      ${CMP_ROWS.map(r => `<tr><td>${r[0]}</td>${r.slice(1).map((x, k) => `<td>${x ? `<span class="yes ${k === 3 ? "u" : ""}">${I.check}</span>` : `<span class="no">—</span>`}</td>`).join("")}</tr>`).join("")}
+    </tbody></table></div></section>
+    <section class="sec demo-box"><div class="sh"><div><h2>Selector de demostración</h2><p class="sub">Herramienta de desarrollo para comprobar permisos. No es una suscripción y no se paga nada.</p></div></div>
+      <div class="segtabs four" role="radiogroup" aria-label="Plan de demostración">${["free", ...PAID].map(k => `<button type="button" class="${p === k ? "on" : ""}" role="radio" aria-checked="${p === k}" data-act="demo-plan" data-v="${k}">${PLANS[k].short}</button>`).join("")}</div>
+      <p class="small muted">Plan simulado ahora: <b style="color:var(--fg)">${PLANS[p].name}</b>.</p>
+    </section>
+    <section class="sec"><button class="li list" data-go="widgets" style="border:1px solid var(--line)"><span class="av ultra-av">${I.widgets}</span><span class="grow"><span class="t">Ultra Widgets</span><span class="s">${can("widgets") ? "Personaliza tu panel de inicio" : "Exclusivo de Drop Ultra · ver vista previa"}</span></span>${I.chev}</button></section>
+  </div>`;
+  if (UI.premFocus) { const el = $("#plan-" + UI.premFocus); UI.premFocus = ""; if (el) requestAnimationFrame(() => el.scrollIntoView({ block: "center", behavior: "smooth" })); }
+};
+
+/* =================== ULTRA WIDGETS (solo Drop Ultra) =================== */
+const WTYPES = {
+  player: { name: "Estadísticas del jugador", sizes: ["m", "l"], fields: { wins: "Victorias", kills: "Eliminaciones", matches: "Partidas", kd: "K/D", winRate: "% victorias" } },
+  wins: { name: "Victorias", sizes: ["s", "m"] }, kills: { name: "Eliminaciones", sizes: ["s", "m"] }, winrate: { name: "Porcentaje de victorias", sizes: ["s", "m"] },
+  evolution: { name: "Evolución de estadísticas", sizes: ["m", "l"], fields: { wins: "Victorias", kills: "Eliminaciones", kd: "K/D" } },
+  shop: { name: "Tienda actual", sizes: ["m", "l"], fields: { count: "Nº de ofertas", timer: "Cuenta atrás", items: "Objetos" } },
+  favs: { name: "Cosméticos favoritos", sizes: ["m", "l"], fields: { onlyToday: "Solo los que están hoy en tienda" } },
+  events: { name: "Próximos torneos confirmados", sizes: ["m"] }, map: { name: "Acceso rápido al mapa", sizes: ["s", "m"] },
+  strats: { name: "Rutas y estrategias", sizes: ["m", "l"] }, news: { name: "Novedades verificadas", sizes: ["m", "l"] }
+};
+const WSTYLES = { glass: "Cristal", solid: "Sólido", holo: "Holográfico" };
+const SIZE_N = { s: "Pequeño", m: "Mediano", l: "Grande" };
+const DEFAULT_WIDGETS = () => [["shop", "l", "holo"], ["player", "m", "glass"], ["wins", "s", "solid"], ["winrate", "s", "solid"], ["favs", "m", "glass"], ["strats", "m", "glass"], ["news", "m", "glass"]].map(([type, size, style]) => ({ id: uid("w"), type, size, style, hide: {} }));
+S.widgets = store.get("widgets", null) || DEFAULT_WIDGETS();
+const W_GUARD = () => { if (can("widgets")) return true; lockedWidgets(); return false; };
+function lockedWidgets() { if (ROUTE !== "widgets") go("widgets"); else render(); }
+/* datos de mi jugador para los widgets */
+const MY = { status: "idle", data: null, at: 0 };
+async function loadMy(force) {
+  if (!S.myPlayer || MY.status === "loading" || (!force && MY.status !== "idle" && Date.now() - MY.at < 5 * 60e3)) return;
+  MY.status = "loading";
+  try {
+    const p = S.myPlayer.id ? { id: S.myPlayer.id, timeWindow: S.prefs.window } : { name: S.myPlayer.name, accountType: S.myPlayer.type || "epic", timeWindow: S.prefs.window };
+    const j = await API.stats(p);
+    if (j.status === 200 && j.data?.account) { MY.status = "ok"; MY.data = j.data; recordSnap(j.data); }
+    else { MY.status = "error"; MY.err = j.error === "missing_key" ? "Las estadísticas no están activadas en el servidor." : j.status === 403 ? "Tus estadísticas son privadas en Fortnite." : "No se encontraron tus estadísticas."; }
+  } catch { MY.status = "error"; MY.err = "No hay conexión con el servidor de estadísticas."; }
+  MY.at = Date.now(); rerender("home", "widgets");
+}
+/* novedades oficiales (noticias del juego publicadas por Epic, vía fortnite-api.com) */
+const NEWS = { status: "idle", items: [] };
+async function loadNews() {
+  if (NEWS.status !== "idle") return; NEWS.status = "loading";
+  try { const j = await API.get("v2/news/br", {}, { ms: 10000 }); const m = j.data?.motds || []; NEWS.items = m.filter(x => x.title).slice(0, 6); NEWS.status = "ok"; }
+  catch { NEWS.status = "error"; }
+  rerender("home", "widgets");
+}
+const wEmpty = (txt, btn = "") => `<div class="w-empty"><p>${txt}</p>${btn}</div>`;
+const spark = (vals, w = 260, h = 64) => { if (vals.length < 2) return ""; const mn = Math.min(...vals), mx = Math.max(...vals), sp = mx - mn || 1; const pts = vals.map((v, i) => [i / (vals.length - 1) * w, h - 6 - (v - mn) / sp * (h - 12)]); return `<svg viewBox="0 0 ${w} ${h}" class="spark" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="var(--violet2)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${pts.at(-1)[0]}" cy="${pts.at(-1)[1]}" r="4" fill="var(--violet2)"/></svg>`; };
+function widgetBody(w) {
+  const show = k => !w.hide?.[k];
+  const o = MY.data?.stats?.all?.overall;
+  const needPlayer = () => !S.myPlayer ? wEmpty("Elige tu cuenta de Fortnite para ver tus datos.", `<button class="btn sm" data-go="stats">Ir a Stats</button>`)
+    : MY.status === "error" ? wEmpty(esc(MY.err)) : !o ? `<div class="skel" style="height:56px"></div>` : null;
+  switch (w.type) {
+    case "player": { const n = needPlayer(); if (n) return n; return `<div class="w-sub">${esc(MY.data.account.name)} · ${S.prefs.window === "season" ? "temporada" : "total"}</div><div class="w-kv">${Object.entries(WTYPES.player.fields).filter(([k]) => show(k)).map(([k, l]) => `<div><span>${l}</span><b>${k === "kd" ? (+o.kd).toFixed(2) : k === "winRate" ? (+o.winRate).toFixed(1) + "%" : fmtN(o[k])}</b></div>`).join("")}</div>`; }
+    case "wins": case "kills": case "winrate": { const n = needPlayer(); if (n) return n; const val = w.type === "winrate" ? (+o.winRate).toFixed(1) + "%" : fmtN(o[w.type]); return `<div class="w-big">${val}</div><div class="w-sub">${esc(MY.data.account.name)}</div>`; }
+    case "evolution": {
+      if (!S.myPlayer) return needPlayer();
+      const snaps = (S.snaps[S.myPlayer.id] || []).filter(x => x.w === S.prefs.window);
+      if (snaps.length < 2) return wEmpty("Aún no hay historial: DropStats guarda una medición al día cada vez que se consultan tus estadísticas. Vuelve mañana.");
+      const keys = Object.keys(WTYPES.evolution.fields).filter(show);
+      return keys.map(k => `<div class="w-evo"><span>${WTYPES.evolution.fields[k]}</span>${spark(snaps.map(x => +x[k]))}<b>${k === "kd" ? (+snaps.at(-1)[k]).toFixed(2) : fmtN(snaps.at(-1)[k])}</b></div>`).join("") + `<div class="w-sub">${snaps.length} mediciones · desde ${fmtD(snaps[0].at, { day: "numeric", month: "short" })}</div>`;
+    }
+    case "shop": {
+      if (SHOP.status === "error") return wEmpty("No hay conexión con la tienda ahora mismo.", `<button class="btn sm" data-act="retry-shop">Reintentar</button>`);
+      if (SHOP.status !== "ok") return `<div class="skel" style="height:90px"></div>`;
+      const items = SHOP.entries.filter(e => e.img).slice(0, w.size === "l" ? 6 : 3);
+      return `<div class="w-row">${show("count") ? `<div><span class="w-lbl">Ofertas</span><b class="w-mid">${SHOP.entries.length}</b></div>` : ""}${show("timer") ? `<div><span class="w-lbl">Cambia en</span><b class="w-mid" data-cd="short">${untilShort(nextResetUTC() - Date.now())}</b></div>` : ""}</div>
+        ${show("items") ? `<div class="w-items">${items.map(e => `<button class="tile" data-act="entry" data-id="${esc(e.key)}" aria-label="${esc(e.name)}">${art(e.img, e.name, e.rarity, { c1: e.c1, c2: e.c2 })}</button>`).join("")}</div>` : ""}`;
+    }
+    case "favs": {
+      const f = Object.values(S.favs); if (!f.length) return wEmpty("Aún no tienes cosméticos favoritos.", `<button class="btn sm" data-go="catalog">Explorar</button>`);
+      const today = f.filter(x => SHOP.byItem.has(x.id)), list = show("onlyToday") ? today : [...today, ...f.filter(x => !SHOP.byItem.has(x.id))];
+      if (!list.length) return wEmpty(SHOP.status === "ok" ? "Ninguno de tus favoritos está hoy en la tienda." : "Comprobando la tienda de hoy…");
+      return `<div class="w-sub">${today.length ? `${today.length} hoy en la tienda` : "Ninguno está hoy en la tienda"}</div><div class="w-items">${list.slice(0, w.size === "l" ? 6 : 3).map(x => `<button class="tile" data-act="item" data-id="${esc(x.id)}" aria-label="${esc(x.name)}">${art(x.img, x.name, x.rarity, { tags: SHOP.byItem.has(x.id) ? `<span class="tag today">Hoy</span>` : "" })}</button>`).join("")}</div>`;
+    }
+    case "events": {
+      const up = S.events.filter(e => e.confirmed && new Date(e.when) > Date.now()).sort((a, b) => new Date(a.when) - new Date(b.when)).slice(0, 3);
+      return up.length ? `<div class="list">${up.map(e => `<button class="li" data-act="event" data-id="${esc(e.id)}"><span class="grow"><span class="t">${esc(e.name)}</span><span class="s">${fmtD(e.when, { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })} · ${esc(e.region)} · en ${until(new Date(e.when) - Date.now())}</span></span></button>`).join("")}</div>`
+        : wEmpty("No hay torneos confirmados. Añade un recordatorio en Torneos y marca que has comprobado la fecha oficial.", `<button class="btn sm" data-go="events">Torneos</button>`);
+    }
+    case "map": return `<div class="w-row"><button class="btn sm pri" data-go="map">${I.map}Abrir mapa</button>${curStrat() ? `<button class="btn sm" data-act="strat-load" data-id="${curStrat().id}">${esc(curStrat().name)}</button>` : ""}</div>`;
+    case "strats": {
+      const l = S.strategies.slice().sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.updated - a.updated).slice(0, w.size === "l" ? 5 : 3);
+      return l.length ? `<div class="list">${l.map(s => `<button class="li" data-act="strat-load" data-id="${s.id}"><span class="grow"><span class="t">${s.pinned ? "★ " : ""}${esc(s.name)}</span><span class="s">${s.markers.length} marcadores · ${s.routes.length} rutas</span></span>${I.chev}</button>`).join("")}</div>`
+        : wEmpty("Aún no has guardado estrategias.", `<button class="btn sm" data-go="map">Crear en el mapa</button>`);
+    }
+    case "news": {
+      if (NEWS.status === "error") return wEmpty("No se pudieron cargar las novedades.");
+      if (NEWS.status !== "ok") return `<div class="skel" style="height:80px"></div>`;
+      if (!NEWS.items.length) return wEmpty("Epic no tiene novedades publicadas ahora mismo.");
+      return `<div class="w-news">${NEWS.items.slice(0, w.size === "l" ? 4 : 2).map(n => `<div class="w-new">${n.tileImage || n.image ? `<img src="${esc(n.tileImage || n.image)}" alt="" loading="lazy">` : ""}<div><b>${esc(n.title)}</b><p>${esc((n.body || "").slice(0, 110))}</p></div></div>`).join("")}</div><div class="w-sub">Noticias oficiales del juego</div>`;
+    }
+  }
+  return "";
+}
+const widgetCard = w => `<article class="wg wg-${w.size} wg-${w.style}" data-wid="${w.id}"><header><span>${esc(WTYPES[w.type].name)}</span></header><div class="wg-body">${widgetBody(w)}</div></article>`;
+function widgetsPanel() {
+  if (!can("widgets")) return ""; // nunca se muestra fuera de Drop Ultra
+  queueMicrotask(() => { loadMy(); if (S.widgets.some(w => w.type === "news")) loadNews(); });
+  return `<section class="sec"><div class="sh"><div><h2>Mi panel <span class="plan-badge t-ultra" style="vertical-align:middle">ULTRA</span></h2><p class="sub">Tus widgets</p></div><button class="link" data-go="widgets">Personalizar</button></div>
+    ${S.widgets.length ? `<div class="wgrid">${S.widgets.map(widgetCard).join("")}</div>` : `<div class="state compact"><span class="si">${I.widgets}</span><p class="small muted">Tu panel está vacío. Pulsa «Personalizar» para añadir widgets.</p></div>`}</section>`;
+}
+VIEWS.widgets = v => {
+  if (!can("widgets")) { // pantalla de bloqueo premium (cualquier ruta que llegue aquí)
+    const p = planId();
+    v.innerHTML = `<div class="page"><div class="ultra-lock">
+      <div class="ul-glow"></div><span class="plan-badge t-ultra">EXCLUSIVO DE DROP ULTRA</span>
+      <h1>Ultra Widgets</h1><p>Convierte el inicio en tu panel: tus estadísticas, la tienda, tus favoritas, tus estrategias y las novedades, en tarjetas que eliges, ordenas y diseñas a tu gusto.</p>
+      <div class="ul-preview" aria-hidden="true">${["Tienda actual", "Victorias", "% victorias", "Favoritos", "Estrategias", "Novedades"].map((n, k) => `<div class="ulp ulp-${k}"><span>${n}</span><i></i><i></i></div>`).join("")}</div>
+      <ul class="perks">${PLAN_PERKS.ultra.map(x => `<li>${I.check}<span>${x}</span></li>`).join("")}</ul>
+      <button class="btn ultra-btn" data-act="go-premium" data-v="ultra">${I.gem}Descubrir Drop Ultra</button>
+      <p class="small muted">Tu plan ${p === "free" ? "actual es Gratis" : `de demostración es ${PLANS[p].name}, que no incluye widgets`}. La vista previa es ilustrativa: no contiene datos.</p>
+    </div></div>`;
+    return;
+  }
+  queueMicrotask(() => { loadMy(); loadNews(); });
+  v.innerHTML = `<div class="page"><div class="ph"><div class="row" style="justify-content:space-between"><h1>Ultra Widgets</h1><button class="btn sm pri" data-go="home">Hecho</button></div><p class="small muted">Añade, ordena y diseña las tarjetas de tu panel de inicio. Se guarda en este dispositivo y en tu cuenta.</p></div>
+    <div class="row"><button class="btn pri" data-act="w-add">${I.plus}Añadir widget</button><button class="btn" data-act="w-reset">Restaurar diseño original</button></div>
+    ${S.widgets.length ? `<div class="list">${S.widgets.map((w, i) => { const T = WTYPES[w.type]; return `<div class="w-edit">
+      <div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(T.name)}</b>
+        <span class="row" style="flex-wrap:nowrap;gap:4px"><button class="ibtn" data-act="w-up" data-i="${i}" ${i ? "" : "disabled"} aria-label="Subir">${I.up}</button><button class="ibtn" data-act="w-down" data-i="${i}" ${i < S.widgets.length - 1 ? "" : "disabled"} aria-label="Bajar">${I.down}</button><button class="ibtn" data-act="w-del" data-i="${i}" aria-label="Quitar">${I.trash}</button></span></div>
+      <div class="row"><select class="sel grow" data-wset="size" data-i="${i}" aria-label="Tamaño">${T.sizes.map(s => `<option value="${s}" ${w.size === s ? "selected" : ""}>${SIZE_N[s]}</option>`).join("")}</select>
+        <select class="sel grow" data-wset="style" data-i="${i}" aria-label="Diseño">${Object.entries(WSTYLES).map(([k, l]) => `<option value="${k}" ${w.style === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+      ${T.fields ? `<div class="chips" style="flex-wrap:wrap;margin:0;padding:0">${Object.entries(T.fields).map(([k, l]) => `<button class="chip ${w.hide?.[k] ? "" : "on"}" data-act="w-field" data-i="${i}" data-v="${k}">${l}</button>`).join("")}</div>` : ""}
+    </div>`; }).join("")}</div>` : stateEmpty("Panel vacío", "Añade tu primer widget.")}
+    <section class="sec"><h2>Vista previa</h2><div class="wgrid">${S.widgets.map(widgetCard).join("")}</div></section></div>`;
+};
+function widgetAction(act, a) {
+  if (!act.startsWith("w-")) return false;
+  if (!W_GUARD()) return true; // bloqueo también en cada acción, no solo en la interfaz
+  const i = +a.dataset.i, W = S.widgets;
+  if (act === "w-add") { openSheet(`<div class="stack"><h1>Añadir widget</h1><div class="list">${Object.entries(WTYPES).map(([k, t]) => `<button class="li" data-act="w-addtype" data-v="${k}"><span class="av">${I.widgets}</span><span class="grow"><span class="t">${t.name}</span><span class="s">${t.sizes.map(s => SIZE_N[s]).join(" · ")}</span></span>${I.plus}</button>`).join("")}</div></div>`); return true; }
+  if (act === "w-addtype") { const T = WTYPES[a.dataset.v]; W.push({ id: uid("w"), type: a.dataset.v, size: T.sizes[0], style: "glass", hide: {} }); closeSheet(); toast("Widget añadido"); }
+  else if (act === "w-del") W.splice(i, 1);
+  else if (act === "w-up" && i > 0) [W[i - 1], W[i]] = [W[i], W[i - 1]];
+  else if (act === "w-down" && i < W.length - 1) [W[i + 1], W[i]] = [W[i], W[i + 1]];
+  else if (act === "w-field") { W[i].hide = W[i].hide || {}; W[i].hide[a.dataset.v] = !W[i].hide[a.dataset.v]; }
+  else if (act === "w-reset") { if (!arm(a, "wreset")) return true; S.widgets = DEFAULT_WIDGETS(); toast("Diseño original restaurado"); }
+  save("widgets"); render(); return true;
+}
+
+/* =================== HISTORIAL DE ESTADÍSTICAS (mediciones reales guardadas) =================== */
+S.snaps = store.get("snaps", {});
+function recordSnap(d) {
+  const o = d?.stats?.all?.overall, id = d?.account?.id; if (!o || !id) return;
+  const day = new Date().toISOString().slice(0, 10), w = S.prefs.window;
+  const arr = (S.snaps[id] = (S.snaps[id] || []).filter(x => !(x.day === day && x.w === w)));
+  arr.push({ day, w, at: Date.now(), wins: o.wins, kills: o.kills, matches: o.matches, kd: o.kd, winRate: o.winRate });
+  arr.sort((a, b) => a.at - b.at); if (arr.length > 120) arr.splice(0, arr.length - 120);
+  save("snaps");
+}
+
+/* =================== ESTADÍSTICAS AVANZADAS (Pro / Elite) =================== */
+const lockRow = (f, txt) => `<button class="li list" data-act="locked" data-v="${f}" style="border:1px solid var(--line)"><span class="av">${I.lock}</span><span class="grow"><span class="t" style="white-space:normal">${txt}</span><span class="s">Disponible en ${PLANS[FEATURES[f]].name}</span></span>${I.chev}</button>`;
+const METRICS = [["wins", "Victorias", 0], ["kills", "Eliminaciones", 0], ["matches", "Partidas", 0], ["kd", "K/D", 2], ["winRate", "% victorias", 1]];
+const fmtM = (v, dg) => v == null ? "—" : dg ? (+v).toFixed(dg) : fmtN(Math.round(v));
+function lineChart(pts, dg) {
+  const W = 600, H = 160, pl = 46, pr = 14, pt = 14, pb = 28;
+  const xs = pts.map(p => p.at), ys = pts.map(p => +p.v); const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const sx = t => pl + (x1 === x0 ? .5 : (t - x0) / (x1 - x0)) * (W - pl - pr), sy = v => H - pb - (y1 === y0 ? .5 : (v - y0) / (y1 - y0)) * (H - pt - pb);
+  const path = pts.map((p, i) => `${i ? "L" : "M"}${sx(p.at).toFixed(1)},${sy(+p.v).toFixed(1)}`).join("");
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Evolución registrada"><line x1="${pl}" x2="${W - pr}" y1="${H - pb}" y2="${H - pb}" stroke="var(--line2)"/><line x1="${pl}" x2="${W - pr}" y1="${sy(y1)}" y2="${sy(y1)}" stroke="var(--line)" stroke-dasharray="4 4"/>
+    <text x="${pl - 8}" y="${sy(y1) + 4}" text-anchor="end">${fmtM(y1, dg)}</text><text x="${pl - 8}" y="${sy(y0) + 4}" text-anchor="end">${fmtM(y0, dg)}</text>
+    <path d="${path} L${sx(x1)},${H - pb} L${sx(x0)},${H - pb}Z" fill="var(--violet)" fill-opacity=".14"/><path d="${path}" fill="none" stroke="var(--violet2)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map(p => `<circle cx="${sx(p.at)}" cy="${sy(+p.v)}" r="3.5" fill="var(--violet2)"/>`).join("")}
+    <text x="${pl}" y="${H - 8}">${fmtD(x0, { day: "numeric", month: "short" })}</text><text x="${W - pr}" y="${H - 8}" text-anchor="end">${fmtD(x1, { day: "numeric", month: "short" })}</text></svg>`;
+}
+async function loadOther(params, win) {
+  ST.other = { status: "loading", w: win }; rerender("stats");
+  try { const j = await API.stats({ ...params, timeWindow: win }); ST.other = j.status === 200 && j.data?.stats?.all?.overall ? { status: "ok", data: j.data, w: win } : { status: "none", w: win }; }
+  catch { ST.other = { status: "error", w: win }; }
+  rerender("stats");
+}
+async function loadCompare(q) {
+  q = (q || "").trim(); if (!q) return;
+  if (!can("compare")) return lockedSheet("compare");
+  const byId = isAccId(q); ST.cmp = { status: "loading", q }; rerender("stats");
+  const params = byId ? { id: q.replace(/[\s-]/g, "").toLowerCase(), timeWindow: S.prefs.window } : { name: q, accountType: ST.type || S.prefs.platform, timeWindow: S.prefs.window };
+  try { const j = await API.stats(params); ST.cmp = j.status === 200 && j.data?.stats?.all?.overall ? { status: "ok", q, data: j.data } : { status: "none", q, msg: j.status === 403 ? "Sus estadísticas son privadas." : "No se encontró ese jugador." }; if (ST.cmp.status === "ok") recordSnap(j.data); }
+  catch { ST.cmp = { status: "none", q, msg: "Sin conexión con el servidor de estadísticas." }; }
+  rerender("stats");
+}
+function statsExtras(d) {
+  const o = d.stats?.all?.overall; if (!o) return "";
+  let h = "";
+  if (can("statsPlus")) {
+    const m = [["Elim. por partida", o.killsPerMatch, 2], ["Elim. por minuto", o.killsPerMin, 2], ["Horas jugadas", o.minutesPlayed != null ? o.minutesPlayed / 60 : null, 0], ["Rivales superados", o.playersOutlived, 0], ["Top 3", o.top3, 0], ["Top 25", o.top25, 0], ["Puntos por partida", o.scorePerMatch, 0], ["Muertes", o.deaths, 0]].filter(x => x[1] != null);
+    if (m.length) h += `<section class="sec"><h2>Métricas Pro ${lockTag("pro").replace(I.lock, "")}</h2><div class="kpis">${m.map(([l, v, dg]) => `<div class="kpi"><span>${l}</span><b>${fmtM(v, dg)}</b></div>`).join("")}</div></section>`;
+  } else h += lockRow("statsPlus", "Métricas Pro: eliminaciones por partida, horas jugadas, top 3 y más");
+  if (can("compTools")) {
+    const modes = [["Solo", "solo"], ["Dúo", "duo"], ["Trío", "trio"], ["Escuadrón", "squad"]].filter(([, k]) => d.stats?.all?.[k]?.matches);
+    if (modes.length > 1) {
+      const best = modes.reduce((a, b) => (+d.stats.all[b[1]].kd > +d.stats.all[a[1]].kd ? b : a)), mx = Math.max(...modes.map(([, k]) => +d.stats.all[k].kd || 0)) || 1;
+      h += `<section class="sec"><h2>Análisis competitivo</h2><div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:10px"><p class="small muted">Tu mejor modo por K/D es <b style="color:var(--fg)">${best[0]}</b>.</p>
+        ${modes.map(([l, k]) => { const s = d.stats.all[k]; return `<div class="bar-row"><span>${l}</span><span class="bar"><i style="width:${((+s.kd || 0) / mx * 100).toFixed(0)}%"></i></span><b class="num">${(+s.kd).toFixed(2)}</b></div>`; }).join("")}
+        <p class="small faint">K/D por modo · % de victorias: ${modes.map(([l, k]) => `${l} ${(+d.stats.all[k].winRate).toFixed(1)}%`).join(" · ")}</p></div></section>`;
+    }
+  }
+  if (can("seasonCompare")) {
+    const ot = ST.other, wNow = S.prefs.window, lbl = w => w === "season" ? "Temporada" : "Total";
+    let body = ot?.status === "loading" ? `<div class="skel" style="height:120px"></div>` : ot?.status === "ok"
+      ? `<div class="tblwrap"><table><thead><tr><th></th><th>${lbl(wNow)}</th><th>${lbl(ot.w)}</th></tr></thead><tbody>${METRICS.map(([k, l, dg]) => `<tr><td>${l}</td><td>${fmtM(o[k], dg)}</td><td>${fmtM(ot.data.stats.all.overall[k], dg)}</td></tr>`).join("")}</tbody></table></div>`
+      : `<p class="small muted">${ot?.status === "none" ? "La fuente no tiene datos de este jugador para " + lbl(ot.w).toLowerCase() + "." : "No se pudo cargar el otro periodo."}</p>`;
+    h += `<section class="sec"><h2>Total y temporada</h2>${body}</section>`;
+  }
+  if (can("statsCharts")) {
+    const snaps = (S.snaps[d.account.id] || []).filter(x => x.w === S.prefs.window), mk = UI.evoMetric || "wins", M = METRICS.find(m => m[0] === mk);
+    h += `<section class="sec"><div class="sh"><div><h2>Evolución</h2><p class="sub">Mediciones reales que guarda DropStats: una al día cada vez que consultas a este jugador</p></div></div>
+      ${chips("evoMetric", METRICS.map(([k, l]) => [k, l]), mk)}
+      ${snaps.length >= 2 ? `<div class="panel" style="padding:10px">${lineChart(snaps.map(s => ({ at: s.at, v: s[mk] })), M[2])}</div>` : `<div class="state compact"><span class="si">${I.stats}</span><p class="small muted">Hay ${snaps.length} medición${snaps.length === 1 ? "" : "es"}. La gráfica aparece en cuanto haya dos días distintos.</p></div>`}</section>`;
+  }
+  if (can("compare")) {
+    const c = ST.cmp;
+    h += `<section class="sec"><h2>Comparar jugadores</h2><form class="field" data-form="cmp">${I.user}<input id="cmpq" placeholder="Otro jugador (nombre o ID)" value="${esc(c?.q || "")}" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn sm pri">Comparar</button></form>
+      ${c?.status === "loading" ? `<div class="skel" style="height:140px"></div>` : c?.status === "none" ? `<p class="small muted">${esc(c.msg)}</p>` : c?.status === "ok" ? (() => { const o2 = c.data.stats.all.overall; return `<div class="tblwrap"><table class="cmp2"><thead><tr><th></th><th>${esc(d.account.name)}</th><th>${esc(c.data.account.name)}</th></tr></thead><tbody>${METRICS.map(([k, l, dg]) => { const a = +o[k] || 0, b = +o2[k] || 0; return `<tr><td>${l}</td><td class="${a > b ? "win" : ""}">${fmtM(o[k], dg)}</td><td class="${b > a ? "win" : ""}">${fmtM(o2[k], dg)}</td></tr>`; }).join("")}</tbody></table></div><button class="link" data-act="cmp-clear">Quitar comparación</button>`; })() : ""}</section>`;
+  }
+  if (!can("statsCharts")) h += lockRow("statsCharts", "Evolución en gráficas, total frente a temporada, comparar jugadores y análisis competitivo");
+  return h;
+}
+/* =================== CATÁLOGO: filtros Pro =================== */
+function catFiltered() {
+  let l = CAT.items; if (!can("catFilters")) return l;
+  if (UI.catToday) l = l.filter(i => SHOP.byItem.has(i.id));
+  if (UI.catPrice) { const [a, b] = UI.catPrice.split("-").map(Number); l = l.filter(i => { const p = priceOf(i.id); return p != null && p >= a && p <= b; }); }
+  if (UI.catSort === "name") l = l.slice().sort((a, b) => a.name.localeCompare(b.name, "es"));
+  else if (UI.catSort === "price") l = l.slice().sort((a, b) => (priceOf(b.id) ?? -1) - (priceOf(a.id) ?? -1));
+  return l;
+}
+const catProControls = () => can("catFilters") ? `<div class="row">
+    <select class="sel grow" id="catPrice" aria-label="Precio"><option value="">Cualquier precio</option><option value="0-800">Hasta 800</option><option value="801-1500">801 – 1.500</option><option value="1501-999999">Más de 1.500</option></select>
+    <select class="sel grow" id="catSort" aria-label="Orden"><option value="new">Más recientes</option><option value="name">Nombre A–Z</option><option value="price">Precio</option></select></div>
+    <label class="switch"><span>Solo lo que está hoy a la venta</span><input type="checkbox" id="catToday" ${UI.catToday ? "checked" : ""}></label>`
+  : `<div class="row"><button class="chip" data-act="locked" data-v="catFilters">${I.lock}Filtros por precio, orden y «solo hoy» · Pro</button></div>`;
 /* =================== CUENTA Y SINCRONIZACIÓN =================== */
 /* Cuenta propia de DropStats (correo y contraseña), independiente de Epic Games.
    Sincroniza favoritos, jugadores, historial, rutas, marcadores, recordatorios, precios y preferencias. */
-const SYNC_KEYS = ["favs", "favPlayers", "history", "routes", "markers", "events", "prefs", "myPlayer"];
+const SYNC_KEYS = ["favs", "favPlayers", "history", "routes", "markers", "events", "prefs", "myPlayer", "strategies", "curStrat", "widgets", "look", "quick", "snaps"];
 const ACC = { checked: false, configured: null, user: null, status: "idle", lastAt: store.get("syncAt", 0), dirty: store.get("dirty", false), busy: false, err: "" };
 async function sendJSON(url, body, method = "POST") {
   const ac = new AbortController(), t = setTimeout(() => ac.abort(), 15000);
@@ -1195,13 +1941,20 @@ function mergeData(d) {
   S.markers = uniq([...S.markers, ...asArr(d.markers)], m => m.x + "," + m.y);
   S.events = uniq([...S.events, ...asArr(d.events)], e => e.id);
   S.myPlayer = S.myPlayer || d.myPlayer || null;
+  S.strategies = uniq([...S.strategies, ...asArr(d.strategies)], x => x.id);
+  S.curStrat = S.curStrat || d.curStrat || null;
+  if (!store.get("widgets", null) && Array.isArray(d.widgets)) S.widgets = d.widgets;
+  if (Array.isArray(d.quick) && !store.get("quick", null)) S.quick = d.quick;
+  const sn = asObj(d.snaps); for (const [id, arr] of Object.entries(sn)) S.snaps[id] = uniq([...(S.snaps[id] || []), ...asArr(arr)], x => x.day + x.w).sort((a, b) => a.at - b.at).slice(-120);
   persistAll();
 }
 function replaceData(d) {
   S.favs = asObj(d.favs); S.prices = Object.assign({}, S.prices, asObj(d.prices));
   S.favPlayers = asArr(d.favPlayers); S.history = asArr(d.history); S.routes = asArr(d.routes); S.markers = asArr(d.markers); S.events = asArr(d.events);
   S.prefs = Object.assign({ lang: "es", platform: "epic", window: "lifetime" }, asObj(d.prefs)); S.myPlayer = d.myPlayer || null;
-  persistAll();
+  S.strategies = asArr(d.strategies); S.curStrat = d.curStrat || null; if (Array.isArray(d.widgets)) S.widgets = d.widgets; if (Array.isArray(d.quick)) S.quick = d.quick;
+  S.snaps = asObj(d.snaps); if (d.look && typeof d.look === "object") S.look = Object.assign({}, S.look, d.look);
+  persistAll(); applyLook();
 }
 async function syncPush() {
   if (!ACC.user) return;
@@ -1292,12 +2045,14 @@ function toggleFav(id) {
 document.addEventListener("click", async e => {
   const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); return go(g.dataset.go); }
   const c = e.target.closest("[data-chip]");
-  if (c) { UI[c.dataset.chip] = c.dataset.v; saveUI(); if (c.dataset.chip === "drawer") return renderDrawer(); if (c.dataset.chip === "catType") CAT.key = ""; return render(); }
-  const m = e.target.closest("[data-mode]"); if (m) { if (m.disabled) return; UI.mapMode = m.dataset.mode; $$("[data-mode]").forEach(b => b.classList.toggle("on", b === m)); toast(UI.mapMode === "draw" ? "Dibuja con un dedo · muévete con dos" : UI.mapMode === "pin" ? "Toca el mapa para poner un marcador" : "Arrastra y pellizca para moverte"); return; }
+  if (c) { UI[c.dataset.chip] = c.dataset.v; saveUI(); if (c.dataset.chip === "drawer") return renderDrawer(); if (c.dataset.chip === "evoMetric") return rerender("stats"); if (c.dataset.chip === "catType") CAT.key = ""; return render(); }
+  const m = e.target.closest("[data-mode]"); if (m) { if (m.disabled) return; UI.mapMode = m.dataset.mode; paintTools(); toast(UI.mapMode === "draw" ? "Dibuja con un dedo · muévete con dos" : UI.mapMode === "pin" ? "Toca el mapa para poner un marcador" : "Arrastra y pellizca para moverte"); return; }
   const l = e.target.closest("[data-layer]"); if (l) { if (l.disabled) return; UI.mapLayer = l.dataset.layer; saveUI(); $$("[data-layer]").forEach(b => b.classList.toggle("on", b === l)); return mapApplyLayer(); }
   if (e.target === $("#scrim")) return closeSheet();
   const a = e.target.closest("[data-act]"); if (!a || a.disabled) return;
   const act = a.dataset.act, id = a.dataset.id, i = +a.dataset.i;
+  if (await mapAction(act, a)) return;
+  if (widgetAction(act, a)) return;
   switch (act) {
     case "close": return closeSheet();
     case "entry": return entrySheet(id);
@@ -1341,20 +2096,15 @@ document.addEventListener("click", async e => {
     case "event-new": return eventSheet(null);
     case "event": return eventSheet(id);
     case "event-del": if (!arm(a, "e" + id)) return; S.events = S.events.filter(x => x.id !== id); save("events"); closeSheet(); return render();
-    case "zin": case "zout": { if (!mapReady()) return; const r = $("#mapwrap").getBoundingClientRect(); return zoomAt(r.width / 2, r.height / 2, act === "zin" ? 1.4 : 1 / 1.4); }
-    case "zfit": return mapFit();
-    case "grid": UI.mapGrid = !UI.mapGrid; saveUI(); a.classList.toggle("on", UI.mapGrid); return renderOverlay();
-    case "mapretry": MAP.status = "idle"; MAP.error = null; $("#mapimg")?.removeAttribute("src"); return loadMap(true);
-    case "route": return routeSheet(i);
-    case "marker": return markerSheet(i);
-    case "discard-route": closeSheet(); return renderOverlay();
-    case "rcolor": S.routes[i].c = a.dataset.c; save("routes"); renderOverlay(); renderDrawer(); return routeSheet(i);
-    case "mcolor": S.markers[i].c = a.dataset.c; save("markers"); renderOverlay(); renderDrawer(); return markerSheet(i);
-    case "rhide": S.routes[i].hidden = !S.routes[i].hidden; save("routes"); renderOverlay(); renderDrawer(); return routeSheet(i);
-    case "rdel": if (!arm(a, "r" + i)) return; S.routes.splice(i, 1); save("routes"); closeSheet(); renderOverlay(); return renderDrawer();
-    case "mdel": S.markers.splice(i, 1); save("markers"); closeSheet(); renderOverlay(); return renderDrawer();
-    case "rshare": { const code = encodeRoute(S.routes[i]); const ok = await copyText(code); $("#sharebox").innerHTML = `<p class="small muted">${ok ? "Código copiado. Envíalo por mensaje: en DropStats se importa desde Mapa → Rutas → Importar ruta." : "Copia este código y envíalo:"}</p><textarea class="inp mono" rows="3" readonly>${esc(code)}</textarea>`; return; }
-    case "route-import": return openSheet(`<form class="stack" data-form="rimport"><h1>Importar ruta</h1><p class="muted">Pega el código que empieza por DS1:</p><textarea class="inp mono" id="rimp" rows="4" placeholder="DS1:…"></textarea><button class="btn pri">Importar</button></form>`);
+    case "go-premium": UI.premFocus = a.dataset.v || ""; closeSheet(); return go("premium");
+    case "locked": return lockedSheet(a.dataset.v);
+    case "demo-plan": Entitlements.setDemo(a.dataset.v); closeSheet(); return toast(`Demostración: ${PLANS[a.dataset.v].name}`);
+    case "plan-choose": { const pv = a.dataset.v; const r = await Billing.checkout(pv); if (!r.ok) openSheet(`<div class="stack"><div class="plan-mini t-${pv}"><span class="eyebrow">${PLANS[pv].name}</span><h2>Todavía no está a la venta</h2></div><p class="muted">Las suscripciones de DropStats aún no están activas, así que no se cobra nada y ningún plan queda contratado. El precio de ${priceTxt(PLANS[pv].price)} al mes es provisional.</p><p class="muted">Mientras tanto puedes probar todas sus funciones con el selector de demostración.</p><button class="btn pri" data-act="demo-plan" data-v="${pv}">Probar ${PLANS[pv].short} en demostración</button></div>`); return; }
+    case "theme": { const t = THEMES.find(x => x.id === a.dataset.v); if (!t) return; if (!themeOk(t)) return lockedSheet({ pro: "themesPro", elite: "themesElite", ultra: "themesUltra" }[t.need]); S.look.theme = t.id; save("look"); applyLook(); return render(); }
+    case "look-accent-clear": S.look.accent = ""; save("look"); applyLook(); return render();
+    case "look-reset": S.look = { theme: "base", density: "comfy", accent: "", radius: 16, scale: 1, fx: true, anim: true }; save("look"); applyLook(); toast("Apariencia restablecida"); return render();
+    case "quick-edit": return quickSheet();
+    case "cmp-clear": ST.cmp = null; return render();
   }
 });
 document.addEventListener("focusin", e => { if (e.target.readOnly && e.target.tagName === "TEXTAREA") e.target.select(); });
@@ -1363,6 +2113,13 @@ document.addEventListener("change", e => {
   if (t.id === "shopPrice") { UI.shopPrice = t.value; saveUI(); render(); }
   else if (t.id === "shopSort") { UI.shopSort = t.value; saveUI(); render(); }
   else if (t.id === "catRar") { UI.catRar = t.value; saveUI(); render(); }
+  else if (t.id === "catPrice" || t.id === "catSort") { if (!can("catFilters")) return; UI[t.id] = t.value; saveUI(); render(); }
+  else if (t.id === "catToday") { if (!can("catFilters")) return; UI.catToday = t.checked; saveUI(); render(); }
+  else if (t.dataset.wset) { if (!can("widgets")) return lockedWidgets(); const w = S.widgets[+t.dataset.i]; if (w) { w[t.dataset.wset] = t.value; save("widgets"); render(); } }
+  else if (t.id === "look-anim") { S.look.anim = t.checked; save("look"); applyLook(); }
+  else if (t.id === "look-density") { if (!can("density")) return; S.look.density = t.checked ? "compact" : "comfy"; save("look"); applyLook(); }
+  else if (t.id === "look-fx") { if (!can("fx")) return; S.look.fx = t.checked; save("look"); applyLook(); }
+  else if (t.id === "look-accent" || t.id === "look-radius" || t.id === "look-scale") { save("look"); }
   else if (t.id === "statWin" || t.id === "statType") { /* se aplica al buscar */ }
   else if (t.id?.startsWith("pref-")) {
     const k = t.id.slice(5); S.prefs[k] = t.value; save("prefs");
@@ -1372,11 +2129,21 @@ document.addEventListener("change", e => {
 });
 let shopT;
 document.addEventListener("input", e => {
+  const lt = e.target.id;
+  if ((lt === "look-accent" || lt === "look-radius" || lt === "look-scale") && can("customUI")) {
+    if (lt === "look-accent") S.look.accent = e.target.value;
+    if (lt === "look-radius") { S.look.radius = +e.target.value; $("#look-radius-v").textContent = e.target.value; }
+    if (lt === "look-scale") { S.look.scale = +e.target.value / 100; $("#look-scale-v").textContent = e.target.value + "%"; }
+    applyLook(); store.set("look", S.look); return;
+  }
   if (e.target.id === "shopq") { UI.shopQ = e.target.value; clearTimeout(shopT); shopT = setTimeout(() => rerender("shop"), 200); }
 });
 document.addEventListener("submit", e => {
   const f = e.target.closest("[data-form]"); if (!f) return; e.preventDefault();
   const k = f.dataset.form;
+  if (mapSubmit(k, f)) return;
+  if (k === "quick") { const sel = [...f.querySelectorAll("input[name=q]:checked")].map(x => x.value); if (!sel.length || sel.length > 4) { $("#q-err").textContent = "Elige entre 1 y 4 accesos."; return; } S.quick = sel; save("quick"); closeSheet(); toast("Accesos rápidos guardados"); return render(); }
+  if (k === "cmp") return loadCompare($("#cmpq").value);
   if (k === "homesearch") loadStats($("#homeq").value, S.prefs.platform, S.prefs.window);
   else if (k === "stats") { S.prefs.window = $("#statWin").value; save("prefs"); loadStats($("#statq").value, $("#statType").value, S.prefs.window); }
   else if (k === "catq") { UI.catQ = $("#catq").value.trim(); saveUI(); $("#catq").blur(); render(); }
@@ -1394,14 +2161,10 @@ document.addEventListener("submit", e => {
       else $("#del-err").textContent = r.j.error || "No se pudo eliminar.";
     });
   }
-  else if (k === "newroute") { S.routes.push({ n: $("#rname").value.trim() || "Ruta", c: COLORS[S.routes.length % 6], p: newRouteSheet.pts, at: Date.now() }); save("routes"); closeSheet(); renderOverlay(); UI.drawer = "routes"; renderDrawer(); toast("Ruta guardada"); }
-  else if (k === "editroute") { S.routes[+f.dataset.i].n = $("#rname").value.trim() || "Ruta"; save("routes"); closeSheet(); renderDrawer(); toast("Ruta guardada"); }
-  else if (k === "editmarker") { S.markers[+f.dataset.i].n = $("#mname").value.trim(); save("markers"); closeSheet(); renderOverlay(); renderDrawer(); }
-  else if (k === "rimport") { const r = decodeRoute($("#rimp").value); if (!r) return toast("Ese código no es una ruta de DropStats"); S.routes.push(r); save("routes"); closeSheet(); renderOverlay(); UI.drawer = "routes"; renderDrawer(); toast("Ruta importada"); }
   else if (k === "event") {
     const when = $("#ev-when").value, name = $("#ev-name").value.trim(); if (!when || !name) return toast("Faltan el nombre o la fecha");
     const link = $("#ev-link").value.trim();
-    const ev = { id: f.dataset.id || "e" + Date.now(), name, when: new Date(when).toISOString(), region: $("#ev-region").value, mode: $("#ev-mode").value.trim(), format: $("#ev-format").value.trim(), link: /^https?:\/\//.test(link) ? link : "", result: $("#ev-result").value.trim() };
+    const ev = { id: f.dataset.id || "e" + Date.now(), name, when: new Date(when).toISOString(), region: $("#ev-region").value, mode: $("#ev-mode").value.trim(), format: $("#ev-format").value.trim(), link: /^https?:\/\//.test(link) ? link : "", result: $("#ev-result").value.trim(), confirmed: $("#ev-confirmed").checked };
     S.events = S.events.filter(x => x.id !== ev.id).concat(ev); save("events"); closeSheet(); render(); toast("Recordatorio guardado");
   }
   else if (k === "import") {
@@ -1424,6 +2187,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && AC
 document.addEventListener("visibilitychange", () => { if (!document.hidden && SHOP.status === "ok" && (Date.now() - SHOP.at > 10 * 60e3 || SHOP.at < lastResetUTC())) loadShop(true); });
 
 /* =================== arranque =================== */
+applyLook(); paintPlanBadge();
 go(VIEWS[(location.hash || "").slice(1)] ? location.hash.slice(1) : "home");
 accCheck();
 (async function loadPrices() { // base de precios compartida del servidor
