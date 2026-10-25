@@ -2286,7 +2286,7 @@ function aiContext() {
 }
 const curChat = () => S.aiChats.find(c => c.id === UI.aiChat) || null;
 function mdLite(t) {
-  t = String(t).replace(/【[^】]*】/g, "").replace(/【[^】]*$/, ""); // marcas de cita del buscador
+  t = String(t).replace(/【[^】]*】/g, "").replace(/【[^】]*$/, "").replace(/<br\s*\/?>/gi, " · "); // marcas de cita del buscador y saltos HTML
   const lines = esc(t).split(/\n/); let html = "", list = null;
   const inline = s => s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener nofollow">$1</a>').replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" rel="noopener nofollow">$2</a>').replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/g, "$1<i>$2</i>");
   const close = () => { if (list) { html += `</${list}>`; list = null; } };
