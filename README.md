@@ -47,10 +47,6 @@ Cuatro niveles en orden ascendente. Los precios (2,99 €, 5,99 € y 9,99 € a
 
 12 tipos: estadísticas del jugador, victorias, eliminaciones, % de victorias, resumen de temporada, tienda actual, cosméticos favoritos, torneos confirmados, rutas y estrategias, accesos rápidos, novedades oficiales y resumen de Meta Lab. Se pueden añadir, quitar, reordenar (botones subir/bajar), cambiar de tamaño y diseño, elegir los datos visibles, configurar (por ejemplo, qué accesos muestra), cambiar la disposición (cuadrícula o lista) y restaurar el diseño original. Se guardan solos en el dispositivo y en la cuenta.
 
-## Meta Lab
-
-Armas del parche actual desde **api-fortnite.com** (no oficial, gratuita hasta 10.000 consultas al día) a través de `/api/meta`. Necesita `METALAB_API_KEY` en Vercel (clave en https://www.api-fortnite.com/login). Los cambios entre parches se calculan comparando los datos que la fuente da para el parche actual y el anterior. Sin clave, la sección explica cómo activarla y no muestra datos inventados.
-
 ## Drop AI (Drop Ultra)
 
 Chat con un modelo de IA real a través de `/api/ai`: burbujas, respuestas con formato, copiar, nueva conversación, historial local, preguntas sugeridas, estados de carga y error. Con «Usar mis datos de DropStats» activado envía al modelo solo lo que la app tiene cargado (tus stats, estrategias, Meta Lab, tienda, torneos con su marca de confirmado, novedades) y una lista de lo que **no** está disponible, para que no afirme haberlo consultado.
@@ -88,7 +84,6 @@ dropstats/
   api/_lib.js           Redis, contraseñas, sesiones y protección de peticiones
   api/prices.js         Base de precios compartida (y api/collect.js, tarea diaria)
   api/img.js            Proxy de imágenes de fortnite-api.com para exportar estrategias
-  api/meta.js           Meta Lab: armas por parche (api-fortnite.com); clave METALAB_API_KEY
   api/ai.js             Drop AI: llama al modelo de IA (Gemini, Claude o compatible) con límite diario
   scripts/snapshot.py   Copia de tienda, mapa y novedades con sus imágenes (public/data/)
   vercel.json           Configuración de despliegue

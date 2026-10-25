@@ -494,6 +494,11 @@ td .pct.up{color:var(--ok)} td .pct.dn{color:var(--bad)}
 .composer .field{align-items:flex-end;padding:6px 6px 6px 13px}
 .composer textarea{flex:1;min-width:0;border:0;background:none;outline:0;resize:none;font-size:16px;line-height:1.4;padding:6px 0;max-height:160px}
 .composer .btn svg{width:18px;height:18px}
+.typing.searching{padding:12px 16px}
+.typing .srch{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);animation:caret 1.6s ease-in-out infinite}
+.typing .srch svg{width:16px;height:16px;color:var(--violet2)}
+.msg .md a{color:var(--violet2);overflow-wrap:anywhere}
+.msg-tools .small svg{width:13px;height:13px;vertical-align:-2px;margin-right:3px}
 .stop-btn{background:var(--raise);border:1px solid var(--line2);color:var(--fg)}
 .stop-btn svg{width:14px!important;height:14px!important}
 .to-end{position:sticky;bottom:118px;align-self:center;width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:var(--surface2);color:var(--fg);display:grid;place-items:center;box-shadow:0 8px 24px -8px #000;margin-top:-40px;z-index:2}
@@ -559,20 +564,6 @@ td .pct.up{color:var(--ok)} td .pct.dn{color:var(--bad)}
 @media (min-width:900px){.ux-card{margin-top:16vh}}
 @media (prefers-reduced-motion:reduce){.unlock *{animation:none!important}.ux-card,.ux-perks li,.ux-go{opacity:1!important;transform:none!important}}
 .switch.tiny{font-size:13px;color:var(--muted);justify-content:flex-start;gap:8px;min-height:0;padding:0;border:0;background:none}
-/* ---------- Meta Lab ---------- */
-.wlist2{display:grid;gap:8px}
-@media (min-width:900px){.wlist2{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.wcard{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);color:var(--fg);text-align:left;min-width:0}
-.wcard.sel{border-color:var(--violet);box-shadow:inset 0 0 0 1px var(--violet)}
-.wcard .t{display:block;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wcard .s{display:block;font-size:12.5px;color:var(--muted)}
-.wimg{flex:none;width:58px;height:58px;border-radius:12px;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 35%,#ffffff14,transparent 70%),var(--surface2);border:1px solid var(--line)}
-.wimg.big{width:84px;height:84px}
-.wimg img{width:100%;height:100%;object-fit:contain}
-.wimg .ini{font:700 18px var(--display);color:var(--muted)}
-.wstats{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px}
-.wstats span{display:flex;flex-direction:column}.wstats small{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}.wstats b{font-variant-numeric:tabular-nums;font-size:14px}
-.prem-banner>svg{width:18px;height:18px;color:var(--muted)}.prem-banner .grow{flex:1;min-width:0}.prem-banner .t,.prem-banner .s{display:block;white-space:normal}
 /* ---------- widgets y catálogo ---------- */
 .w-quick{display:flex;flex-wrap:wrap;gap:6px}
 .wgrid.wlist{grid-template-columns:minmax(0,1fr)}.wgrid.wlist .wg{grid-column:auto}
@@ -595,7 +586,6 @@ td .pct.up{color:var(--ok)} td .pct.dn{color:var(--bad)}
     <button data-go="shop"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5h16l-1.2 11.6a1 1 0 0 1-1 .9H6.2a1 1 0 0 1-1-.9zM8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/></svg></span>Tienda</button>
     <button data-go="catalog"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></svg></span>Catálogo</button>
     <button data-go="map"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m9 4.5-5.5 2.2v12.8L9 17.3l6 2.2 5.5-2.2V4.5L15 6.7zM9 4.5v12.8M15 6.7v12.8"/></svg></span>Mapa</button>
-    <button data-go="meta"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></svg></span>Meta</button>
     <button data-go="stats"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg></span>Stats</button>
   </nav>
 </div>
@@ -1497,7 +1487,6 @@ function stratSheet(id) {
     ${can("gamePlan") ? `<details ${s.phases && Object.values(s.phases).some(Boolean) ? "open" : ""}><summary>Plan de partida por fases</summary><div class="stack" style="margin-top:10px">${PHASES.map(([k, l]) => `<label class="lbl">${l}<textarea class="inp" id="ph-${k}" rows="2" maxlength="300">${esc(s.phases?.[k] || "")}</textarea></label>`).join("")}</div></details>` : lockRow("gamePlan", "Plan de partida por fases: aterrizaje, botín, rotación, mitad y final")}
     <button class="btn">Guardar datos</button>
     ${can("routeAnalysis") ? `<details><summary>Análisis de rutas</summary><div style="margin-top:10px">${routeAnalysis(s)}</div></details>` : lockRow("routeAnalysis", "Análisis de rutas: longitudes, casillas recorridas y aterrizaje")}
-    ${can("stratLoadout") ? `<div class="stack" style="gap:8px"><span class="eyebrow">Armas (Meta Lab)</span>${(s.loadout || []).length ? `<div class="list">${s.loadout.map(w => `<div class="li"><button class="grow" style="background:none;border:0;text-align:left;padding:0;min-width:0" data-act="${WKNOWN.has(w.id) ? "weapon" : "go-meta"}" data-id="${esc(w.id)}"><span class="t">${esc(w.name)}</span><span class="s">${esc(rarName(w.rarity))}${w.patch ? " · parche " + esc(w.patch) : ""}</span></button><button type="button" class="ibtn" data-act="loadout-del" data-id="${s.id}" data-w="${esc(w.id)}" aria-label="Quitar">${I.x}</button></div>`).join("")}</div>` : `<p class="small muted">Sin armas. Abre un arma en Meta Lab y pulsa «Añadir a la estrategia».</p>`}<button type="button" class="btn sm" data-go="meta" style="align-self:flex-start">${I.bolt}Abrir Meta Lab</button></div>` : lockRow("stratLoadout", "Añade armas de Meta Lab a tus estrategias")}
     <div class="row"><button type="button" class="btn grow" data-act="strat-dup" data-id="${s.id}">${can("stratDup") ? I.copy : I.lock}Duplicar</button><button type="button" class="btn grow" data-act="strat-share" data-id="${s.id}">${I.share}Compartir</button><button type="button" class="btn grow" data-act="strat-img" data-id="${s.id}">${I.image}Imagen</button></div>
     <div id="sharebox"></div>
     <button type="button" class="btn danger" data-act="strat-del" data-id="${s.id}">Eliminar estrategia</button>
@@ -1718,14 +1707,13 @@ VIEWS.settings = v => {
       <div class="li"><span class="grow"><span class="t">Tienda, catálogo y mapa</span><span class="s">fortnite-api.com · gratuita · no oficial</span></span><button class="btn sm" data-act="test-shop">Comprobar</button></div>
       <div class="li"><span class="grow"><span class="t">Estadísticas</span><span class="s">fortnite-api.com · clave en el servidor</span></span><button class="btn sm" data-act="test-stats">Comprobar</button></div>
       <div class="li"><span class="grow"><span class="t">Cuentas y sincronización</span><span class="s">${ACC.configured ? "Base de datos conectada" : ACC.configured === false ? "Falta conectar la base de datos" : "Sin servidor en esta versión"}</span></span><button class="btn sm" data-go="account">Abrir</button></div>
-      <div class="li"><span class="grow"><span class="t">Meta Lab (armas)</span><span class="s">api-fortnite.com · clave METALAB_API_KEY en el servidor</span></span><button class="btn sm" data-act="test-meta">Comprobar</button></div>
       <div class="li"><span class="grow"><span class="t">Drop AI</span><span class="s">Groq (nivel gratuito) · clave GROQ_API_KEY en el servidor</span></span><button class="btn sm" data-act="test-ai">Comprobar</button></div>
       <div class="li"><span class="grow"><span class="t">Torneos</span><span class="s">Sin fuente pública · enlaces oficiales</span></span></div>
     </div>
     <div id="testout"></div>
   </section>
   <section class="sec"><h2>Datos guardados</h2>
-    <div class="list">${[["favs", "Cosméticos favoritos", Object.keys(S.favs).length], ["favPlayers", "Jugadores favoritos", S.favPlayers.length], ["history", "Historial de búsquedas", S.history.length], ["routes", "Rutas del mapa", S.routes.length], ["markers", "Marcadores", S.markers.length], ["events", "Recordatorios de torneos", S.events.length], ["strategies", "Estrategias del mapa", S.strategies.length], ["snaps", "Historial de estadísticas", Object.keys(S.snaps).length], ["favLists", "Listas de favoritos", S.favLists.length], ["presets", "Filtros guardados", S.presets.length], ["metaSaved", "Comparaciones de armas", S.metaSaved.length], ["aiChats", "Conversaciones de Drop AI", S.aiChats.length], ["prices", "Precios vistos en la tienda", Object.keys(S.prices).length]].map(([k, l, n]) => `<div class="li"><span class="grow"><span class="t">${l}</span><span class="s">${n} ${n === 1 ? "elemento" : "elementos"}</span></span><button class="btn sm danger" data-act="wipe" data-k="${k}" ${n ? "" : "disabled"}>Borrar</button></div>`).join("")}</div>
+    <div class="list">${[["favs", "Cosméticos favoritos", Object.keys(S.favs).length], ["favPlayers", "Jugadores favoritos", S.favPlayers.length], ["history", "Historial de búsquedas", S.history.length], ["routes", "Rutas del mapa", S.routes.length], ["markers", "Marcadores", S.markers.length], ["events", "Recordatorios de torneos", S.events.length], ["strategies", "Estrategias del mapa", S.strategies.length], ["snaps", "Historial de estadísticas", Object.keys(S.snaps).length], ["favLists", "Listas de favoritos", S.favLists.length], ["presets", "Filtros guardados", S.presets.length], ["aiChats", "Conversaciones de Drop AI", S.aiChats.length], ["prices", "Precios vistos en la tienda", Object.keys(S.prices).length]].map(([k, l, n]) => `<div class="li"><span class="grow"><span class="t">${l}</span><span class="s">${n} ${n === 1 ? "elemento" : "elementos"}</span></span><button class="btn sm danger" data-act="wipe" data-k="${k}" ${n ? "" : "disabled"}>Borrar</button></div>`).join("")}</div>
     <div class="row"><button class="btn sm" data-act="export">Copia de seguridad</button><button class="btn sm" data-act="import">Restaurar copia</button></div>
   </section>
   <p class="small faint">DropStats es un proyecto independiente. No está afiliado, patrocinado ni aprobado por Epic Games. Fortnite y los nombres e imágenes de sus objetos son marcas de Epic Games, Inc. DropStats nunca pide tu contraseña de Epic ni hace compras.</p>
@@ -1751,16 +1739,14 @@ const FEATURES = {
   catFilters: "pro", itemCompare: "pro",
   stratSearch: "pro", stratTags: "pro", stratDup: "pro", routeColors: "pro", markerNotes: "pro", poiSearch: "pro",
   themesPro: "pro", density: "pro",
-  metaFilters: "pro", metaTable: "pro", metaCompare: "pro",
   // Elite
   statsCharts: "elite", seasonCompare: "elite", compareMulti: "elite", trends: "elite",
   stratClass: "elite", gamePlan: "elite", routeAnalysis: "elite", stratCompare: "elite",
   catTable: "elite", itemCompare4: "elite",
-  metaCompare4: "elite", metaCharts: "elite", metaPatchDiff: "elite", metaSaved: "elite",
   themesElite: "elite",
   // Drop Ultra (exclusivas: solo Ultra)
   widgets: "ultra", ai: "ultra", themesUltra: "ultra", fx: "ultra", customUI: "ultra",
-  stratFolders: "ultra", stratPin: "ultra", stratLoadout: "ultra"
+  stratFolders: "ultra", stratPin: "ultra"
 };
 const ULTRA_ONLY = new Set(["widgets", "ai"]); // nunca se desbloquean con otro plan
 /* límites por plan (Infinity = sin límite) */
@@ -1770,8 +1756,7 @@ const LIMITS = {
   favLists: { free: 0, pro: 5, elite: 20, ultra: Infinity },
   presets: { free: 0, pro: 5, elite: 20, ultra: Infinity },
   compareItems: { free: 0, pro: 2, elite: 4, ultra: 4 },
-  comparePlayers: { free: 0, pro: 1, elite: 3, ultra: 3 },
-  compareWeapons: { free: 0, pro: 2, elite: 4, ultra: 4 }
+  comparePlayers: { free: 0, pro: 1, elite: 3, ultra: 3 }
 };
 const Entitlements = {
   source: "demo", // "demo" ahora; "server" cuando se integre una suscripción real
@@ -1832,13 +1817,12 @@ const FEAT_TXT = {
   presets: "Guardar configuraciones de filtros del catálogo", quickEdit: "Accesos rápidos personalizables", homeLayout: "Ordenar las secciones del inicio", catFilters: "Filtros por rareza y precio, orden y «solo hoy»",
   itemCompare: "Comparar cosméticos lado a lado", stratSearch: "Buscar estrategias por nombre", stratTags: "Categorías de estrategias", stratDup: "Duplicar estrategias y rutas", routeColors: "Colores de las rutas",
   markerNotes: "Notas y descripciones en los marcadores", poiSearch: "Buscar y organizar los puntos de interés", themesPro: "Temas Noche morada y Medianoche", density: "Preferencias de visualización: modo compacto",
-  metaFilters: "Filtros de armas por rareza, munición y botín actual", metaTable: "Tabla completa de estadísticas de armas", metaCompare: "Comparar dos armas",
   statsCharts: "Gráficas históricas de tus estadísticas, con varias métricas", seasonCompare: "Total y temporada lado a lado", compareMulti: "Comparar hasta 4 jugadores a la vez", trends: "Tendencias calculadas con tus mediciones reales",
   stratClass: "Clasificar estrategias por modo, temporada y estilo", gamePlan: "Planes de partida por fases", routeAnalysis: "Análisis de rutas", stratCompare: "Comparar dos estrategias",
-  catTable: "Vista de tabla del catálogo", itemCompare4: "Comparar hasta 4 cosméticos", metaCompare4: "Comparar hasta 4 armas", metaCharts: "Gráficas de diferencias entre armas",
-  metaPatchDiff: "Cambios de equilibrio entre parches", metaSaved: "Guardar comparaciones de armas", themesElite: "Temas Aurora y Cobalto",
+  catTable: "Vista de tabla del catálogo", itemCompare4: "Comparar hasta 4 cosméticos", 
+  themesElite: "Temas Aurora y Cobalto",
   widgets: "Widgets: tu panel de inicio a medida", ai: "Drop AI: asistente de IA especializado en Fortnite", themesUltra: "Temas Ultravioleta y Holográfico", fx: "Efectos visuales sutiles",
-  customUI: "Personalización total: color de acento, esquinas y tamaño de texto", stratFolders: "Carpetas de estrategias", stratPin: "Fijar estrategias", stratLoadout: "Armas de Meta Lab dentro de tus estrategias"
+  customUI: "Personalización total: color de acento, esquinas y tamaño de texto", stratFolders: "Carpetas de estrategias", stratPin: "Fijar estrategias"
 };
 function onPlanChange() {
   applyLook(); paintPlanBadge();
@@ -1882,10 +1866,10 @@ function applyLook() {
 /* =================== ACCESOS RÁPIDOS E INICIO (Pro) =================== */
 const QUICK = {
   catalog: ["Catálogo", "Todos los cosméticos", "grid"], map: ["Mapa", "Estrategias y rutas", "map"], stats: ["Stats", "Busca jugadores", "stats"],
-  events: ["Torneos", "FNCS y Cash Cups", "trophy"], meta: ["Meta Lab", "Armas y parches", "bolt"], favs: ["Favoritos", "Tus skins guardadas", "star"],
+  events: ["Torneos", "FNCS y Cash Cups", "trophy"], favs: ["Favoritos", "Tus skins guardadas", "star"],
   shop: ["Tienda", "Ofertas de hoy", "shop"], ai: ["Drop AI", "Asistente de IA", "spark"], premium: ["Premium", "Planes y demostración", "gem"]
 };
-const QUICK_DEFAULT = ["events", "meta", "catalog", "map"];
+const QUICK_DEFAULT = ["events", "catalog", "map", "favs"];
 S.quick = (store.get("quick", null) || QUICK_DEFAULT).filter(k => QUICK[k]).slice(0, 4);
 const quickTiles = () => (can("quickEdit") ? S.quick : QUICK_DEFAULT).map(k => { const [t, s, ic] = QUICK[k]; return `<button class="qa" data-go="${k}"><span class="qi">${I[ic]}</span><span>${t}<small>${s}</small></span></button>`; }).join("");
 function quickSheet() {
@@ -1909,10 +1893,10 @@ function homeSheet() {
 
 /* =================== SECCIÓN PREMIUM: comparativa de los 4 planes =================== */
 const PLAN_PERKS = {
-  free: ["Tienda diaria completa y catálogo con búsqueda", "Stats esenciales: victorias, eliminaciones, partidas y % de victorias", "Mapa con marcadores, rutas y hasta 5 estrategias", "Meta Lab básico: armas y sus estadísticas principales", "Torneos confirmados y hasta 30 favoritos", "Cuenta y sincronización entre dispositivos"],
-  pro: ["Todo lo de Gratis", "Stats: K/D, top 10, métricas extra, desglose por modo y control, gráficos por modo, comparar con 1 jugador", "Favoritos: listas con nombre, categorías, historial organizable y filtros guardados", "Mapa: hasta 50 estrategias, buscar, categorías, duplicar, colores de ruta, notas en marcadores", "Catálogo: filtros por rareza y precio, orden y comparar 2 cosméticos", "Meta Lab: filtros, tabla completa y comparar 2 armas", "Temas Noche morada y Medianoche, modo compacto y orden del inicio"],
-  elite: ["Todo lo de Pro", "Stats: gráficas históricas reales, tendencias, total frente a temporada y comparar hasta 4 jugadores", "Mapa: estrategias sin límite, clasificación por modo, temporada y estilo, planes por fases, análisis de rutas y comparar estrategias", "Meta Lab avanzado: comparar 4 armas, gráficas, % de diferencia, cambios entre parches y comparaciones guardadas", "Catálogo: vista de tabla y comparar 4 cosméticos", "Temas Aurora y Cobalto y acabado visual Elite"],
-  ultra: ["Todo lo de Pro y Elite", "Widgets: 12 tipos, tamaño, diseño, orden y datos a tu gusto", "Drop AI: asistente de IA con tus datos reales de DropStats", "Temas exclusivos Ultravioleta y Holográfico y efectos sutiles", "Personalización total: color de acento, esquinas y tamaño de texto", "Carpetas, estrategias fijadas y armas de Meta Lab en tus estrategias"]
+  free: ["Tienda diaria completa y catálogo con búsqueda", "Stats esenciales: victorias, eliminaciones, partidas y % de victorias", "Mapa con marcadores, rutas y hasta 5 estrategias", "Torneos confirmados y hasta 30 favoritos", "Cuenta y sincronización entre dispositivos"],
+  pro: ["Todo lo de Gratis", "Stats: K/D, top 10, métricas extra, desglose por modo y control, gráficos por modo, comparar con 1 jugador", "Favoritos: listas con nombre, categorías, historial organizable y filtros guardados", "Mapa: hasta 50 estrategias, buscar, categorías, duplicar, colores de ruta, notas en marcadores", "Catálogo: filtros por rareza y precio, orden y comparar 2 cosméticos", "Temas Noche morada y Medianoche, modo compacto y orden del inicio"],
+  elite: ["Todo lo de Pro", "Stats: gráficas históricas reales, tendencias, total frente a temporada y comparar hasta 4 jugadores", "Mapa: estrategias sin límite, clasificación por modo, temporada y estilo, planes por fases, análisis de rutas y comparar estrategias", "Catálogo: vista de tabla y comparar 4 cosméticos", "Temas Aurora y Cobalto y acabado visual Elite"],
+  ultra: ["Todo lo de Pro y Elite", "Widgets: 12 tipos, tamaño, diseño, orden y datos a tu gusto", "Drop AI: asistente de IA con tus datos reales y búsqueda web de datos actuales (daño de armas, cambios de parche)", "Temas exclusivos Ultravioleta y Holográfico y efectos sutiles", "Personalización total: color de acento, esquinas y tamaño de texto", "Carpetas y estrategias fijadas en el mapa"]
 };
 function planCard(p) {
   const P = PLANS[p], cur = planId() === p;
@@ -1935,10 +1919,7 @@ const CMP_GROUPS = [
     ["Marcadores, rutas, deshacer y compartir", 1, 1, 1, 1], ["Estrategias guardadas", "5", "50", "Sin límite", "Sin límite"],
     ["Buscar, categorías y duplicar", 0, 1, 1, 1], ["Colores de ruta y notas en marcadores", 0, 1, 1, 1], ["Buscar puntos de interés", 0, 1, 1, 1],
     ["Clasificar por modo, temporada y estilo", 0, 0, 1, 1], ["Plan de partida por fases y análisis de rutas", 0, 0, 1, 1], ["Comparar estrategias", 0, 0, 1, 1],
-    ["Carpetas y estrategias fijadas", 0, 0, 0, 1], ["Armas de Meta Lab en la estrategia", 0, 0, 0, 1]]],
-  ["Meta Lab (armas)", [
-    ["Lista de armas y estadísticas principales", 1, 1, 1, 1], ["Filtros y tabla completa", 0, 1, 1, 1], ["Comparar armas", 0, "2 armas", "4 armas", "4 armas"],
-    ["Gráficas y % de diferencia", 0, 0, 1, 1], ["Cambios de equilibrio entre parches", 0, 0, 1, 1], ["Guardar comparaciones", 0, 0, 1, 1]]],
+    ["Carpetas y estrategias fijadas", 0, 0, 0, 1]]],
   ["Catálogo y favoritos", [
     ["Búsqueda y filtro por tipo", 1, 1, 1, 1], ["Cosméticos favoritos", "30", "300", "Sin límite", "Sin límite"], ["Filtros por rareza y precio, orden y «solo hoy»", 0, 1, 1, 1],
     ["Listas de favoritos y categorías", 0, "5 listas", "20 listas", "Sin límite"], ["Guardar configuraciones de filtros", 0, "5", "20", "Sin límite"],
@@ -1946,13 +1927,13 @@ const CMP_GROUPS = [
   ["Interfaz", [
     ["Interfaz oscura para móvil", 1, 1, 1, 1], ["Temas", "1", "3", "5", "7"], ["Modo compacto y orden del inicio", 0, 1, 1, 1], ["Acabado visual propio del plan", 0, "Negro y morado", "Violeta y azul", "Holográfico"],
     ["Color de acento, esquinas y tamaño de texto", 0, 0, 0, 1], ["Efectos visuales sutiles", 0, 0, 0, 1]]],
-  ["Exclusivo de Drop Ultra", [["Widgets (12 tipos, configurables)", 0, 0, 0, 1], ["Drop AI, asistente de IA", 0, 0, 0, 1]]]
+  ["Exclusivo de Drop Ultra", [["Widgets (12 tipos, configurables)", 0, 0, 0, 1], ["Drop AI, asistente de IA con búsqueda web", 0, 0, 0, 1]]]
 ];
 const cmpCell = (x, k) => x === 1 || x === true ? `<span class="yes ${k === 3 ? "u" : ""}" aria-label="Incluido">${I.check}</span>` : x ? `<span class="val">${esc(x)}</span>` : `<span class="no" aria-label="No incluido">—</span>`;
 VIEWS.premium = v => {
   const p = planId();
   v.innerHTML = `<div class="page">
-    <div class="prem-hero"><span class="eyebrow">DropStats Premium</span><h1>Cuatro niveles, de menos a más</h1><p class="muted">Gratis tiene lo esencial. Pro y Elite amplían estadísticas, mapa, Meta Lab y catálogo. Widgets y Drop AI son exclusivos de Drop Ultra.</p></div>
+    <div class="prem-hero"><span class="eyebrow">DropStats Premium</span><h1>Cuatro niveles, de menos a más</h1><p class="muted">Gratis tiene lo esencial. Pro y Elite amplían estadísticas, mapa, catálogo y favoritos. Widgets y Drop AI son exclusivos de Drop Ultra.</p></div>
     <div class="note warn">${I.info}<p><b>Aún no hay suscripciones.</b> Los precios son provisionales, no se cobra nada y ningún plan está contratado. Para probar cada plan usa el selector de demostración.</p></div>
     <section class="sec demo-box"><div class="sh"><div><h2>Selector de demostración</h2><p class="sub">Cambia los permisos al instante. Tus datos y ajustes se conservan. No es una suscripción.</p></div></div>
       <div class="segtabs four" role="radiogroup" aria-label="Plan de demostración">${PLAN_IDS.map(k => `<button type="button" class="${p === k ? "on" : ""}" role="radio" aria-checked="${p === k}" data-act="demo-plan" data-v="${k}">${PLANS[k].short}</button>`).join("")}</div>
@@ -2049,7 +2030,7 @@ const Unlock = {
 document.addEventListener("visibilitychange", () => { if (document.hidden && Unlock.el && !Unlock.el.classList.contains("s-done")) Unlock.skip(); });
 /* pantalla de bloqueo común para cualquier ruta exclusiva (Widgets, Drop AI) */
 const LOCK_INFO = {
-  widgets: { title: "Widgets", ic: "widgets", text: "Convierte el inicio en tu panel: tus estadísticas, la tienda, tus favoritos, tus estrategias, Meta Lab y las novedades, en tarjetas que eliges, ordenas y configuras.", preview: ["Tienda actual", "Victorias", "% victorias", "Favoritos", "Estrategias", "Meta Lab"] },
+  widgets: { title: "Widgets", ic: "widgets", text: "Convierte el inicio en tu panel: tus estadísticas, la tienda, tus favoritos, tus estrategias y las novedades, en tarjetas que eliges, ordenas y configuras.", preview: ["Tienda actual", "Victorias", "% victorias", "Favoritos", "Estrategias", "Tu mejor modo"] },
   ai: { title: "Drop AI", ic: "spark", text: "Un asistente de inteligencia artificial especializado en Fortnite: estrategia, armas, rotaciones, torneos e interpretación de tus estadísticas, usando los datos reales que tienes en DropStats.", preview: ["¿Dónde caigo?", "Mis stats", "Rotación", "Armas del parche", "Torneo", "Plan de partida"] }
 };
 function lockScreen(v, f) {
@@ -2075,11 +2056,11 @@ const WTYPES = {
   strats: { name: "Rutas y estrategias guardadas", sizes: ["m", "l"], fields: { onlyPinned: "Solo fijadas" } },
   quick: { name: "Accesos rápidos", sizes: ["s", "m", "l"], pick: true },
   news: { name: "Novedades verificadas", sizes: ["m", "l"] },
-  meta: { name: "Resumen de Meta Lab", sizes: ["m", "l"], fields: { pool: "Solo botín actual" } }
+  bestmode: { name: "Tu mejor modo", sizes: ["m", "l"] }
 };
 const WSTYLES = { glass: "Cristal", solid: "Sólido", holo: "Holográfico" };
 const SIZE_N = { s: "Pequeño", m: "Mediano", l: "Grande" };
-const DEFAULT_WIDGETS = () => [["shop", "l", "holo"], ["player", "m", "glass"], ["wins", "s", "solid"], ["winrate", "s", "solid"], ["quick", "m", "glass"], ["meta", "m", "glass"], ["strats", "m", "glass"], ["news", "m", "glass"]].map(([type, size, style]) => ({ id: uid("w"), type, size, style, hide: {}, pick: type === "quick" ? ["map", "stats", "meta", "ai"] : undefined }));
+const DEFAULT_WIDGETS = () => [["shop", "l", "holo"], ["player", "m", "glass"], ["wins", "s", "solid"], ["winrate", "s", "solid"], ["quick", "m", "glass"], ["bestmode", "m", "glass"], ["strats", "m", "glass"], ["news", "m", "glass"]].map(([type, size, style]) => ({ id: uid("w"), type, size, style, hide: {}, pick: type === "quick" ? ["map", "stats", "events", "ai"] : undefined }));
 S.widgets = (store.get("widgets", null) || DEFAULT_WIDGETS()).map(w => w.type === "evolution" ? { ...w, type: "season" } : w.type === "map" ? { ...w, type: "quick", pick: ["map"] } : w).filter(w => WTYPES[w.type]);
 S.wlayout = store.get("wlayout", "grid");
 const W_GUARD = () => { if (can("widgets")) return true; lockedWidgets(); return false; };
@@ -2151,7 +2132,7 @@ function widgetBody(w) {
       let l = S.strategies.slice().sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.updated - a.updated);
       if (w.opt?.onlyPinned) l = l.filter(s => s.pinned);
       l = l.slice(0, w.size === "l" ? 5 : 3);
-      return l.length ? `<div class="list">${l.map(s => `<button class="li" data-act="strat-load" data-id="${s.id}"><span class="grow"><span class="t">${s.pinned ? "★ " : ""}${esc(s.name)}</span><span class="s">${s.markers.length} marcadores · ${s.routes.length} rutas${s.loadout?.length ? ` · ${s.loadout.length} armas` : ""}</span></span>${I.chev}</button>`).join("")}</div>`
+      return l.length ? `<div class="list">${l.map(s => `<button class="li" data-act="strat-load" data-id="${s.id}"><span class="grow"><span class="t">${s.pinned ? "★ " : ""}${esc(s.name)}</span><span class="s">${s.markers.length} marcadores · ${s.routes.length} rutas</span></span>${I.chev}</button>`).join("")}</div>`
         : wEmpty(S.strategies.length ? "No tienes estrategias fijadas." : "Aún no has guardado estrategias.", `<button class="btn sm" data-go="map">Abrir el mapa</button>`);
     }
     case "quick": {
@@ -2164,20 +2145,18 @@ function widgetBody(w) {
       if (!NEWS.items.length) return wEmpty("Epic no tiene novedades publicadas ahora mismo.");
       return `<div class="w-news">${NEWS.items.slice(0, w.size === "l" ? 4 : 2).map(n => `<div class="w-new">${n.tileImage || n.image ? `<img src="${esc(n.tileImage || n.image)}" alt="" loading="lazy">` : ""}<div><b>${esc(n.title)}</b><p>${esc((n.body || "").slice(0, 110))}</p></div></div>`).join("")}</div><div class="w-sub">Noticias oficiales del juego</div>`;
     }
-    case "meta": {
-      if (META.status === "error" || META.status === "nokey") return wEmpty(META.status === "nokey" ? "Meta Lab aún no está configurado en el servidor." : "No se pudo cargar Meta Lab.", `<button class="btn sm" data-go="meta">Abrir Meta Lab</button>`);
-      if (META.status !== "ok") return `<div class="skel" style="height:80px"></div>`;
-      let l = META.items; if (w.opt?.pool) l = l.filter(x => x.inPool);
-      const k = metaMainKeys(l)[0];
-      const top = k ? l.filter(x => x.stats[k] != null).sort((a, b) => b.stats[k] - a.stats[k]).slice(0, w.size === "l" ? 5 : 3) : [];
-      return `<div class="w-sub">Parche ${esc(META.patch || "actual")} · ${l.length} armas${l.some(x => x.inPool) ? ` · ${l.filter(x => x.inPool).length} en el botín` : ""}</div>
-        ${top.length ? `<div class="list">${top.map(x => `<button class="li" data-act="weapon" data-id="${esc(x.id)}"><span class="grow"><span class="t">${esc(x.name)}</span><span class="s">${esc(statLabel(k))}: ${fmtStat(x.stats[k])}</span></span>${I.chev}</button>`).join("")}</div>` : wEmpty("La fuente no trae estadísticas numéricas para este parche.")}`;
+    case "bestmode": { // K/D y % de victorias por modo, con los datos reales de tu cuenta
+      const n = needPlayer(); if (n) return n;
+      const ms = [["Solo", "solo"], ["Dúo", "duo"], ["Trío", "trio"], ["Escuadrón", "squad"]].filter(([, k]) => MY.data.stats.all[k]?.matches);
+      if (!ms.length) return wEmpty("La fuente no tiene datos por modo de tu cuenta en este periodo.");
+      const best = ms.reduce((a, b) => (+MY.data.stats.all[b[1]].kd > +MY.data.stats.all[a[1]].kd ? b : a)), mx = Math.max(...ms.map(([, k]) => +MY.data.stats.all[k].kd || 0)) || 1;
+      return `<div class="w-sub">Mejor K/D: <b style="color:var(--fg)">${best[0]}</b></div>${ms.map(([l, k]) => { const st = MY.data.stats.all[k]; return `<div class="bar-row"><span>${l}</span><span class="bar"><i style="width:${((+st.kd || 0) / mx * 100).toFixed(0)}%"></i></span><b class="num">${(+st.kd).toFixed(2)}</b></div>`; }).join("")}${w.size === "l" ? `<div class="w-sub">% victorias: ${ms.map(([l, k]) => `${l} ${(+MY.data.stats.all[k].winRate).toFixed(1)}%`).join(" · ")}</div>` : ""}`;
     }
   }
   return "";
 }
 const widgetCard = w => `<article class="wg wg-${w.size} wg-${w.style}" data-wid="${w.id}"><header><span>${esc(WTYPES[w.type].name)}</span></header><div class="wg-body">${widgetBody(w)}</div></article>`;
-function widgetLoads() { loadMy(); if (S.widgets.some(w => w.type === "season")) loadMySeason(); if (S.widgets.some(w => w.type === "news")) loadNews(); if (S.widgets.some(w => w.type === "meta")) loadMeta(); }
+function widgetLoads() { loadMy(); if (S.widgets.some(w => w.type === "season")) loadMySeason(); if (S.widgets.some(w => w.type === "news")) loadNews(); }
 function widgetsPanel() {
   if (!can("widgets")) return ""; // nunca se muestra fuera de Drop Ultra
   queueMicrotask(widgetLoads);
@@ -2217,200 +2196,6 @@ function widgetAction(act, a) {
   save("widgets"); render(); return true;
 }
 
-/* =================== META LAB (armas por parche, api-fortnite.com a través de /api/meta) =================== */
-const META = { status: "idle", items: [], patch: null, patches: [], at: 0, err: "", prev: null };
-async function loadMeta(force) {
-  if (META.status === "loading" || (!force && META.status === "ok" && Date.now() - META.at < 30 * 60e3) || (!force && (META.status === "nokey" || META.status === "error"))) return;
-  META.status = "loading"; rerender("meta", "home", "widgets");
-  try {
-    const j = await fetchJSON("/api/meta?op=weapons", 20000);
-    if (j.status === 200) { META.items = j.items || []; META.patch = j.patch; META.status = "ok"; META.at = Date.now(); META.items.forEach(w => WKNOWN.set(w.id, w)); }
-    else { META.status = j.error === "missing_key" ? "nokey" : "error"; META.err = j.error === "invalid_key" ? "La clave de Meta Lab no es válida." : j.error === "plan_required" ? "La fuente de armas no permite estos datos con el plan gratuito de la clave configurada." : j.error === "rate_limited" ? "La fuente ha alcanzado su límite de peticiones. Vuelve a intentarlo más tarde." : "La fuente de armas no responde ahora mismo."; }
-  } catch { META.status = "error"; META.err = API.proxy === false || EMBEDDED ? "Esta versión no tiene servidor (por ejemplo, dentro de Claude). Ábrela en dropstats.vercel.app." : "No hay conexión con el servidor de Meta Lab."; }
-  rerender("meta", "home", "widgets");
-}
-const patchNum = p => { const [a, b] = String(p).split(".").map(Number); return (a || 0) * 1000 + (b || 0); };
-async function loadMetaPrev() {
-  if (!can("metaPatchDiff") || META.prev?.status === "loading" || META.prev?.status === "ok") return;
-  META.prev = { status: "loading" }; rerender("meta");
-  try {
-    const pj = await fetchJSON("/api/meta?op=patches", 15000);
-    const list = (pj.patches || []).map(p => p.patch).filter(p => /^\d+\.\d+$/.test(p)).sort((a, b) => patchNum(b) - patchNum(a));
-    const cur = META.patch && list.includes(META.patch) ? META.patch : pj.current || list[0];
-    const prev = list.find(p => patchNum(p) < patchNum(cur));
-    if (!prev) { META.prev = { status: "none", cur }; return rerender("meta"); }
-    const j = await fetchJSON("/api/meta?op=weapons&patch=" + encodeURIComponent(prev), 20000);
-    META.prev = j.status === 200 ? { status: "ok", patch: prev, cur, items: j.items || [] } : { status: "error" };
-  } catch { META.prev = { status: "error" }; }
-  rerender("meta");
-}
-const WKNOWN = new Map();
-const STAT_ES = { dmgpb: "Daño", damage: "Daño", dmg: "Daño", basedamage: "Daño", dps: "Daño por segundo", firingrate: "Cadencia", firerate: "Cadencia", rateoffire: "Cadencia", clipsize: "Cargador", magazinesize: "Cargador", magsize: "Cargador", reloadtime: "Recarga (s)", reload: "Recarga (s)", headshotdamage: "Daño a la cabeza", headshotmultiplier: "Multiplicador a la cabeza", critmultiplier: "Multiplicador a la cabeza", damagezonecritical: "Multiplicador a la cabeza", envdmgpb: "Daño a estructuras", structuredamage: "Daño a estructuras", range: "Alcance", maxrange: "Alcance máximo", spread: "Dispersión", recoil: "Retroceso", ammocost: "Munición por disparo", cartridgepershot: "Proyectiles por disparo", bulletspercartridge: "Proyectiles por disparo", chargetime: "Tiempo de carga", equiptime: "Tiempo para equipar", adsspeed: "Velocidad al apuntar", movespeed: "Velocidad de movimiento" };
-const normK = k => String(k).toLowerCase().replace(/[^a-z]/g, "");
-const statLabel = k => STAT_ES[normK(k)] || STAT_ES[normK(k.split(".").pop())] || String(k).replace(/\./g, " · ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase());
-const fmtStat = v => v == null ? "—" : Math.abs(v) >= 100 || Number.isInteger(v) ? fmtN(Math.round(v * 10) / 10) : (+v).toLocaleString("es-ES", { maximumFractionDigits: 2 });
-const MAIN_RE = [/^(dmg|damage|basedamage)/i, /dps/i, /firing|firerate|rateoffire/i, /clip|mag/i, /reload/i, /headshot|crit/i];
-function metaMainKeys(items) {
-  const cnt = {}; items.forEach(w => Object.keys(w.stats || {}).forEach(k => cnt[k] = (cnt[k] || 0) + 1));
-  const keys = Object.keys(cnt).filter(k => cnt[k] >= Math.max(1, items.length * 0.3)), out = [];
-  MAIN_RE.forEach(re => { const k = keys.filter(x => re.test(x.split(".").pop()) && !out.includes(x)).sort((a, b) => cnt[b] - cnt[a])[0]; if (k) out.push(k); });
-  keys.sort((a, b) => cnt[b] - cnt[a]).forEach(k => { if (out.length < 4 && !out.includes(k)) out.push(k); });
-  return out.slice(0, 4);
-}
-const allStatKeys = items => { const s = new Set(); items.forEach(w => Object.keys(w.stats || {}).forEach(k => s.add(k))); return [...s]; };
-const RAR_ES = { common: "Común", uncommon: "Infrecuente", rare: "Raro", epic: "Épico", legendary: "Legendario", mythic: "Mítico", exotic: "Exótico", transcendent: "Trascendente" };
-const rarName = r => RAR_ES[r] || (r ? r[0].toUpperCase() + r.slice(1) : "");
-UI.metaCat = UI.metaCat || ""; UI.metaQ = UI.metaQ || ""; UI.metaRar = UI.metaRar || ""; UI.metaAmmo = UI.metaAmmo || ""; UI.metaPool = !!UI.metaPool; UI.metaView = UI.metaView || "cards"; UI.metaCmp = UI.metaCmp || [];
-S.metaSaved = store.get("metaSaved", []);
-function metaFiltered() {
-  let l = META.items;
-  if (UI.metaQ) { const q = UI.metaQ.toLowerCase(); l = l.filter(w => w.name.toLowerCase().includes(q)); }
-  if (UI.metaCat) l = l.filter(w => (w.category || w.type) === UI.metaCat);
-  if (can("metaFilters")) {
-    if (UI.metaRar) l = l.filter(w => w.rarity === UI.metaRar);
-    if (UI.metaAmmo) l = l.filter(w => w.ammo === UI.metaAmmo);
-    if (UI.metaPool) l = l.filter(w => w.inPool);
-  }
-  return l;
-}
-const weaponArt = w => w.image ? `<img src="${esc(w.image)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : `<span class="ini">${esc(initials(w.name))}</span>`;
-function weaponCard(w, keys) {
-  const sel = UI.metaCmp.includes(w.id);
-  return `<button class="wcard ${rarCls(w.rarity)} ${sel ? "sel" : ""}" data-act="weapon" data-id="${esc(w.id)}"><span class="wimg">${weaponArt(w)}</span><span class="grow" style="min-width:0">
-    <span class="t">${esc(w.name)}</span><span class="s">${esc(rarName(w.rarity))}${w.category ? " · " + esc(w.category) : ""}${w.inPool ? ` · <b style="color:var(--ok)">En el botín</b>` : ""}</span>
-    <span class="wstats">${keys.filter(k => w.stats[k] != null).map(k => `<span><small>${esc(statLabel(k))}</small><b>${fmtStat(w.stats[k])}</b></span>`).join("") || `<span class="small faint">Sin estadísticas numéricas</span>`}</span></span></button>`;
-}
-function metaSetupState() {
-  if (META.status === "nokey") return `<div class="state err fade"><span class="si">${I.plug}</span><h3>Falta activar Meta Lab</h3>
-    <p>Meta Lab necesita una clave gratuita de api-fortnite.com (no oficial, 10.000 consultas al día). Se configura una sola vez en el servidor; la clave nunca llega al navegador:</p>
-    <ol class="steps"><li>Entra en <a href="https://www.api-fortnite.com/login" target="_blank" rel="noopener">api-fortnite.com</a>, crea una cuenta y copia tu <b>API key</b>.</li>
-      <li>En Vercel: proyecto <b>dropstats</b> → <b>Settings → Environment Variables</b> → nombre <b>METALAB_API_KEY</b>, valor tu clave → <b>Save</b>.</li>
-      <li><b>Deployments</b> → «…» del último → <b>Redeploy</b>. Después vuelve aquí.</li></ol>
-    <div class="row"><button class="btn" data-act="meta-retry">${I.refresh}Comprobar de nuevo</button></div></div>`;
-  return `<div class="state err fade"><span class="si">${I.plug}</span><h3>Meta Lab no está disponible</h3><p>${esc(META.err)} No se muestran datos inventados.</p><div class="row"><button class="btn" data-act="meta-retry">${I.refresh}Reintentar</button></div></div>`;
-}
-function metaCompareBlock() {
-  const ids = UI.metaCmp.filter(id => WKNOWN.has(id)); if (!ids.length) return "";
-  const ws = ids.map(id => WKNOWN.get(id)), keys = allStatKeys(ws).filter(k => ws.filter(w => w.stats[k] != null).length >= 2);
-  const charts = can("metaCharts");
-  return `<section class="sec" id="metacmp"><div class="sh"><div><h2>Comparación</h2><p class="sub">${ws.length} de ${limit("compareWeapons")} armas · datos de la fuente${META.patch ? `, parche ${esc(META.patch)}` : ""}</p></div><button class="link" data-act="meta-cmp-clear">Vaciar</button></div>
-    ${ws.length < 2 ? `<p class="small muted">Elige otra arma para comparar: ábrela y pulsa «Comparar».</p>` : !keys.length ? `<p class="small muted">Estas armas no comparten estadísticas numéricas en la fuente.</p>` : `
-    <div class="tblwrap"><table class="cmp2"><thead><tr><th></th>${ws.map(w => `<th>${esc(w.name)}</th>`).join("")}</tr></thead><tbody>
-      ${keys.map(k => { const vals = ws.map(w => w.stats[k]), mx = Math.max(...vals.filter(x => x != null)); return `<tr><td>${esc(statLabel(k))}</td>${vals.map((x, j) => `<td class="${x === mx && vals.filter(y => y === mx).length === 1 ? "win" : ""}">${fmtStat(x)}${charts && j && x != null && vals[0] ? `<small class="pct ${x > vals[0] ? "up" : x < vals[0] ? "dn" : ""}">${x === vals[0] ? "=" : (x > vals[0] ? "+" : "") + ((x / vals[0] - 1) * 100).toFixed(0) + "%"}</small>` : ""}</td>`).join("")}</tr>`; }).join("")}
-    </tbody></table></div>
-    <p class="small faint">En verde, el valor más alto de cada fila (no siempre es mejor: en recarga o dispersión, menos es mejor).${charts ? " El porcentaje compara cada arma con la primera." : ""}</p>
-    ${charts ? `<div class="panel" style="padding:12px;display:flex;flex-direction:column;gap:14px">${keys.slice(0, 6).map(k => { const mx = Math.max(...ws.map(w => Math.abs(w.stats[k] ?? 0))) || 1; return `<div><span class="w-lbl">${esc(statLabel(k))}</span>${ws.map((w, j) => `<div class="bar-row"><span>${esc(w.name)}</span><span class="bar"><i style="width:${(Math.abs(w.stats[k] ?? 0) / mx * 100).toFixed(0)}%;${j ? `background:${COLORS[j % 6]}` : ""}"></i></span><b class="num">${fmtStat(w.stats[k])}</b></div>`).join("")}</div>`; }).join("")}</div>` : lockRow("metaCharts", "Gráficas y % de diferencia entre armas")}`}
-    <div class="row">${can("metaSaved") ? (ws.length >= 2 ? `<button class="btn sm" data-act="meta-save">${I.plus}Guardar comparación</button>` : "") : `<button class="chip" data-act="locked" data-v="metaSaved">${I.lock}Guardar comparaciones · Elite</button>`}</div>
-  </section>`;
-}
-function metaDiffBlock() {
-  if (!can("metaPatchDiff")) return lockRow("metaPatchDiff", "Cambios de equilibrio entre el parche actual y el anterior");
-  const P = META.prev;
-  if (!P || P.status === "loading") return `<section class="sec"><h2>Cambios desde el parche anterior</h2><div class="skel" style="height:90px"></div></section>`;
-  if (P.status === "none") return `<section class="sec"><h2>Cambios desde el parche anterior</h2><p class="small muted">La fuente no tiene un parche anterior con el que comparar.</p></section>`;
-  if (P.status !== "ok") return `<section class="sec"><h2>Cambios desde el parche anterior</h2><p class="small muted">No se pudo cargar el parche anterior.</p><button class="btn sm" data-act="meta-prev-retry">Reintentar</button></section>`;
-  const key = w => w.id || (w.name + "|" + w.rarity), old = new Map(P.items.map(w => [key(w), w]));
-  const changes = [], added = [];
-  META.items.forEach(w => { const o = old.get(key(w)); if (!o) { added.push(w); return; } const d = Object.keys(w.stats).filter(k => o.stats[k] != null && o.stats[k] !== w.stats[k]).map(k => [k, o.stats[k], w.stats[k]]); if (d.length) changes.push([w, d]); });
-  const cur = new Set(META.items.map(key)), removed = P.items.filter(w => !cur.has(key(w)));
-  return `<section class="sec"><div class="sh"><div><h2>Cambios desde el parche ${esc(P.patch)}</h2><p class="sub">Calculados comparando los datos de la fuente de los dos parches</p></div></div>
-    ${!changes.length && !added.length && !removed.length ? `<p class="small muted">La fuente no registra cambios de estadísticas entre ${esc(P.patch)} y ${esc(META.patch || P.cur)}.</p>` : ""}
-    ${changes.length ? `<div class="list">${changes.slice(0, 30).map(([w, d]) => `<button class="li" data-act="weapon" data-id="${esc(w.id)}"><span class="grow"><span class="t">${esc(w.name)} <span class="small muted">${esc(rarName(w.rarity))}</span></span><span class="s">${d.slice(0, 4).map(([k, a, b]) => `${esc(statLabel(k))}: ${fmtStat(a)} → <b style="color:${b > a ? "var(--ok)" : "var(--bad)"}">${fmtStat(b)}</b>`).join(" · ")}</span></span>${I.chev}</button>`).join("")}</div>` : ""}
-    ${added.length ? `<p class="small muted"><b style="color:var(--fg)">Nuevas en este parche:</b> ${added.slice(0, 20).map(w => esc(w.name)).join(", ")}</p>` : ""}
-    ${removed.length ? `<p class="small muted"><b style="color:var(--fg)">Ya no aparecen:</b> ${removed.slice(0, 20).map(w => esc(w.name)).join(", ")}</p>` : ""}</section>`;
-}
-VIEWS.meta = v => {
-  queueMicrotask(() => { loadMeta(); if (META.status === "ok" && can("metaPatchDiff")) loadMetaPrev(); });
-  const ok = META.status === "ok";
-  const list = ok ? metaFiltered() : [], keys = ok ? metaMainKeys(META.items) : [];
-  const cats = ok ? [...new Set(META.items.map(w => w.category || w.type).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es")) : [];
-  const ammos = ok ? [...new Set(META.items.map(w => w.ammo).filter(Boolean))].sort() : [];
-  const rars = ok ? [...new Set(META.items.map(w => w.rarity).filter(Boolean))] : [];
-  let body;
-  if (META.status === "nokey" || META.status === "error") body = metaSetupState();
-  else if (!ok) body = `<div class="list">${'<div class="skel" style="height:86px;border-radius:0"></div>'.repeat(5)}</div>`;
-  else if (!META.items.length) body = stateEmpty("Sin armas", "La fuente ha respondido, pero sin armas para este parche.");
-  else if (!list.length) body = stateEmpty("Nada con estos filtros", "Prueba otra categoría o quita filtros.", `<button class="btn" data-act="meta-clear">Quitar filtros</button>`);
-  else if (UI.metaView === "table" && can("metaTable")) {
-    const ks = allStatKeys(list).slice(0, 16);
-    body = `<p class="small muted">${list.length} armas</p><div class="tblwrap"><table><thead><tr><th>Arma</th><th>Rareza</th>${ks.map(k => `<th>${esc(statLabel(k))}</th>`).join("")}</tr></thead><tbody>${list.map(w => `<tr data-act="weapon" data-id="${esc(w.id)}" style="cursor:pointer"><td>${esc(w.name)}</td><td>${esc(rarName(w.rarity))}</td>${ks.map(k => `<td>${fmtStat(w.stats[k])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
-  } else body = `<p class="small muted">${list.length} armas${list.some(w => w.inPool) ? ` · ${list.filter(w => w.inPool).length} en el botín actual` : ""}</p><div class="wlist2">${list.slice(0, 120).map(w => weaponCard(w, keys)).join("")}</div>`;
-  v.innerHTML = `<div class="page">
-    <div class="ph"><div class="row"><h1>Meta Lab</h1>${ok ? `<span class="badge">Parche ${esc(META.patch || "actual")}</span>` : ""}</div><p class="small muted">Armas y estadísticas de cada parche · fuente: api-fortnite.com (no oficial). Los valores vienen de la fuente; DropStats no los modifica ni los estima.</p></div>
-    ${ok && META.items.length ? `<div class="sec">
-      <div class="field">${I.search}<input id="metaq" placeholder="Buscar arma" value="${esc(UI.metaQ)}" autocomplete="off" enterkeyhint="search"></div>
-      ${cats.length > 1 ? chips("metaCat", [["", "Todas"], ...cats.map(c => [c, c])], UI.metaCat) : ""}
-      ${can("metaFilters") ? `<div class="row"><select class="sel grow" id="metaRar" aria-label="Rareza"><option value="">Todas las rarezas</option>${rars.map(r => `<option value="${esc(r)}">${esc(rarName(r))}</option>`).join("")}</select>
-        <select class="sel grow" id="metaAmmo" aria-label="Munición"><option value="">Toda la munición</option>${ammos.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join("")}</select></div>
-        <label class="switch"><span>Solo armas del botín actual</span><input type="checkbox" id="metaPool" ${UI.metaPool ? "checked" : ""}></label>` : `<div class="row"><button class="chip" data-act="locked" data-v="metaFilters">${I.lock}Filtros por rareza, munición y botín · Pro</button></div>`}
-      <div class="row"><div class="seg">${[["cards", "Tarjetas"], ["table", "Tabla completa"]].map(([k, l]) => `<button class="${UI.metaView === k ? "on" : ""}" data-act="meta-view" data-v="${k}">${k === "table" && !can("metaTable") ? I.lock : ""}${l}</button>`).join("")}</div></div>
-    </div>` : ""}
-    ${ok ? metaCompareBlock() : ""}
-    ${ok && can("metaSaved") && S.metaSaved.length ? `<section class="sec"><h2>Comparaciones guardadas</h2><div class="list">${S.metaSaved.map(c => `<div class="li"><button class="grow" style="background:none;border:0;text-align:left;padding:0;min-width:0" data-act="meta-load" data-id="${c.id}"><span class="t">${esc(c.name)}</span><span class="s">${c.ids.length} armas · parche ${esc(c.patch || "—")}</span></button><button class="btn sm danger" data-act="meta-unsave" data-id="${c.id}">Borrar</button></div>`).join("")}</div></section>` : ""}
-    ${body}
-    ${ok && META.items.length ? metaDiffBlock() : ""}
-  </div>`;
-  const r = $("#metaRar"); if (r) { r.value = UI.metaRar; $("#metaAmmo").value = UI.metaAmmo; }
-};
-function weaponSheet(id) {
-  const w = WKNOWN.get(id); if (!w) return;
-  const ks = Object.keys(w.stats), main = metaMainKeys(META.items.length ? META.items : [w]);
-  const shown = can("metaTable") ? ks : main.filter(k => w.stats[k] != null);
-  const inCmp = UI.metaCmp.includes(id), cs = curStrat();
-  openSheet(`<div class="stack"><div class="row" style="gap:14px;flex-wrap:nowrap"><span class="wimg big ${rarCls(w.rarity)}">${weaponArt(w)}</span><div style="min-width:0"><div class="row"><span class="badge rar ${rarCls(w.rarity)}">${esc(rarName(w.rarity) || "Arma")}</span>${w.inPool ? `<span class="badge ok">En el botín actual</span>` : ""}</div><h1 style="overflow-wrap:anywhere">${esc(w.name)}</h1></div></div>
-    ${w.desc ? `<p class="muted">${esc(w.desc)}</p>` : ""}
-    <dl class="kv">${w.category ? `<dt>Categoría</dt><dd>${esc(w.category)}</dd>` : ""}${w.ammo ? `<dt>Munición</dt><dd>${esc(w.ammo)}</dd>` : ""}${w.trigger ? `<dt>Disparo</dt><dd>${esc(w.trigger)}</dd>` : ""}${w.modes.length ? `<dt>Modos</dt><dd>${w.modes.map(esc).join(", ")}</dd>` : ""}${w.patch ? `<dt>Parche</dt><dd>${esc(w.patch)}</dd>` : ""}</dl>
-    ${shown.length ? `<div class="tblwrap"><table><tbody>${shown.map(k => `<tr><td>${esc(statLabel(k))}</td><td style="text-align:right"><b>${fmtStat(w.stats[k])}</b></td></tr>`).join("")}</tbody></table></div>` : `<p class="small muted">La fuente no trae estadísticas numéricas de esta arma.</p>`}
-    ${!can("metaTable") && ks.length > shown.length ? lockRow("metaTable", `Ver las ${ks.length} estadísticas de la fuente`) : ""}
-    <div class="row"><button class="btn grow ${inCmp ? "" : "pri"}" data-act="meta-cmp" data-id="${esc(id)}">${inCmp ? I.check + "En la comparación" : can("metaCompare") ? I.plus + "Comparar" : I.lock + "Comparar · Pro"}</button>
-      ${can("stratLoadout") ? (cs ? `<button class="btn grow" data-act="loadout-add" data-id="${esc(id)}">${(cs.loadout || []).some(x => x.id === id) ? I.check + "En «" + esc(cs.name) + "»" : I.map + "Añadir a la estrategia"}</button>` : `<button class="btn grow" data-act="loadout-add" data-id="${esc(id)}">${I.map}Añadir a una estrategia</button>`) : `<button class="btn grow" data-act="locked" data-v="stratLoadout">${I.lock}A la estrategia · Ultra</button>`}</div>
-  </div>`);
-}
-function metaAction(act, a) {
-  const id = a.dataset.id;
-  switch (act) {
-    case "weapon": weaponSheet(id); return true;
-    case "meta-retry": META.status = "idle"; loadMeta(true); return true;
-    case "meta-prev-retry": META.prev = null; loadMetaPrev(); return true;
-    case "meta-clear": UI.metaCat = ""; UI.metaQ = ""; UI.metaRar = ""; UI.metaAmmo = ""; UI.metaPool = false; render(); return true;
-    case "meta-view": if (a.dataset.v === "table" && !can("metaTable")) { lockedSheet("metaTable"); return true; } UI.metaView = a.dataset.v; render(); return true;
-    case "meta-cmp": {
-      if (!can("metaCompare")) { lockedSheet("metaCompare"); return true; }
-      const ix = UI.metaCmp.indexOf(id);
-      if (ix >= 0) UI.metaCmp.splice(ix, 1);
-      else if (UI.metaCmp.length >= limit("compareWeapons")) { limitSheet("compareWeapons", "armas en la comparación"); return true; }
-      else UI.metaCmp.push(id);
-      closeSheet(); rerender("meta"); if (ROUTE === "meta") requestAnimationFrame(() => $("#metacmp")?.scrollIntoView({ block: "start", behavior: "smooth" })); return true;
-    }
-    case "meta-cmp-clear": UI.metaCmp = []; render(); return true;
-    case "meta-save": {
-      if (!can("metaSaved")) { lockedSheet("metaSaved"); return true; }
-      const ws = UI.metaCmp.map(x => WKNOWN.get(x)).filter(Boolean);
-      S.metaSaved.unshift({ id: uid("c"), name: ws.map(w => w.name).join(" vs ").slice(0, 60), ids: UI.metaCmp.slice(), patch: META.patch, at: Date.now() }); S.metaSaved = S.metaSaved.slice(0, 30);
-      save("metaSaved"); toast("Comparación guardada"); render(); return true;
-    }
-    case "meta-load": { if (!can("metaSaved")) { lockedSheet("metaSaved"); return true; } const c = S.metaSaved.find(x => x.id === id); if (!c) return true; UI.metaCmp = c.ids.filter(x => WKNOWN.has(x)).slice(0, limit("compareWeapons")); if (UI.metaCmp.length < c.ids.length) toast("Algunas armas no están en el parche actual"); render(); return true; }
-    case "meta-unsave": S.metaSaved = S.metaSaved.filter(x => x.id !== id); save("metaSaved"); render(); return true;
-    case "loadout-add": {
-      if (!can("stratLoadout")) { lockedSheet("stratLoadout"); return true; }
-      const w = WKNOWN.get(id); if (!w) return true;
-      const cs = curStrat();
-      if (!cs) { openSheet(`<div class="stack"><h1>Añadir a una estrategia</h1>${S.strategies.length ? `<div class="list">${S.strategies.map(s => `<button class="li" data-act="loadout-to" data-id="${s.id}" data-w="${esc(id)}"><span class="grow"><span class="t">${esc(s.name)}</span><span class="s">${(s.loadout || []).length} armas</span></span>${I.plus}</button>`).join("")}</div>` : `<p class="muted">Aún no tienes estrategias. Crea una en el mapa.</p><button class="btn" data-go="map">Abrir el mapa</button>`}</div>`); return true; }
-      addLoadout(cs, w); weaponSheet(id); return true;
-    }
-    case "loadout-to": { if (!can("stratLoadout")) { lockedSheet("stratLoadout"); return true; } const s = S.strategies.find(x => x.id === id), w = WKNOWN.get(a.dataset.w); if (s && w) { addLoadout(s, w); closeSheet(); } return true; }
-    case "loadout-del": { if (!can("stratLoadout")) { lockedSheet("stratLoadout"); return true; } const s = S.strategies.find(x => x.id === id); if (!s) return true; s.loadout = (s.loadout || []).filter(x => x.id !== a.dataset.w); save("strategies"); stratSheet(id); return true; }
-  }
-  return false;
-}
-function addLoadout(s, w) {
-  s.loadout = s.loadout || [];
-  if (s.loadout.some(x => x.id === w.id)) { s.loadout = s.loadout.filter(x => x.id !== w.id); toast(`Quitada de «${s.name}»`); }
-  else if (s.loadout.length >= 6) return toast("Máximo 6 armas por estrategia");
-  else { s.loadout.push({ id: w.id, name: w.name, rarity: w.rarity, patch: w.patch || META.patch || "" }); toast(`Añadida a «${s.name}»`); }
-  s.updated = Date.now(); save("strategies");
-}
-
 /* =================== DROP AI (exclusivo de Drop Ultra) =================== */
 /* El modelo de IA se llama desde el servidor (/api/ai); la clave nunca llega al navegador.
    Si el servidor no tiene proveedor configurado, la interfaz lo dice y no envía nada: no hay respuestas simuladas. */
@@ -2426,7 +2211,7 @@ async function aiCheck(force) {
   catch { AI.status = "noserver"; AI.configured = null; }
   rerender("ai");
 }
-const AI_SUGGEST = ["¿Cómo interpreto mis estadísticas y en qué debería mejorar?", "Analiza mi estrategia actual del mapa y dime qué cambiarías", "¿Qué armas del parche actual destacan según Meta Lab?", "Prepárame un plan para mi próximo torneo", "¿Cómo roto mejor al segundo círculo desde mi zona de aterrizaje?", "¿Qué hay hoy en la tienda que merezca la pena?"];
+const AI_SUGGEST = ["¿Cómo interpreto mis estadísticas y en qué debería mejorar?", "Analiza mi estrategia actual del mapa y dime qué cambiarías", "¿Cuánto daño hace la escopeta ahora mismo?", "Prepárame un plan para mi próximo torneo", "¿Cómo roto mejor al segundo círculo desde mi zona de aterrizaje?", "¿Qué hay hoy en la tienda que merezca la pena?"];
 function aiContext() {
   if (!UI.aiCtx) return { aviso: "El usuario ha desactivado compartir sus datos de DropStats en esta conversación." };
   const c = { app: "DropStats", fecha: new Date().toISOString(), plan: PLANS[planId()].name, noDisponible: [] };
@@ -2439,13 +2224,11 @@ function aiContext() {
   } else c.noDisponible.push(S.myPlayer ? "estadísticas del jugador (no se han podido cargar)" : "estadísticas del jugador (el usuario no ha elegido su cuenta en Stats)");
   if (ST.status === "ok" && ST.data?.account && ST.data.account.id !== MY.data?.account?.id) c.jugadorConsultado = { nombre: ST.data.account.name, general: (s => s && { victorias: s.wins, eliminaciones: s.kills, partidas: s.matches, kd: s.kd, porcentajeVictorias: s.winRate })(ST.data.stats?.all?.overall) };
   const cs = curStrat();
-  if (S.strategies.length) c.estrategias = S.strategies.slice().sort((a, b) => (b.id === S.curStrat) - (a.id === S.curStrat)).slice(0, 8).map(s => ({ nombre: s.name, actual: s.id === S.curStrat || undefined, notas: s.notes || undefined, categoria: s.tag || undefined, modo: s.mode || undefined, estilo: s.style || undefined, fases: s.phases && Object.values(s.phases).some(Boolean) ? s.phases : undefined, armas: s.loadout?.length ? s.loadout.map(w => w.name) : undefined, marcadores: s.markers.slice(0, 20).map(m => ({ tipo: (MT[m.t] || MT.point).n, nombre: m.n || undefined, casilla: gridRef(m.x, m.y), nota: m.note || undefined })), rutas: s.routes.slice(0, 10).map(r => ({ nombre: r.n, desde: gridRef(...r.p[0]), hasta: gridRef(...r.p[r.p.length - 1]), longitudCasillas: +routeLen(r.p).toFixed(1) })) }));
+  if (S.strategies.length) c.estrategias = S.strategies.slice().sort((a, b) => (b.id === S.curStrat) - (a.id === S.curStrat)).slice(0, 8).map(s => ({ nombre: s.name, actual: s.id === S.curStrat || undefined, notas: s.notes || undefined, categoria: s.tag || undefined, modo: s.mode || undefined, estilo: s.style || undefined, fases: s.phases && Object.values(s.phases).some(Boolean) ? s.phases : undefined, marcadores: s.markers.slice(0, 20).map(m => ({ tipo: (MT[m.t] || MT.point).n, nombre: m.n || undefined, casilla: gridRef(m.x, m.y), nota: m.note || undefined })), rutas: s.routes.slice(0, 10).map(r => ({ nombre: r.n, desde: gridRef(...r.p[0]), hasta: gridRef(...r.p[r.p.length - 1]), longitudCasillas: +routeLen(r.p).toFixed(1) })) }));
   else c.noDisponible.push("estrategias del mapa (no hay ninguna guardada)");
   if (!cs && (S.markers.length || S.routes.length)) c.mapaSinGuardar = { marcadores: S.markers.length, rutas: S.routes.length };
   c.cuadriculaMapa = "Casillas A–J (columnas, oeste a este) y 1–10 (filas, norte a sur)";
   if (MAP.pois.length) c.lugaresDelMapa = [...new Set(MAP.pois.map(p => p.name))].slice(0, 40);
-  if (META.status === "ok") { const ks = metaMainKeys(META.items); c.metaLab = { parche: META.patch, fuente: "api-fortnite.com", armasEnBotin: META.items.filter(w => w.inPool).slice(0, 30).map(w => ({ nombre: w.name, rareza: w.rarity, categoria: w.category, stats: Object.fromEntries(ks.filter(k => w.stats[k] != null).map(k => [statLabel(k), w.stats[k]])) })) }; }
-  else c.noDisponible.push(META.status === "nokey" ? "Meta Lab (no configurado en el servidor)" : "Meta Lab (no cargado en esta sesión; el usuario puede abrir Meta Lab)");
   if (SHOP.status === "ok") c.tiendaHoy = { ofertas: SHOP.entries.length, cambiaEn: untilShort(nextResetUTC() - Date.now()), ejemplos: SHOP.entries.slice(0, 15).map(e => ({ nombre: e.name, tipo: e.typeName, precioPaVos: e.price })) };
   else c.noDisponible.push("tienda de hoy (no cargada)");
   const evs = S.events.filter(e => new Date(e.when) > Date.now()).slice(0, 8);
@@ -2454,15 +2237,16 @@ function aiContext() {
   const fv = Object.values(S.favs); if (fv.length) c.favoritos = fv.slice(0, 15).map(f => f.name);
   // el nivel gratuito del proveedor limita los tokens por minuto: se recorta lo menos importante hasta que quepa
   const cut = [() => { delete c.favoritos; }, () => { delete c.lugaresDelMapa; }, () => { delete c.novedadesOficiales; }, () => { if (c.tiendaHoy) c.tiendaHoy.ejemplos = c.tiendaHoy.ejemplos.slice(0, 5); },
-    () => { if (c.metaLab) c.metaLab.armasEnBotin = c.metaLab.armasEnBotin.slice(0, 12); }, () => { if (c.estrategias) c.estrategias = c.estrategias.slice(0, 3).map(s => ({ ...s, marcadores: s.marcadores.slice(0, 8), rutas: s.rutas.slice(0, 4) })); },
-    () => { if (c.metaLab) c.metaLab.armasEnBotin = c.metaLab.armasEnBotin.slice(0, 6); }, () => { if (c.estrategias) c.estrategias = c.estrategias.slice(0, 1); }];
+    () => { if (c.estrategias) c.estrategias = c.estrategias.slice(0, 3).map(s => ({ ...s, marcadores: s.marcadores.slice(0, 8), rutas: s.rutas.slice(0, 4) })); },
+    () => { if (c.estrategias) c.estrategias = c.estrategias.slice(0, 1); }];
   for (const f of cut) { if (JSON.stringify(c).length <= 7000) break; f(); }
   return c;
 }
 const curChat = () => S.aiChats.find(c => c.id === UI.aiChat) || null;
 function mdLite(t) {
+  t = String(t).replace(/【[^】]*】/g, "").replace(/【[^】]*$/, ""); // marcas de cita del buscador
   const lines = esc(t).split(/\n/); let html = "", list = null;
-  const inline = s => s.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/g, "$1<i>$2</i>");
+  const inline = s => s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener nofollow">$1</a>').replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" rel="noopener nofollow">$2</a>').replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/g, "$1<i>$2</i>");
   const close = () => { if (list) { html += `</${list}>`; list = null; } };
   for (const ln of lines) {
     let m;
@@ -2483,7 +2267,7 @@ const AI_ERR = {
   empty: "La IA no ha devuelto texto. Prueba a reformular la pregunta.", too_big: "El mensaje es demasiado largo.", origin: "Petición bloqueada por seguridad.", server: "Error del servidor de DropStats.", bad_request: "Mensaje no válido.", network: "No hay conexión con el servidor de DropStats."
 };
 VIEWS.ai = v => { // solo llega aquí con Drop Ultra: render() muestra la pantalla de bloqueo a los demás planes
-  queueMicrotask(() => { aiCheck(); if (S.myPlayer) loadMy(); loadShop(); if (META.status === "idle") loadMeta(); });
+  queueMicrotask(() => { aiCheck(); if (S.myPlayer) loadMy(); loadShop(); });
   const ch = curChat(), msgs = ch?.msgs || [];
   const ready = AI.configured && !(AI.needsLogin && ACC.checked && !ACC.user);
   let banner = "";
@@ -2510,8 +2294,8 @@ VIEWS.ai = v => { // solo llega aquí con Drop Ultra: render() muestra la pantal
 };
 /* burbuja de respuesta: mientras llega texto se marca como «en directo» y se actualiza sola, sin volver a dibujar la pantalla */
 function aiBubble(m, k) {
-  if (m.live && !m.content) return `<div class="msg bot typing" data-live role="status"><span></span><span></span><span></span><span class="sr">Drop AI está preparando la respuesta…</span></div>`;
-  return `<div class="msg bot ${m.live ? "live" : ""}" ${m.live ? "data-live" : ""}><div class="md">${mdLite(m.content)}</div>${m.live ? "" : `<div class="msg-tools"><button class="link small" data-act="ai-copy" data-i="${k}">${I.copy}Copiar</button>${m.stopped ? `<span class="small faint">Respuesta detenida</span>` : ""}${m.reveal ? `<span class="small faint">Mostrada poco a poco (sin streaming)</span>` : ""}${m.ctx ? `<span class="small faint">Con tus datos de DropStats</span>` : ""}</div>`}</div>`;
+  if (m.live && !m.content) return `<div class="msg bot typing ${m.searching ? "searching" : ""}" data-live role="status">${m.searching ? `<span class="srch">${I.search}Buscando en fuentes fiables…</span>` : `<span></span><span></span><span></span>`}<span class="sr">Drop AI está preparando la respuesta…</span></div>`;
+  return `<div class="msg bot ${m.live ? "live" : ""}" ${m.live ? "data-live" : ""}><div class="md">${mdLite(m.content)}</div>${m.live ? "" : `<div class="msg-tools"><button class="link small" data-act="ai-copy" data-i="${k}">${I.copy}Copiar</button>${m.stopped ? `<span class="small faint">Respuesta detenida</span>` : ""}${m.reveal ? `<span class="small faint">Mostrada poco a poco (sin streaming)</span>` : ""}${m.web ? `<span class="small faint">${I.search}Con búsqueda web</span>` : ""}${m.noweb ? `<span class="small faint">Sin búsqueda web (servicio saturado)</span>` : ""}${m.ctx ? `<span class="small faint">Con tus datos de DropStats</span>` : ""}</div>`}</div>`;
 }
 AI.follow = true; AI.ctl = null;
 const aiView = () => $("#view");
@@ -2568,6 +2352,7 @@ async function aiSend(text) {
           const ln = buf.slice(0, i); buf = buf.slice(i + 1); if (!ln.trim()) continue;
           let o; try { o = JSON.parse(ln); } catch { continue; }
           if (o.t === "delta") { m.content += o.d; aiPaint(m); } else if (o.t === "done") done = o; else if (o.t === "error") err = o.error;
+          else if (o.t === "status") { if (o.d === "search") { m.searching = true; const el = $("#chat [data-live]"); if (el && !m.content) el.outerHTML = aiBubble(m, 0); } else if (o.d === "nosearch") { m.searching = false; m.noweb = true; } }
         }
       }
       if (!done && !err) err = "network";
@@ -2578,8 +2363,9 @@ async function aiSend(text) {
     }
   } catch (e) { if (ctl.signal.aborted && ctl.signal.reason !== "timeout") { m.stopped = true; } else err = ctl.signal.reason === "timeout" ? "timeout" : "network"; }
   clearTimeout(to); clearTimeout(aiPaint.t); aiPaint.t = 0; AI.ctl = null; AI.busy = false;
-  delete m.live;
+  delete m.live; delete m.searching;
   if (done?.remaining != null) AI.remaining = done.remaining;
+  if (done?.web) m.web = true;
   if (err) {
     AI.err = AI_ERR[err] || AI_ERR.server;
     if (err === "no_session") { ACC.user = null; paintAcc(); } if (err === "rate_limited") AI.remaining = 0;
@@ -2699,7 +2485,7 @@ function stratCmpSheet() {
   if (ss.length < 2) return openSheet(`<div class="stack"><h1>Comparar estrategias</h1><p class="muted">Elige dos estrategias:</p><div class="list">${S.strategies.map(s => `<button class="li" data-act="scmp-pick" data-id="${s.id}"><span class="grow"><span class="t">${esc(s.name)}</span><span class="s">${s.markers.length} marcadores · ${s.routes.length} rutas</span></span>${UI.stratCmp.includes(s.id) ? `<span class="badge ok">Elegida</span>` : I.plus}</button>`).join("")}</div></div>`);
   const st = ss.map(stratStats);
   const rows = [["Modo", s => esc(s.mode || "—")], ["Estilo", s => esc(s.style || "—")], ["Aterrizaje", (s, i) => st[i].land || "—"], ["Marcadores", (s, i) => st[i].markers], ...Object.entries(MT).map(([k, t]) => [t.n, (s, i) => st[i].byType[k] || 0]),
-    ["Rutas", (s, i) => st[i].routes], ["Distancia total", (s, i) => fmtLen(st[i].total)], ["Casillas recorridas", (s, i) => st[i].cells], ["Fases planificadas", s => PHASES.filter(([k]) => s.phases?.[k]).length + " de " + PHASES.length], ["Armas", s => (s.loadout || []).map(w => esc(w.name)).join(", ") || "—"]];
+    ["Rutas", (s, i) => st[i].routes], ["Distancia total", (s, i) => fmtLen(st[i].total)], ["Casillas recorridas", (s, i) => st[i].cells], ["Fases planificadas", s => PHASES.filter(([k]) => s.phases?.[k]).length + " de " + PHASES.length]];
   openSheet(`<div class="stack"><h1>Comparar estrategias</h1><div class="tblwrap"><table class="cmp2"><thead><tr><th></th>${ss.map(s => `<th>${esc(s.name)}</th>`).join("")}</tr></thead><tbody>${rows.map(([l, f]) => `<tr><td>${l}</td>${ss.map((s, i) => `<td>${f(s, i)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
     <button class="btn" data-act="scmp-clear">Elegir otras</button></div>`);
 }
@@ -2795,7 +2581,7 @@ const catProControls = () => can("catFilters") ? `<select class="sel" id="catRar
 /* =================== CUENTA Y SINCRONIZACIÓN =================== */
 /* Cuenta propia de DropStats (correo y contraseña), independiente de Epic Games.
    Sincroniza favoritos, jugadores, historial, rutas, marcadores, recordatorios, precios y preferencias. */
-const SYNC_KEYS = ["favs", "favPlayers", "history", "routes", "markers", "events", "prefs", "myPlayer", "strategies", "curStrat", "widgets", "wlayout", "look", "quick", "snaps", "favLists", "presets", "homeOrder", "homeHide", "metaSaved"];
+const SYNC_KEYS = ["favs", "favPlayers", "history", "routes", "markers", "events", "prefs", "myPlayer", "strategies", "curStrat", "widgets", "wlayout", "look", "quick", "snaps", "favLists", "presets", "homeOrder", "homeHide"];
 const ACC = { checked: false, configured: null, user: null, status: "idle", lastAt: store.get("syncAt", 0), dirty: store.get("dirty", false), busy: false, err: "" };
 async function sendJSON(url, body, method = "POST", ms = 15000) {
   const ac = new AbortController(), t = setTimeout(() => ac.abort(), ms);
@@ -2829,7 +2615,7 @@ function mergeData(d) {
   S.curStrat = S.curStrat || d.curStrat || null;
   if (!store.get("widgets", null) && Array.isArray(d.widgets)) S.widgets = d.widgets;
   if (Array.isArray(d.quick) && !store.get("quick", null)) S.quick = d.quick;
-  S.favLists = uniq([...S.favLists, ...asArr(d.favLists)], x => x.id); S.presets = uniq([...S.presets, ...asArr(d.presets)], x => x.id); S.metaSaved = uniq([...S.metaSaved, ...asArr(d.metaSaved)], x => x.id);
+  S.favLists = uniq([...S.favLists, ...asArr(d.favLists)], x => x.id); S.presets = uniq([...S.presets, ...asArr(d.presets)], x => x.id);
   if (Array.isArray(d.homeOrder) && !store.get("homeOrder", null)) S.homeOrder = d.homeOrder.filter(k => HOME_SECS[k]).concat(HOME_DEFAULT.filter(k => !d.homeOrder.includes(k)));
   if (d.homeHide && !store.get("homeHide", null)) S.homeHide = asObj(d.homeHide);
   if (typeof d.wlayout === "string" && !store.get("wlayout", null)) S.wlayout = d.wlayout;
@@ -2841,7 +2627,7 @@ function replaceData(d) {
   S.favPlayers = asArr(d.favPlayers); S.history = asArr(d.history); S.routes = asArr(d.routes); S.markers = asArr(d.markers); S.events = asArr(d.events);
   S.prefs = Object.assign({ lang: "es", platform: "epic", window: "lifetime" }, asObj(d.prefs)); S.myPlayer = d.myPlayer || null;
   S.strategies = asArr(d.strategies); S.curStrat = d.curStrat || null; if (Array.isArray(d.widgets)) S.widgets = d.widgets; if (Array.isArray(d.quick)) S.quick = d.quick;
-  S.favLists = asArr(d.favLists); S.presets = asArr(d.presets); S.metaSaved = asArr(d.metaSaved); S.homeHide = asObj(d.homeHide); if (typeof d.wlayout === "string") S.wlayout = d.wlayout;
+  S.favLists = asArr(d.favLists); S.presets = asArr(d.presets); S.homeHide = asObj(d.homeHide); if (typeof d.wlayout === "string") S.wlayout = d.wlayout;
   if (Array.isArray(d.homeOrder)) S.homeOrder = d.homeOrder.filter(k => HOME_SECS[k]).concat(HOME_DEFAULT.filter(k => !d.homeOrder.includes(k)));
   S.snaps = asObj(d.snaps); if (d.look && typeof d.look === "object") S.look = Object.assign({}, S.look, d.look);
   persistAll(); applyLook();
@@ -2945,7 +2731,6 @@ document.addEventListener("click", async e => {
   if (await mapAction(act, a)) return;
   if (widgetAction(act, a)) return;
   if (aiAction(act, a)) return;
-  if (metaAction(act, a)) return;
   switch (act) {
     case "close": return closeSheet();
     case "entry": return entrySheet(id);
@@ -3023,12 +2808,10 @@ document.addEventListener("click", async e => {
     case "flist-toggle": { if (!can("favLists")) return lockedSheet("favLists"); const l = S.favLists.find(x => x.id === id), it = a.dataset.item; if (!l) return; if (!S.favs[it]) toggleFav(it); if (!S.favs[it]) return; const ix = l.ids.indexOf(it); if (ix >= 0) l.ids.splice(ix, 1); else l.ids.push(it); save("favLists"); toast(ix >= 0 ? `Quitado de «${l.name}»` : `Añadido a «${l.name}»`); listsSheet(it); return rerender("favs"); }
     case "flist-del": { if (!arm(a, "fl" + id)) return; S.favLists = S.favLists.filter(x => x.id !== id); if (UI.favList === id) UI.favList = ""; save("favLists"); listsSheet(null); return rerender("favs"); }
     case "flist-rename": { const l = S.favLists.find(x => x.id === id); if (!l) return; return openSheet(`<form class="stack" data-form="flist-rename" data-id="${l.id}"><h1>Renombrar lista</h1><label class="lbl">Nombre<input class="inp" id="fl-rn" maxlength="30" value="${esc(l.name)}" required></label><button class="btn pri">Guardar</button></form>`); }
-    case "go-meta": closeSheet(); return go("meta");
-    case "test-meta": case "test-ai": {
+    case "test-ai": {
       const out = $("#testout"); out.innerHTML = `<p class="small muted">Comprobando…</p>`;
       try {
-        if (act === "test-meta") { const j = await fetchJSON("/api/meta?op=probe", 15000); out.innerHTML = j.status === 200 ? `<div class="note">${I.info}<p><b>Conectada.</b> La fuente devuelve ${j.count} armas (parche ${esc(j.patch || "—")}): ${j.withStats} con estadísticas, ${j.withImage} con imagen, ${j.inPool} en el botín actual.</p></div>` : `<div class="note warn">${I.warn}<p>${j.error === "missing_key" ? "Falta la variable METALAB_API_KEY en el servidor." : j.error === "invalid_key" ? "La clave METALAB_API_KEY no es válida." : j.error === "plan_required" ? "La clave funciona, pero su plan no incluye las armas." : "La fuente respondió con el código " + esc(j.status) + "."}</p></div>`; }
-        else { const j = await fetchJSON("/api/ai?op=ping", 55000); out.innerHTML = j.ok ? `<div class="note">${I.info}<p><b>Funciona.</b> ${esc(j.provider)} ha respondido con el modelo ${esc(j.model)} en ${(j.ms / 1000).toFixed(1)} s.</p></div>` : `<div class="note warn">${I.warn}<p>${j.error === "not_configured" ? "Falta la clave de IA en el servidor (GROQ_API_KEY)." : j.error === "ping_limit" ? "Ya se han hecho hoy todas las pruebas permitidas." : esc(AI_ERR[j.error] || "Error: " + j.error)}${j.detail ? " · " + esc(j.detail) : ""}</p></div>`; }
+        { const j = await fetchJSON("/api/ai?op=ping", 55000); out.innerHTML = j.ok ? `<div class="note">${I.info}<p><b>Funciona.</b> ${esc(j.provider)} ha respondido con el modelo ${esc(j.model)} en ${(j.ms / 1000).toFixed(1)} s.</p></div>` : `<div class="note warn">${I.warn}<p>${j.error === "not_configured" ? "Falta la clave de IA en el servidor (GROQ_API_KEY)." : j.error === "ping_limit" ? "Ya se han hecho hoy todas las pruebas permitidas." : esc(AI_ERR[j.error] || "Error: " + j.error)}${j.detail ? " · " + esc(j.detail) : ""}</p></div>`; }
       } catch { out.innerHTML = `<div class="note warn">${I.warn}<p><b>No hay servidor de DropStats accesible</b> desde esta versión.</p></div>`; }
       return;
     }
@@ -3040,8 +2823,6 @@ document.addEventListener("change", e => {
   if (t.id === "shopPrice") { UI.shopPrice = t.value; saveUI(); render(); }
   else if (t.id === "shopSort") { UI.shopSort = t.value; saveUI(); render(); }
   else if (t.id === "catRar") { if (!can("catFilters")) return; UI.catRar = t.value; saveUI(); render(); }
-  else if (t.id === "metaRar" || t.id === "metaAmmo") { if (!can("metaFilters")) return; UI[t.id] = t.value; render(); }
-  else if (t.id === "metaPool") { if (!can("metaFilters")) return; UI.metaPool = t.checked; render(); }
   else if (t.id === "aiCtx") { UI.aiCtx = t.checked; saveUI(); }
   else if (t.id === "catPrice" || t.id === "catSort") { if (!can("catFilters")) return; UI[t.id] = t.value; saveUI(); render(); }
   else if (t.id === "catToday") { if (!can("catFilters")) return; UI.catToday = t.checked; saveUI(); render(); }
@@ -3066,7 +2847,6 @@ document.addEventListener("input", e => {
     if (lt === "look-scale") { S.look.scale = +e.target.value / 100; $("#look-scale-v").textContent = e.target.value + "%"; }
     applyLook(); store.set("look", S.look); return;
   }
-  if (e.target.id === "metaq") { UI.metaQ = e.target.value; clearTimeout(shopT); shopT = setTimeout(() => rerender("meta"), 200); return; }
   if (e.target.id === "stratq") { UI.stratQ = e.target.value; clearTimeout(shopT); shopT = setTimeout(() => { renderDrawer(); const n = $("#stratq"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }, 200); return; }
   if (e.target.id === "poiq") { UI.poiQ = e.target.value; clearTimeout(shopT); shopT = setTimeout(() => { renderDrawer(); const n = $("#poiq"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }, 200); return; }
   if (e.target.id === "aiq") { e.target.style.height = "auto"; e.target.style.height = Math.min(160, e.target.scrollHeight) + "px"; return; }
