@@ -15,7 +15,8 @@ Versión del 25 de octubre de 2026.
 | Tienda | Ofertas actuales con imagen, colores de la oferta, nombre, tipo, rareza, precio en paVos y rebaja. Búsqueda, filtros por tipo y precio, orden por sección, precio o nombre. Ficha con fechas de entrada y salida, si se puede regalar, conjunto, historial de apariciones y objetos del lote. Botón «Actualizar», hora de la última actualización y cuenta atrás hasta el cambio (00:00 UTC). Estados de carga, error con «Reintentar» y sin resultados. Las ofertas con fecha de salida pasada se descartan. | fortnite-api.com `/v2/shop` (no oficial, gratuita, sin clave) |
 | Catálogo | Archivo histórico de cosméticos: novedades, búsqueda por nombre, filtros por tipo y rareza, «Mostrar más». Los objetos a la venta hoy llevan la etiqueta «Hoy en tienda». El precio solo aparece si DropStats lo ha visto en la tienda; no se estima. | fortnite-api.com `/v2/cosmetics/...` |
 | Mapa | Mapa actual con y sin nombres, zoom con pellizco o rueda, marcadores (añadir, arrastrar, renombrar, color, borrar), rutas dibujadas con el dedo (guardar, renombrar, color, ocultar, borrar, compartir e importar con un código), distancia en casillas de la cuadrícula, lista de lugares. Si el mapa no carga, lo dice y desactiva las herramientas. | fortnite-api.com `/v1/map` |
-| Stats | Victorias, eliminaciones, partidas, K/D, % de victorias y top 10, por modo y por control; total o temporada; historial y jugadores favoritos. Necesita la clave (gratuita) en el servidor. | fortnite-api.com `/v2/stats/br/v2` a través de `/api/stats` |
+| Stats | Búsqueda por nombre (Epic, PlayStation, Xbox) o por ID de cuenta de Epic; botón «Es mi cuenta». Victorias, eliminaciones, partidas, K/D, % de victorias y top 10, por modo y por control; total o temporada; historial y jugadores favoritos. Necesita la clave (gratuita) en el servidor. | fortnite-api.com `/v2/stats/br/v2` a través de `/api/stats` |
+| Cuenta | Inicio de sesión con correo y contraseña (cuenta de DropStats, independiente de Epic). Sincroniza favoritos, jugadores, «mi cuenta» de Fortnite, historial, rutas, marcadores, recordatorios, precios y preferencias entre dispositivos. Contraseñas con scrypt, sesión en cookie HttpOnly y Secure, límite de intentos. Se puede cerrar sesión y eliminar la cuenta. | Upstash Redis (Vercel Storage) a través de `/api/auth` y `/api/sync` |
 | Torneos | Enlaces al calendario y las noticias oficiales, y recordatorios que añades tú (en tu hora local). No hay calendario automático: no existe una fuente pública autorizada. | fortnite.com |
 | Favoritos | Cosméticos (avisa de cuáles están hoy en la tienda) y jugadores. | Este dispositivo |
 | Ajustes | Idioma de los nombres, plataforma y periodo por defecto, «Comprobar» cada fuente, borrar datos, copia de seguridad y restauración. | Este dispositivo |
@@ -31,6 +32,9 @@ dropstats/
   public/               Lo que se publica: index.html, manifest, iconos
   api/fn.js             Proxy de solo lectura a fortnite-api.com, con caché
   api/stats.js          Estadísticas; la clave vive solo aquí
+  api/auth.js           Cuentas: crear, entrar, salir, eliminar
+  api/sync.js           Datos sincronizados de cada cuenta
+  api/_lib.js           Redis, contraseñas, sesiones y protección de peticiones
   scripts/snapshot.py   Copia de tienda, mapa y novedades con sus imágenes (public/data/)
   vercel.json           Configuración de despliegue
 ```
@@ -58,6 +62,14 @@ Cada petición tiene un tiempo máximo (12 s) y, si la fuente falla, la app deja
 2. Vercel → tu proyecto → **Settings → Environment Variables** → `FORTNITE_API_KEY` = tu clave.
 3. **Deployments → … → Redeploy**.
 4. En DropStats: Ajustes → Estadísticas → «Comprobar».
+
+### Activar las cuentas (inicio de sesión)
+
+1. Vercel → proyecto **dropstats** → pestaña **Storage** → **Create Database** → **Upstash for Redis** (plan gratuito).
+2. Conéctala al proyecto **dropstats** (todos los entornos). Vercel crea las variables `KV_REST_API_URL` y `KV_REST_API_TOKEN`.
+3. **Deployments → … → Redeploy**. En DropStats: icono de persona → Crear cuenta.
+
+No hay recuperación de contraseña por correo: si se olvida, los datos de este dispositivo se conservan y se puede crear otra cuenta.
 
 ### En el iPhone
 

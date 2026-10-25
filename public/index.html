@@ -71,6 +71,15 @@ main.full{padding:0;overflow:hidden;display:flex;flex-direction:column}
 .ibtn:active{transform:scale(.93);background:var(--raise)}
 .ibtn.on{color:var(--fg);border-color:#8b5cf688;background:#8b5cf61f}
 .ibtn:disabled{opacity:.4;cursor:default}
+.ibtn .on-dot{position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;background:var(--ok);border:2px solid var(--bg)}
+.top .ibtn{width:38px;height:38px}
+@media (max-width:370px){.logo{font-size:17px}.top .ibtn{width:34px;height:34px}}
+.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;text-align:left;color:var(--muted);font-size:14px}
+.steps b{color:var(--fg)}
+.segtabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px}
+.segtabs button{height:38px;border:0;border-radius:9px;background:none;font-weight:600;color:var(--muted)}
+.segtabs button.on{background:var(--raise);color:var(--fg);box-shadow:inset 0 0 0 1px #8b5cf699}
+.formerr{color:var(--bad);font-size:14px;min-height:0}
 .ibtn .n{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--violet);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;border:2px solid var(--bg)}
 @media (hover:hover){.ibtn:hover{color:var(--fg);border-color:var(--line2)}}
 
@@ -309,6 +318,7 @@ details>summary::-webkit-details-marker{display:none}
     <button class="logo" data-go="home" aria-label="DropStats, inicio"><span class="mark">DS</span>DROP<b>STATS</b></button>
     <button class="ibtn" data-go="events" aria-label="Torneos" title="Torneos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/></svg></button>
     <button class="ibtn" data-go="favs" aria-label="Favoritos" title="Favoritos" id="favbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></button>
+    <button class="ibtn" data-go="account" aria-label="Mi cuenta" title="Mi cuenta" id="accbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>
     <button class="ibtn" data-go="settings" aria-label="Ajustes" title="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg></button>
   </header>
   <main id="view"></main>
@@ -361,11 +371,12 @@ const S = {
   favs: store.get("favs", {}), favPlayers: store.get("favPlayers", []), history: store.get("history", []),
   routes: store.get("routes", []), markers: store.get("markers", []), events: store.get("events", []),
   prices: store.get("prices", {}),
-  prefs: Object.assign({ lang: "es", platform: "epic", window: "lifetime" }, store.get("prefs", {}))
+  prefs: Object.assign({ lang: "es", platform: "epic", window: "lifetime" }, store.get("prefs", {})),
+  myPlayer: store.get("myPlayer", null)
 };
-const save = k => store.set(k, S[k]);
+const save = k => { store.set(k, S[k]); onLocalChange(k); };
 const UI = Object.assign({ shopType: "all", shopSort: "section", shopPrice: "", shopQ: "", catType: "all", catRar: "", catQ: "", favTab: "items", mapMode: "pan", mapLayer: "pois", mapGrid: true, drawer: "routes" }, store.get("ui", {}));
-UI.shopQ = ""; UI.catQ = UI.catQ || "";
+UI.shopQ = ""; UI.catQ = UI.catQ || ""; UI.authMode = "login";
 const saveUI = () => store.set("ui", { shopType: UI.shopType, shopSort: UI.shopSort, shopPrice: UI.shopPrice, catType: UI.catType, catRar: UI.catRar, catQ: UI.catQ, favTab: UI.favTab, mapLayer: UI.mapLayer, mapGrid: UI.mapGrid, drawer: UI.drawer });
 
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2200); }
@@ -441,8 +452,8 @@ const API = {
     this.ok = false; this.lastErr = err; this.downUntil = Date.now() + 60e3;
     throw err;
   },
-  async stats(name, accountType, timeWindow) {
-    try { return await fetchJSON("/api/stats?" + new URLSearchParams({ name, accountType, timeWindow }), 12000); }
+  async stats(params) {
+    try { return await fetchJSON("/api/stats?" + new URLSearchParams(params), 15000); }
     catch (e) { throw Object.assign(new Error("server"), { kind: e.kind === "timeout" ? "timeout" : "server" }); }
   }
 };
@@ -610,7 +621,7 @@ VIEWS.home = v => {
   v.innerHTML = `<div class="page">
     <section class="sec">${hero}</section>
     <section class="sec">
-      <form class="field" data-form="homesearch" role="search">${I.search}<input id="homeq" placeholder="Buscar jugador de Epic Games" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button class="btn sm pri">Buscar</button></form>
+      <form class="field" data-form="homesearch" role="search">${I.search}<input id="homeq" placeholder="Nombre o ID de jugador" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button class="btn sm pri">Buscar</button></form>
       <div class="quick">
         <button class="qa" data-go="catalog"><span class="qi">${I.grid}</span><span>Catálogo<small>Todos los cosméticos</small></span></button>
         <button class="qa" data-go="map"><span class="qi">${I.map}</span><span>Mapa<small>Marcadores y rutas</small></span></button>
@@ -627,9 +638,10 @@ VIEWS.home = v => {
         </div>
         ${upcoming.length ? `<p class="small faint">Los recordatorios los has añadido tú; comprueba los horarios en la web oficial.</p>` : ""}
       </section>
-      <section class="sec"><div class="sh"><h2>Jugadores favoritos</h2>${S.favPlayers.length ? `<button class="link" data-act="favs-players">Ver todos</button>` : ""}</div>
-        ${S.favPlayers.length ? `<div class="list">${S.favPlayers.slice(0, 4).map(p => `<button class="li" data-act="player" data-name="${esc(p.name)}" data-type="${esc(p.type)}"><span class="av">${esc(initials(p.name))}</span><span class="grow"><span class="t">${esc(p.name)}</span><span class="s">${esc(p.type.toUpperCase())}</span></span>${I.chev}</button>`).join("")}</div>`
-          : `<div class="state compact"><span class="si">${I.user}</span><p class="small muted">Busca un jugador en Stats y pulsa la estrella para tenerlo aquí.</p></div>`}
+      <section class="sec"><div class="sh"><h2>Jugadores</h2>${S.favPlayers.length ? `<button class="link" data-act="favs-players">Ver todos</button>` : ""}</div>
+        ${S.myPlayer || S.favPlayers.length ? `<div class="list">${S.myPlayer ? playerLi(S.myPlayer, "Tú · ver mis estadísticas") : ""}${S.favPlayers.slice(0, 4).map(p => playerLi(p)).join("")}</div>`
+          : `<div class="state compact"><span class="si">${I.user}</span><p class="small muted">Busca tu nombre en Stats y pulsa «Es mi cuenta», o guarda jugadores con la estrella.</p></div>`}
+        ${ACC.checked && ACC.configured && !ACC.user ? `<button class="li list" data-go="account" style="border:1px solid var(--line)"><span class="av">${I.user}</span><span class="grow"><span class="t">Inicia sesión</span><span class="s">Guarda todo y recupéralo en cualquier dispositivo</span></span>${I.chev}</button>` : ""}
       </section>
     </div>
   </div>`;
@@ -801,43 +813,60 @@ VIEWS.catalog = v => {
 
 /* =================== ESTADÍSTICAS =================== */
 const ST = { status: "idle", data: null, error: null, q: "", type: null };
-async function loadStats(name, type, win) {
-  name = (name || "").trim(); if (!name) return toast("Escribe un nombre de Epic Games");
-  Object.assign(ST, { status: "loading", q: name, type, error: null });
+const isAccId = q => /^[0-9a-f]{32}$/i.test(String(q).replace(/[\s-]/g, ""));
+async function loadStats(q, type, win) {
+  q = (q || "").trim(); if (!q) return toast("Escribe un nombre de Epic Games o un ID de cuenta");
+  const byId = isAccId(q);
+  Object.assign(ST, { status: "loading", q, type, error: null });
   if (ROUTE !== "stats") go("stats"); else render();
+  const params = byId ? { id: q.replace(/[\s-]/g, "").toLowerCase(), timeWindow: win } : { name: q, accountType: type, timeWindow: win };
   try {
-    const j = await API.stats(name, type, win);
+    const j = await API.stats(params);
     if (j.status === 200 && j.data?.account) {
       Object.assign(ST, { status: "ok", data: j.data });
-      S.history = [{ name: j.data.account.name, type, at: Date.now() }, ...S.history.filter(h => h.name.toLowerCase() !== j.data.account.name.toLowerCase())].slice(0, 12); save("history");
+      if (byId) ST.type = "epic";
+      S.history = [{ name: j.data.account.name, type: ST.type, id: j.data.account.id, at: Date.now() }, ...S.history.filter(h => h.name.toLowerCase() !== j.data.account.name.toLowerCase())].slice(0, 12); save("history");
     } else {
       ST.status = "error";
+      const who = byId ? "con ese ID de cuenta" : `${type === "epic" ? "de Epic" : type === "psn" ? "de PlayStation" : "de Xbox"} con ese nombre`;
       ST.error = j.error === "missing_key" ? { kind: "key" }
-        : j.status === 403 ? { kind: "msg", text: "Las estadísticas de esta cuenta son privadas. El jugador tiene que activarlas en Fortnite (Ajustes → Cuenta y privacidad → mostrar en clasificaciones)." }
-        : j.status === 404 ? { kind: "msg", text: `No hay ninguna cuenta ${type === "epic" ? "de Epic" : type === "psn" ? "de PlayStation" : "de Xbox"} con ese nombre, o no tiene partidas de Battle Royale en este periodo.` }
-        : { kind: "msg", text: `La fuente respondió con el código ${j.status}${j.error ? ": " + j.error : ""}.` };
+        : j.error === "invalid_key" ? { kind: "badkey" }
+        : j.status === 403 ? { kind: "msg", title: "Estadísticas privadas", text: "Esta cuenta existe, pero tiene las estadísticas ocultas. En Fortnite: Ajustes → Cuenta y privacidad → activa «Mostrar en la clasificación de carrera» y vuelve a buscar en unos minutos." }
+        : j.status === 404 ? { kind: "msg", title: "Jugador no encontrado", text: `No hay ninguna cuenta ${who}, o no tiene partidas de Battle Royale en este periodo. Comprueba mayúsculas, espacios y símbolos, o prueba con el ID de cuenta.` }
+        : { kind: "msg", title: "No se pudo consultar", text: j.error ? String(j.error) : `La fuente respondió con el código ${j.status}.` };
     }
   } catch (e) { ST.status = "error"; ST.error = { kind: e.kind === "timeout" ? "timeout" : "server" }; }
   rerender("stats");
 }
+function statsSetupState(kind) {
+  if (kind === "key" || kind === "badkey") return `<div class="state err fade"><span class="si">${I.plug}</span><h3>${kind === "key" ? "Falta activar las estadísticas" : "La clave de estadísticas no es válida"}</h3>
+    <p>${kind === "key" ? "El servidor de DropStats funciona, pero aún no tiene la clave de fortnite-api.com, que es obligatoria para consultar estadísticas. Se configura una sola vez:" : "fortnite-api.com rechaza la clave configurada en Vercel. Genera una nueva y sustitúyela:"}</p>
+    <ol class="steps"><li>Entra en <a href="https://dash.fortnite-api.com/" target="_blank" rel="noopener">dash.fortnite-api.com</a>, inicia sesión con Discord y copia tu <b>API key</b> (gratis).</li>
+      <li>En Vercel: proyecto <b>dropstats</b> → <b>Settings → Environment Variables</b> → nombre <b>FORTNITE_API_KEY</b>, valor tu clave → <b>Save</b>.</li>
+      <li><b>Deployments</b> → menú «…» del último → <b>Redeploy</b>. En un minuto, vuelve aquí y busca.</li></ol>
+    <div class="row"><button class="btn" data-act="retry-stats">${I.refresh}Reintentar</button></div></div>`;
+  return `<div class="state err fade"><span class="si">${I.plug}</span><h3>No hay conexión con el servidor de estadísticas</h3>
+    <p>${kind === "timeout" ? "El servidor tardó demasiado en responder." : "Esta versión de DropStats no tiene servidor (por ejemplo, dentro de Claude). Ábrela en dropstats.vercel.app."} No se muestran estadísticas inventadas.</p>
+    <div class="row"><button class="btn" data-act="retry-stats">${I.refresh}Reintentar</button></div></div>`;
+}
+const playerLi = (p, label) => `<button class="li" data-act="player" data-name="${esc(p.id || p.name)}" data-type="${esc(p.type || "epic")}"><span class="av">${esc(initials(p.name))}</span><span class="grow"><span class="t">${esc(p.name)}</span><span class="s">${label || esc((p.type || "epic").toUpperCase())}</span></span>${I.chev}</button>`;
 VIEWS.stats = v => {
   let body = "";
   if (ST.status === "loading") body = `<div class="skel" style="height:64px"></div><div class="kpis">${'<div class="skel" style="height:76px"></div>'.repeat(6)}</div>`;
-  else if (ST.status === "error") {
-    const k = ST.error.kind;
-    body = k === "msg" ? `<div class="state err fade"><span class="si">${I.user}</span><h3>Sin resultados para «${esc(ST.q)}»</h3><p>${esc(ST.error.text)}</p></div>`
-      : `<div class="state err fade"><span class="si">${I.plug}</span><h3>Las estadísticas no están conectadas</h3><p>${k === "key" ? "El servidor de DropStats funciona, pero falta la clave de fortnite-api.com (variable FORTNITE_API_KEY)." : k === "timeout" ? "El servidor de estadísticas no respondió a tiempo." : "Esta versión no tiene acceso al servidor de DropStats, que es quien guarda la clave de la API."} No se muestran estadísticas inventadas.</p>
-        <p class="hint">La clave es gratuita en dash.fortnite-api.com y se configura solo en el servidor (README, apartado «Activar las estadísticas»).${EMBEDDED ? " Dentro de Claude no hay servidor, así que aquí no pueden funcionar." : ""}</p>
-        <div class="row"><button class="btn" data-act="retry-stats">${I.refresh}Reintentar</button></div></div>`;
-  } else if (ST.status === "ok") body = statsBlock(ST.data);
-  else body = S.history.length ? `<section class="sec"><div class="sh"><h2>Búsquedas recientes</h2><button class="link" data-act="clear-history">Borrar</button></div><div class="list">${S.history.map(h => `<button class="li" data-act="player" data-name="${esc(h.name)}" data-type="${esc(h.type)}"><span class="av">${esc(initials(h.name))}</span><span class="grow"><span class="t">${esc(h.name)}</span><span class="s">${esc(h.type.toUpperCase())} · ${fmtD(h.at)}</span></span>${I.chev}</button>`).join("")}</div></section>`
-    : stateEmpty("Busca cualquier jugador", "Escribe su nombre de Epic Games. Solo aparecen las cuentas con estadísticas públicas.");
+  else if (ST.status === "error") body = ST.error.kind === "msg"
+    ? `<div class="state err fade"><span class="si">${I.user}</span><h3>${esc(ST.error.title)}</h3><p>${esc(ST.error.text)}</p><p class="hint">Buscaste «${esc(ST.q)}»${isAccId(ST.q) ? " como ID de cuenta" : ` en ${esc((ST.type || "epic").toUpperCase())}`}.</p></div>`
+    : statsSetupState(ST.error.kind);
+  else if (ST.status === "ok") body = statsBlock(ST.data);
+  else body = (S.myPlayer ? `<section class="sec"><h2>Mi cuenta de Fortnite</h2><div class="list">${playerLi(S.myPlayer, "Ver mis estadísticas")}</div></section>` : "")
+    + (S.history.length ? `<section class="sec"><div class="sh"><h2>Búsquedas recientes</h2><button class="link" data-act="clear-history">Borrar</button></div><div class="list">${S.history.map(h => playerLi(h, `${esc((h.type || "epic").toUpperCase())} · ${fmtD(h.at)}`)).join("")}</div></section>`
+      : S.myPlayer ? "" : stateEmpty("Busca cualquier jugador", "Escribe el nombre de Epic Games tal como aparece en el juego, o el ID de cuenta. Solo aparecen las cuentas con estadísticas públicas."));
   v.innerHTML = `<div class="page"><div class="ph"><h1>Estadísticas</h1><p class="small muted">Battle Royale · fuente: fortnite-api.com</p></div>
     <form class="sec" data-form="stats" style="gap:8px">
-      <div class="field">${I.search}<input id="statq" placeholder="Nombre de Epic Games" value="${esc(ST.q)}" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"></div>
+      <div class="field">${I.search}<input id="statq" placeholder="Nombre de Epic o ID de cuenta" value="${esc(ST.q)}" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"></div>
       <div class="row"><select class="sel grow" id="statType" aria-label="Plataforma"><option value="epic">Epic</option><option value="psn">PlayStation</option><option value="xbl">Xbox</option></select>
         <select class="sel grow" id="statWin" aria-label="Periodo"><option value="lifetime">Total</option><option value="season">Temporada</option></select>
         <button class="btn pri" ${ST.status === "loading" ? "disabled" : ""}>Buscar</button></div>
+      <details><summary class="small">¿Dónde veo mi nombre o mi ID?</summary><p class="small muted" style="margin-top:8px">El <b>nombre</b> es el que aparece en Fortnite y en epicgames.com (Cuenta → Configuración → Nombre público). El <b>ID de cuenta</b> son 32 letras y números que aparecen en epicgames.com → Cuenta → Configuración, debajo del nombre. Si juegas en PlayStation o Xbox sin nombre de Epic, elige esa plataforma y usa tu nombre de esa consola.</p></details>
     </form>
     ${body}</div>`;
   $("#statType").value = ST.type || S.prefs.platform; $("#statWin").value = S.prefs.window;
@@ -845,11 +874,13 @@ VIEWS.stats = v => {
 function statsBlock(d) {
   const o = d.stats?.all?.overall;
   const fav = S.favPlayers.some(f => f.name.toLowerCase() === d.account.name.toLowerCase());
+  const isMe = S.myPlayer && (S.myPlayer.id === d.account.id || S.myPlayer.name.toLowerCase() === d.account.name.toLowerCase());
   const modes = [["Solo", "solo"], ["Dúo", "duo"], ["Trío", "trio"], ["Escuadrón", "squad"], ["Modos temporales", "ltm"]].filter(([, k]) => d.stats?.all?.[k]);
   const inputs = [["Teclado y ratón", "keyboardMouse"], ["Mando", "gamepad"], ["Táctil", "touch"]].filter(([, k]) => d.stats?.[k]?.overall);
   const f2 = x => x == null ? "—" : (+x).toFixed(2), f1 = x => x == null ? "—" : (+x).toFixed(1);
   return `<section class="sec fade">
   <div class="phead"><span class="av">${esc(initials(d.account.name))}</span><div class="grow"><h2 style="font-size:22px;overflow-wrap:anywhere">${esc(d.account.name)}</h2><span class="small muted">${d.battlePass ? `Nivel ${d.battlePass.level} · ` : ""}${S.prefs.window === "season" ? "Temporada actual" : "Total"}</span></div>
+  ${isMe ? `<span class="badge ok">Tu cuenta</span>` : `<button class="btn sm" data-act="setme">Es mi cuenta</button>`}
   <button class="ibtn ${fav ? "on" : ""}" data-act="favplayer" aria-label="${fav ? "Quitar de favoritos" : "Añadir a favoritos"}" style="${fav ? "color:var(--warn)" : ""}">${fav ? I.starF : I.star}</button></div>
   ${o ? `<div class="kpis">
     <div class="kpi hl"><span>Victorias</span><b>${fmtN(o.wins)}</b></div><div class="kpi"><span>Elim.</span><b>${fmtN(o.kills)}</b></div><div class="kpi"><span>Partidas</span><b>${fmtN(o.matches)}</b></div>
@@ -1090,6 +1121,7 @@ VIEWS.favs = v => {
 VIEWS.settings = v => {
   const p = S.prefs;
   v.innerHTML = `<div class="page"><div class="ph"><h1>Ajustes</h1></div>
+  <section class="sec"><h2>Cuenta</h2><div class="list"><button class="li" data-go="account"><span class="av">${I.user}</span><span class="grow"><span class="t">${ACC.user ? esc(ACC.user.email) : "Iniciar sesión o crear cuenta"}</span><span class="s">${ACC.user ? "Sincronización activa" : "Guarda tus datos en la nube"}</span></span>${I.chev}</button></div></section>
   <section class="sec"><h2>Preferencias</h2>
     <label class="lbl">Idioma de los nombres de cosméticos<select class="sel" id="pref-lang"><option value="es">Español</option><option value="en">English</option><option value="de">Deutsch</option></select></label>
     <div class="row" style="align-items:flex-start"><label class="lbl grow">Plataforma por defecto<select class="sel" id="pref-platform"><option value="epic">Epic</option><option value="psn">PlayStation</option><option value="xbl">Xbox</option></select></label>
@@ -1099,6 +1131,7 @@ VIEWS.settings = v => {
     <div class="list">
       <div class="li"><span class="grow"><span class="t">Tienda, catálogo y mapa</span><span class="s">fortnite-api.com · gratuita · no oficial</span></span><button class="btn sm" data-act="test-shop">Comprobar</button></div>
       <div class="li"><span class="grow"><span class="t">Estadísticas</span><span class="s">fortnite-api.com · clave en el servidor</span></span><button class="btn sm" data-act="test-stats">Comprobar</button></div>
+      <div class="li"><span class="grow"><span class="t">Cuentas y sincronización</span><span class="s">${ACC.configured ? "Base de datos conectada" : ACC.configured === false ? "Falta conectar la base de datos" : "Sin servidor en esta versión"}</span></span><button class="btn sm" data-go="account">Abrir</button></div>
       <div class="li"><span class="grow"><span class="t">Torneos</span><span class="s">Sin fuente pública · enlaces oficiales</span></span></div>
     </div>
     <div id="testout"></div>
@@ -1110,6 +1143,123 @@ VIEWS.settings = v => {
   <p class="small faint">DropStats es un proyecto independiente. No está afiliado, patrocinado ni aprobado por Epic Games. Fortnite y los nombres e imágenes de sus objetos son marcas de Epic Games, Inc. DropStats nunca pide tu contraseña de Epic ni hace compras.</p>
   </div>`;
   $("#pref-lang").value = p.lang; $("#pref-platform").value = p.platform; $("#pref-window").value = p.window;
+};
+
+/* =================== CUENTA Y SINCRONIZACIÓN =================== */
+/* Cuenta propia de DropStats (correo y contraseña), independiente de Epic Games.
+   Sincroniza favoritos, jugadores, historial, rutas, marcadores, recordatorios, precios y preferencias. */
+const SYNC_KEYS = ["favs", "favPlayers", "history", "routes", "markers", "events", "prices", "prefs", "myPlayer"];
+const ACC = { checked: false, configured: null, user: null, status: "idle", lastAt: store.get("syncAt", 0), dirty: store.get("dirty", false), busy: false, err: "" };
+async function sendJSON(url, body, method = "POST") {
+  const ac = new AbortController(), t = setTimeout(() => ac.abort(), 15000);
+  try {
+    const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ac.signal, credentials: "same-origin" });
+    let j = {}; try { j = await r.json(); } catch {}
+    return { ok: r.ok, code: r.status, j };
+  } catch (e) { return { ok: false, code: 0, j: { error: e.name === "AbortError" ? "El servidor no respondió a tiempo." : "No se pudo conectar con el servidor de DropStats." } }; }
+  finally { clearTimeout(t); }
+}
+function onLocalChange(k) {
+  if (!SYNC_KEYS.includes(k)) return;
+  ACC.dirty = true; store.set("dirty", true);
+  if (ACC.user) { clearTimeout(onLocalChange.t); onLocalChange.t = setTimeout(syncPush, 1500); }
+}
+function setSynced(at) { ACC.lastAt = at; ACC.dirty = false; store.set("syncAt", at); store.set("dirty", false); ACC.status = "ok"; }
+function persistAll() { SYNC_KEYS.forEach(k => store.set(k, S[k])); Object.values(S.favs).forEach(remember); }
+const asObj = x => x && typeof x === "object" && !Array.isArray(x) ? x : {};
+const asArr = x => Array.isArray(x) ? x : [];
+const uniq = (arr, key) => { const m = new Map(); arr.forEach(x => { try { const k = key(x); if (!m.has(k)) m.set(k, x); } catch {} }); return [...m.values()]; };
+function mergeData(d) {
+  S.favs = Object.assign({}, asObj(d.favs), S.favs);
+  S.prices = Object.assign({}, asObj(d.prices), S.prices);
+  S.favPlayers = uniq([...S.favPlayers, ...asArr(d.favPlayers)], p => p.name.toLowerCase());
+  S.history = uniq([...S.history, ...asArr(d.history)], h => h.name.toLowerCase()).sort((a, b) => b.at - a.at).slice(0, 12);
+  S.routes = uniq([...S.routes, ...asArr(d.routes)], r => JSON.stringify(r.p));
+  S.markers = uniq([...S.markers, ...asArr(d.markers)], m => m.x + "," + m.y);
+  S.events = uniq([...S.events, ...asArr(d.events)], e => e.id);
+  S.myPlayer = S.myPlayer || d.myPlayer || null;
+  persistAll();
+}
+function replaceData(d) {
+  S.favs = asObj(d.favs); S.prices = Object.assign({}, S.prices, asObj(d.prices));
+  S.favPlayers = asArr(d.favPlayers); S.history = asArr(d.history); S.routes = asArr(d.routes); S.markers = asArr(d.markers); S.events = asArr(d.events);
+  S.prefs = Object.assign({ lang: "es", platform: "epic", window: "lifetime" }, asObj(d.prefs)); S.myPlayer = d.myPlayer || null;
+  persistAll();
+}
+async function syncPush() {
+  if (!ACC.user) return;
+  if (ACC.busy) { clearTimeout(onLocalChange.t); onLocalChange.t = setTimeout(syncPush, 1500); return; }
+  ACC.busy = true; ACC.status = "saving"; paintAcc();
+  const r = await sendJSON("/api/sync", { data: Object.fromEntries(SYNC_KEYS.map(k => [k, S[k]])) }, "PUT");
+  ACC.busy = false;
+  if (r.ok) setSynced(r.j.updatedAt);
+  else if (r.code === 401) { ACC.user = null; ACC.status = "idle"; toast("Tu sesión ha caducado. Vuelve a entrar para sincronizar."); }
+  else ACC.status = "error";
+  paintAcc();
+}
+async function syncPull() {
+  if (!ACC.user || ACC.busy) return;
+  ACC.busy = true; ACC.status = "saving"; paintAcc();
+  let srv = null;
+  try { srv = await fetchJSON("/api/sync", 12000); } catch { ACC.busy = false; ACC.status = "error"; paintAcc(); return; }
+  ACC.busy = false;
+  if (srv.error === "no_session") { ACC.user = null; ACC.status = "idle"; paintAcc(); return; }
+  if (!srv.data) { await syncPush(); }                                        // cuenta sin datos: se sube lo de este dispositivo
+  else if (!ACC.lastAt) { mergeData(srv.data); await syncPush(); }            // primera vez en este dispositivo: se combinan
+  else if (srv.updatedAt > ACC.lastAt) {                                      // hay cambios de otro dispositivo
+    if (ACC.dirty) { mergeData(srv.data); await syncPush(); }
+    else { replaceData(srv.data); setSynced(srv.updatedAt); }
+  } else if (ACC.dirty) await syncPush();
+  else ACC.status = "ok";
+  paintAcc(); rerender(ROUTE);
+}
+async function accCheck() {
+  try { const j = await fetchJSON("/api/auth", 8000); ACC.configured = !!j.configured; ACC.user = j.user || null; }
+  catch { ACC.configured = null; ACC.user = null; }
+  ACC.checked = true; paintAcc(); rerender("home");
+  if (ACC.user) await syncPull();
+}
+function paintAcc() {
+  const b = $("#accbtn"); b.querySelector(".on-dot")?.remove();
+  if (ACC.user) b.insertAdjacentHTML("beforeend", `<span class="on-dot"></span>`);
+  b.title = ACC.user ? "Mi cuenta · " + ACC.user.email : "Iniciar sesión";
+  if (ROUTE === "account" || ROUTE === "settings") rerender("account", "settings");
+}
+const syncLine = () => !ACC.user ? "" : ACC.status === "saving" ? `<span class="pill"><span class="dot load"></span>Sincronizando…</span>`
+  : ACC.status === "error" ? `<span class="pill"><span class="dot bad"></span>No se pudo sincronizar · se reintentará</span>`
+  : `<span class="pill"><span class="dot ok"></span>Sincronizado${ACC.lastAt ? " · " + fmtD(ACC.lastAt) : ""}</span>`;
+VIEWS.account = v => {
+  if (!ACC.checked) { v.innerHTML = `<div class="page"><div class="ph"><h1>Mi cuenta</h1></div><div class="skel" style="height:220px"></div></div>`; return; }
+  let body;
+  if (ACC.configured === null) body = `<div class="state fade"><span class="si">${I.user}</span><h3>Inicio de sesión no disponible aquí</h3><p>Esta versión de DropStats no tiene servidor (por ejemplo, dentro de Claude). Abre dropstats.vercel.app para entrar en tu cuenta.</p></div>`;
+  else if (!ACC.configured) body = `<div class="state fade"><span class="si">${I.plug}</span><h3>Falta activar las cuentas</h3><p>El servidor funciona, pero todavía no tiene una base de datos donde guardar las cuentas. Se configura una vez, gratis:</p>
+    <ol class="steps"><li>En Vercel: proyecto <b>dropstats</b> → pestaña <b>Storage</b> → <b>Create Database</b> → <b>Upstash for Redis</b> (plan gratuito) → crear.</li>
+    <li>Cuando pregunte, conéctala al proyecto <b>dropstats</b> (todos los entornos).</li>
+    <li><b>Deployments</b> → «…» del último → <b>Redeploy</b>. Después vuelve aquí.</li></ol>
+    <div class="row"><button class="btn" data-act="acc-recheck">${I.refresh}Comprobar de nuevo</button></div></div>`;
+  else if (!ACC.user) {
+    const reg = UI.authMode === "register";
+    body = `<form class="sec" data-form="auth" style="gap:12px">
+      <div class="segtabs" role="tablist"><button type="button" class="${reg ? "" : "on"}" data-act="auth-mode" data-v="login">Entrar</button><button type="button" class="${reg ? "on" : ""}" data-act="auth-mode" data-v="register">Crear cuenta</button></div>
+      <label class="lbl">Correo electrónico<input class="inp" type="email" id="au-email" autocomplete="email" autocapitalize="off" spellcheck="false" required></label>
+      <label class="lbl">Contraseña${reg ? " (mínimo 8 caracteres)" : ""}<input class="inp" type="password" id="au-pass" autocomplete="${reg ? "new-password" : "current-password"}" minlength="${reg ? 8 : 1}" required></label>
+      <p class="formerr" id="au-err" role="alert">${esc(ACC.err)}</p>
+      <button class="btn pri" id="au-go">${reg ? "Crear cuenta y sincronizar" : "Entrar"}</button>
+      <p class="small muted">${reg ? "Lo que ya tienes guardado en este dispositivo (favoritos, rutas, recordatorios…) se sube a tu cuenta al crearla." : "Al entrar, se combinan los datos de este dispositivo con los de tu cuenta."} Es una cuenta de DropStats, independiente de Epic Games: <b>no uses tu contraseña de Epic</b>.</p>
+    </form>`;
+  } else {
+    const n = { f: Object.keys(S.favs).length, p: S.favPlayers.length, r: S.routes.length, m: S.markers.length, e: S.events.length };
+    body = `<section class="sec"><div class="panel" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div class="phead"><span class="av">${esc(initials(ACC.user.email))}</span><div class="grow"><h2 style="font-size:18px;overflow-wrap:anywhere">${esc(ACC.user.email)}</h2>${syncLine()}</div></div>
+      <div class="stats3"><div class="stat"><span>Favoritos</span><b>${n.f + n.p}</b></div><div class="stat"><span>Rutas</span><b>${n.r + n.m}</b></div><div class="stat"><span>Torneos</span><b>${n.e}</b></div></div>
+      <div class="row"><button class="btn grow" data-act="sync-now" ${ACC.busy ? "disabled" : ""}>${I.refresh}Sincronizar ahora</button><button class="btn" data-act="logout">Cerrar sesión</button></div></div>
+      <p class="small muted">Todo lo que guardas se sincroniza solo con tu cuenta. Entra con el mismo correo en otro móvil u ordenador y lo tendrás allí.</p></section>
+      <details class="sec"><summary>Eliminar mi cuenta</summary>
+        <form class="stack" data-form="delacc" style="margin-top:10px"><p class="small muted">Se borran la cuenta y los datos guardados en el servidor. Lo que hay en este dispositivo se queda.</p>
+        <label class="lbl">Confirma con tu contraseña<input class="inp" type="password" id="del-pass" autocomplete="current-password" required></label>
+        <p class="formerr" id="del-err" role="alert"></p><button class="btn danger">Eliminar cuenta definitivamente</button></form></details>`;
+  }
+  v.innerHTML = `<div class="page"><div class="ph"><h1>Mi cuenta</h1><p class="small muted">Guarda favoritos, rutas y recordatorios y recupéralos en cualquier dispositivo</p></div>${body}</div>`;
 };
 
 /* =================== eventos =================== */
@@ -1143,13 +1293,18 @@ document.addEventListener("click", async e => {
     case "clear-catq": UI.catQ = ""; saveUI(); return render();
     case "more-cat": CAT.limit += 60; return rerender("catalog");
     case "retry-stats": return loadStats(ST.q, ST.type || S.prefs.platform, S.prefs.window);
-    case "player": return loadStats(a.dataset.name, a.dataset.type || S.prefs.platform, S.prefs.window);
+    case "player": ST.q = a.dataset.name; return loadStats(a.dataset.name, a.dataset.type || S.prefs.platform, S.prefs.window);
     case "favs-players": UI.favTab = "players"; saveUI(); return go("favs");
     case "favplayer": { const n = ST.data?.account?.name; if (!n) return; const ix = S.favPlayers.findIndex(f => f.name.toLowerCase() === n.toLowerCase()); if (ix >= 0) S.favPlayers.splice(ix, 1); else S.favPlayers.push({ name: n, type: ST.type || "epic" }); save("favPlayers"); toast(ix >= 0 ? "Quitado de favoritos" : "Jugador guardado en favoritos"); return render(); }
+    case "setme": { const d = ST.data?.account; if (!d) return; S.myPlayer = { name: d.name, id: d.id, type: ST.type || "epic" }; save("myPlayer"); toast("Guardada como tu cuenta"); return render(); }
+    case "auth-mode": UI.authMode = a.dataset.v; ACC.err = ""; return render();
+    case "acc-recheck": ACC.checked = false; render(); return accCheck();
+    case "sync-now": return syncPull();
+    case "logout": { await sendJSON("/api/auth", { action: "logout" }); ACC.user = null; ACC.status = "idle"; ACC.lastAt = 0; store.set("syncAt", 0); paintAcc(); toast("Sesión cerrada · tus datos siguen en este dispositivo"); return render(); }
     case "unfavplayer": S.favPlayers.splice(i, 1); save("favPlayers"); return render();
     case "clear-history": S.history = []; save("history"); return render();
     case "export": {
-      const txt = JSON.stringify({ dropstats: 2, ...Object.fromEntries(["favs", "favPlayers", "routes", "markers", "events", "prices", "prefs"].map(k => [k, S[k]])) });
+      const txt = JSON.stringify({ dropstats: 2, ...Object.fromEntries(SYNC_KEYS.map(k => [k, S[k]])) });
       const ok = await copyText(txt);
       return openSheet(`<div class="stack"><h1>Copia de seguridad</h1><p class="muted">${ok ? "Copiada al portapapeles. Guárdala en Notas o en un mensaje para ti." : "Selecciona el texto, cópialo y guárdalo en Notas."}</p><textarea class="inp mono" rows="7" readonly id="exptxt">${esc(txt)}</textarea></div>`);
     }
@@ -1208,6 +1363,20 @@ document.addEventListener("submit", e => {
   if (k === "homesearch") loadStats($("#homeq").value, S.prefs.platform, S.prefs.window);
   else if (k === "stats") { S.prefs.window = $("#statWin").value; save("prefs"); loadStats($("#statq").value, $("#statType").value, S.prefs.window); }
   else if (k === "catq") { UI.catQ = $("#catq").value.trim(); saveUI(); $("#catq").blur(); render(); }
+  else if (k === "auth") {
+    const email = $("#au-email").value.trim(), password = $("#au-pass").value, action = UI.authMode === "register" ? "register" : "login";
+    const btn = $("#au-go"); btn.disabled = true; btn.textContent = action === "register" ? "Creando cuenta…" : "Entrando…";
+    sendJSON("/api/auth", { action, email, password }).then(async r => {
+      if (r.ok && r.j.user) { ACC.user = r.j.user; ACC.err = ""; ACC.lastAt = 0; store.set("syncAt", 0); paintAcc(); render(); await syncPull(); toast(action === "register" ? "Cuenta creada · datos guardados" : "Sesión iniciada · datos sincronizados"); }
+      else { ACC.err = r.j.error || "No se pudo completar. Inténtalo de nuevo."; render(); const em = $("#au-email"); if (em) em.value = email; }
+    });
+  }
+  else if (k === "delacc") {
+    sendJSON("/api/auth", { action: "delete", password: $("#del-pass").value }).then(r => {
+      if (r.ok) { ACC.user = null; ACC.lastAt = 0; store.set("syncAt", 0); paintAcc(); render(); toast("Cuenta eliminada · tus datos siguen en este dispositivo"); }
+      else $("#del-err").textContent = r.j.error || "No se pudo eliminar.";
+    });
+  }
   else if (k === "newroute") { S.routes.push({ n: $("#rname").value.trim() || "Ruta", c: COLORS[S.routes.length % 6], p: newRouteSheet.pts, at: Date.now() }); save("routes"); closeSheet(); renderOverlay(); UI.drawer = "routes"; renderDrawer(); toast("Ruta guardada"); }
   else if (k === "editroute") { S.routes[+f.dataset.i].n = $("#rname").value.trim() || "Ruta"; save("routes"); closeSheet(); renderDrawer(); toast("Ruta guardada"); }
   else if (k === "editmarker") { S.markers[+f.dataset.i].n = $("#mname").value.trim(); save("markers"); closeSheet(); renderOverlay(); renderDrawer(); }
@@ -1234,9 +1403,11 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet()
 window.addEventListener("resize", () => { if (ROUTE === "map") mapFit(); });
 window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (VIEWS[h] && h !== ROUTE) go(h); });
 setInterval(() => $$("[data-cd]").forEach(el => el.textContent = (el.dataset.cd === "short" ? untilShort : until)(nextResetUTC() - Date.now())), 30e3);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && ACC.user && Date.now() - (syncPull.last || 0) > 60e3) { syncPull.last = Date.now(); syncPull(); } });
 document.addEventListener("visibilitychange", () => { if (!document.hidden && SHOP.status === "ok" && (Date.now() - SHOP.at > 10 * 60e3 || SHOP.at < lastResetUTC())) loadShop(true); });
 
 /* =================== arranque =================== */
 go(VIEWS[(location.hash || "").slice(1)] ? location.hash.slice(1) : "home");
+accCheck();
 </script>
 </body></html>
