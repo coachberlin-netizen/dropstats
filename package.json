@@ -8,5 +8,5 @@
     "build": "node build.mjs",
     "dev": "vercel dev"
   },
-  "engines": { "node": ">=18" }
+  "engines": { "node": "22.x" }
 }
