@@ -16,11 +16,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Voz (Kokoro)
+      - name: Playwright
+        run: pip install playwright==1.48.0 && python -m playwright install --with-deps chromium
+      - name: Esperar a que Vercel publique la última versión
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq espeak-ng
-          pip install -q "kokoro>=0.9.4" soundfile
-          python tools/tts.py
+          for i in $(seq 1 40); do curl -s https://dropstats.vercel.app/ | grep -q "VBUCK_SVG" && echo listo && break; sleep 15; done
+      - name: Capturas
+        run: python tools/capture.py
       - name: Publicar en media-out
         run: |
           git config user.name "dropstats-bot"
