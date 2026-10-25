@@ -8,6 +8,7 @@
 // GET  /api/ai            → { configured, provider, model, limit }
 // GET  /api/ai?op=ping    → prueba real mínima contra el proveedor (máx. AI_PING_LIMIT al día, 20 por defecto)
 // POST /api/ai { messages:[{role,content}], context:{...} } → { ok, text, remaining, model }
+// POST /api/ai { …, stream:true } → streaming real en NDJSON (Groq); con otros proveedores responde en JSON como siempre
 import { storeReady, redis, send, sameOrigin, readJSON, currentUser, clientIp, tooMany } from "./_lib.js";
 
 const GROQ_URL = "https://api.groq.com/openai/v1";
@@ -85,6 +86,57 @@ async function callModel(p, messages, context, maxTokens = 1100) {
   } catch (e) { return { err: e.name === "AbortError" ? "timeout" : "unreachable" }; }
   finally { clearTimeout(to); }
 }
+// Streaming real (Groq y APIs compatibles con OpenAI): se reenvía al navegador cada trozo de texto según llega,
+// en líneas JSON (NDJSON): {"t":"delta","d":"…"} · {"t":"done",…} · {"t":"error","error":"…"}
+const canStream = p => p.id === "groq" || p.id === "openai";
+async function openStream(p, model, sys, messages, maxTokens, signal) {
+  const body = { model, temperature: 0.6, stream: true, messages: [{ role: "system", content: sys }, ...messages] };
+  if (p.id === "groq") { body.max_completion_tokens = maxTokens; if (/gpt-oss/.test(model)) { body.reasoning_effort = "low"; body.include_reasoning = false; } }
+  else body.max_tokens = maxTokens;
+  const r = await fetch(p.url + "/chat/completions", { method: "POST", signal, headers: { "Content-Type": "application/json", Authorization: `Bearer ${p.key}`, Accept: "text/event-stream" }, body: JSON.stringify(body) });
+  if (!r.ok || !r.body) { const j = await r.json().catch(() => ({})); return { err: errOf(r.status), status: r.status, detail: j.error?.message }; }
+  return { reader: r.body.getReader() };
+}
+async function streamReply(req, res, p, messages, context, onFail, onOk) {
+  const sys = SYSTEM + "\n\nCONTEXTO (JSON, datos reales de DropStats en este momento):\n" + JSON.stringify(context || {});
+  const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 55000);
+  let closed = false; res.on("close", () => { if (!res.writableEnded) { closed = true; ctl.abort(); } }); // el usuario ha pulsado «Detener» o se ha ido
+  let opened = null, model = null;
+  try {
+    for (const m of p.models) {   // antes de enviar nada, si un modelo está agotado se prueba el siguiente
+      const o = await openStream(p, m, sys, messages, 1100, ctl.signal);
+      if (!o.err) { opened = o; model = m; break; }
+      opened = o; if (!["provider_rate", "provider_config"].includes(o.err)) break;
+    }
+  } catch (e) { clearTimeout(to); await onFail(); return send(res, 200, { ok: false, error: e.name === "AbortError" ? "timeout" : "unreachable" }); }
+  if (!opened?.reader) { clearTimeout(to); await onFail(); return send(res, 200, { ok: false, error: opened?.err || "provider_error" }); }
+  res.statusCode = 200;
+  res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8"); res.setHeader("Cache-Control", "no-store, no-transform"); res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders?.();
+  const line = o => { if (!closed) res.write(JSON.stringify(o) + "\n"); };
+  const dec = new TextDecoder(); let buf = "", text = "", finish = null;
+  try {
+    while (true) {
+      const { value, done } = await opened.reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf("\n")) >= 0) {
+        const ln = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+        if (!ln.startsWith("data:")) continue;
+        const data = ln.slice(5).trim(); if (data === "[DONE]") continue;
+        let j; try { j = JSON.parse(data); } catch { continue; }
+        if (j.error) { line({ t: "error", error: "provider_error" }); finish = "error"; continue; }
+        const d = j.choices?.[0]?.delta?.content; if (d) { text += d; line({ t: "delta", d }); }
+        if (j.choices?.[0]?.finish_reason) finish = j.choices[0].finish_reason;
+      }
+    }
+  } catch (e) { if (!closed) line({ t: "error", error: e.name === "AbortError" ? "timeout" : "unreachable" }); }
+  clearTimeout(to);
+  if (closed) { if (!text) await onFail(); return; }               // detenida por el usuario: si ya llegó texto, cuenta como mensaje usado
+  if (!text.trim()) { await onFail(); line({ t: "error", error: "empty" }); return res.end(); }
+  line({ t: "done", model, finish, remaining: await onOk(), stream: true });
+  res.end();
+}
 // Recorta el historial para que cada petición quepa en los límites por minuto del nivel gratuito
 function trimMessages(list) {
   const out = []; let size = 0;
@@ -127,6 +179,8 @@ export default async function handler(req, res) {
     if (await tooMany(`ai:all:${day}`, GLOBAL(), 90000)) return send(res, 200, { ok: false, error: "global_limit" });
     const used = await redis("INCR", `ai:u:${u.id}:${day}`); if (used === 1) await redis("EXPIRE", `ai:u:${u.id}:${day}`, 90000);
     if (used > LIMIT()) return send(res, 200, { ok: false, error: "rate_limited", remaining: 0 });
+    const fail = () => redis("DECR", `ai:u:${u.id}:${day}`);
+    if (b.stream && canStream(p)) return await streamReply(req, res, p, messages, context, fail, async () => Math.max(0, LIMIT() - used));
     const out = await callModel(p, messages, context);
     if (out.err) { await redis("DECR", `ai:u:${u.id}:${day}`); return send(res, 200, { ok: false, error: out.err }); }
     return send(res, 200, { ok: true, text: out.text, remaining: Math.max(0, LIMIT() - used), provider: p.id, model: out.model });

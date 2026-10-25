@@ -500,6 +500,70 @@ td .pct.up{color:var(--ok)} td .pct.dn{color:var(--bad)}
 .composer .field{align-items:flex-end;padding:6px 6px 6px 13px}
 .composer textarea{flex:1;min-width:0;border:0;background:none;outline:0;resize:none;font-size:16px;line-height:1.4;padding:6px 0;max-height:160px}
 .composer .btn svg{width:18px;height:18px}
+.stop-btn{background:var(--raise);border:1px solid var(--line2);color:var(--fg)}
+.stop-btn svg{width:14px!important;height:14px!important}
+.to-end{position:sticky;bottom:118px;align-self:center;width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:var(--surface2);color:var(--fg);display:grid;place-items:center;box-shadow:0 8px 24px -8px #000;margin-top:-40px;z-index:2}
+.to-end[hidden]{display:none}.to-end svg{width:20px;height:20px}
+.msg.live .md>:last-child::after{content:"";display:inline-block;width:.55em;height:1em;margin-left:2px;vertical-align:-2px;border-radius:2px;background:var(--violet2);animation:caret 1s steps(2) infinite}
+@keyframes caret{50%{opacity:0}}
+/* ---------- animación de desbloqueo ---------- */
+.unlock{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;align-items:center;justify-content:safe center;padding:24px 16px;overflow-x:hidden;overflow-y:auto;isolation:isolate;opacity:0;transition:opacity .3s;
+  background:radial-gradient(60% 45% at 50% 38%,var(--u1,#7c3aed55),transparent 70%),radial-gradient(90% 70% at 50% 100%,var(--u2,#3b82f622),transparent 70%),#05040af2}
+.unlock.u-pro{--u1:#7c3aed66;--u2:#4c1d9533;--uc:#a855f7}
+.unlock.u-elite{--u1:#6d28d966;--u2:#2563eb44;--uc:#60a5fa}
+.unlock.u-ultra{--u1:#a855f777;--u2:#22d3ee33;--uc:#f0abfc;background-color:#04030af5}
+.unlock.s-in,.unlock.reduced{opacity:1}.unlock.s-out{opacity:0}
+.ux-cv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.ux-skip{position:absolute;top:max(14px,env(safe-area-inset-top));right:16px;z-index:6;height:36px;padding:0 14px;border-radius:999px;border:1px solid #ffffff2e;background:#ffffff12;color:#fff;font-weight:600;font-size:13.5px}
+.unlock.s-done .ux-skip{display:none}
+.ux-preview{position:absolute;top:max(18px,env(safe-area-inset-top));left:16px;right:110px;z-index:6;font-size:12px;font-weight:700;color:#fde68a;letter-spacing:.02em}
+.ux-core{position:absolute;top:36%;left:50%;width:120px;height:120px;margin:-60px 0 0 -60px;z-index:4;transform:scale(.3);opacity:0;filter:drop-shadow(0 0 0 var(--uc))}
+.ux-core svg{width:100%;height:100%}
+.s-charge .ux-core{animation:uxCharge .9s cubic-bezier(.3,.7,.2,1) forwards}
+.u-ultra.s-charge .ux-core{animation:uxCharge .9s cubic-bezier(.3,.7,.2,1) forwards,uxShake .09s .55s 4 linear}
+.s-burst .ux-core{animation:uxPop .45s ease-in forwards}
+.u-ultra.s-burst .ux-core{animation:uxPop .45s ease-in forwards}
+.s-done .ux-core{display:none}
+@keyframes uxCharge{0%{opacity:0;transform:scale(.3) rotate(-25deg)}60%{opacity:1}100%{opacity:1;transform:scale(1) rotate(0);filter:drop-shadow(0 0 28px var(--uc))}}
+@keyframes uxShake{0%,100%{translate:0 0}25%{translate:-2px 1px}75%{translate:2px -1px}}
+@keyframes uxPop{0%{opacity:1;transform:scale(1);filter:drop-shadow(0 0 30px var(--uc)) brightness(1)}100%{opacity:0;transform:scale(2.4);filter:drop-shadow(0 0 60px #fff) brightness(3)}}
+.ux-flash{position:absolute;inset:0;z-index:2;background:radial-gradient(circle at 50% 36%,#fff,transparent 60%);opacity:0;pointer-events:none}
+.s-burst .ux-flash{animation:uxFlash .7s ease-out}
+.u-ultra.s-burst .ux-flash{animation:uxFlash .9s ease-out}
+@keyframes uxFlash{0%{opacity:0}12%{opacity:.95}100%{opacity:0}}
+.ux-ring{position:absolute;top:36%;left:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:3px solid var(--uc);opacity:0;z-index:2;pointer-events:none}
+.s-burst .ux-ring{animation:uxRing 1.1s var(--d) cubic-bezier(.1,.6,.3,1) forwards}
+@keyframes uxRing{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(14);border-width:1px}}
+.ux-rays{position:absolute;top:36%;left:50%;width:180vmax;height:180vmax;margin:-90vmax 0 0 -90vmax;z-index:1;opacity:0;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,transparent 0 9deg,var(--uc) 10deg 11deg,transparent 12deg 20deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 55%);mask:radial-gradient(circle,#000 0,transparent 55%)}
+.ux-rays.r2{background:repeating-conic-gradient(from 0deg,transparent 0 6deg,#f0abfc 7deg 8deg,transparent 9deg 13deg,#22d3ee 14deg 15deg,transparent 16deg 20deg)}
+.s-burst .ux-rays{animation:uxRays 1.4s ease-out forwards}
+.s-done .ux-rays{animation:none;opacity:.16;transform:none}
+@keyframes uxRays{0%{opacity:0;transform:scale(.4)}35%{opacity:.5}100%{opacity:.16;transform:scale(1)}}
+.ux-card{position:relative;z-index:5;width:min(440px,100%);margin-top:12vh;padding:22px 20px 20px;border-radius:24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;
+  background:radial-gradient(120% 80% at 50% 0%,var(--u1),transparent 70%),#0c0a16f0;border:1px solid #ffffff1f;box-shadow:0 30px 80px -30px var(--uc);opacity:0;transform:translateY(26px) scale(.94)}
+.u-ultra .ux-card{border:0}
+.u-ultra .ux-card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;background:conic-gradient(from var(--ang),#a855f7,#22d3ee,#f0abfc,#7c3aed,#a855f7);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spinang 5s linear infinite;z-index:-1}
+.s-reveal .ux-card{animation:uxCard .6s cubic-bezier(.2,.9,.25,1.2) forwards}
+.skipped .ux-card,.reduced .ux-card{animation:none;opacity:1;transform:none}
+@keyframes uxCard{to{opacity:1;transform:none}}
+.ux-eyebrow{font:700 11.5px/1 var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--uc)}
+.ux-name{font-size:clamp(30px,9vw,46px);line-height:1.05;margin:4px 0 0}
+.ux-line{margin:0;color:var(--muted)}
+.ux-perks{list-style:none;margin:10px 0 6px;padding:0;display:flex;flex-direction:column;gap:8px;text-align:left;width:100%}
+.ux-perks li{display:flex;gap:9px;align-items:flex-start;font-size:14px;opacity:0;transform:translateY(8px)}
+.ux-perks svg{width:17px;height:17px;flex:none;margin-top:2px;color:var(--uc)}
+.s-done .ux-perks li{animation:uxIn .4s calc(var(--i) * .09s) ease-out forwards}
+.skipped .ux-perks li,.reduced .ux-perks li{animation:none;opacity:1;transform:none}
+@keyframes uxIn{to{opacity:1;transform:none}}
+.ux-go{width:100%;opacity:0;pointer-events:none}
+.s-done .ux-go{animation:uxIn .35s .4s ease-out forwards;pointer-events:auto}
+.skipped .ux-go,.reduced .ux-go{animation:none;opacity:1;transform:none}
+.reduced .ux-core,.reduced .ux-ring,.reduced .ux-flash,.reduced .ux-cv{display:none}
+.reduced .ux-card{margin-top:0}
+.skipped .ux-core,.skipped .ux-ring,.skipped .ux-flash{display:none}
+@media (min-width:900px){.ux-card{margin-top:16vh}}
+@media (prefers-reduced-motion:reduce){.unlock *{animation:none!important}.ux-card,.ux-perks li,.ux-go{opacity:1!important;transform:none!important}}
 .switch.tiny{font-size:13px;color:var(--muted);justify-content:flex-start;gap:8px;min-height:0;padding:0;border:0;background:none}
 /* ---------- Meta Lab ---------- */
 .wlist2{display:grid;gap:8px}
@@ -635,6 +699,7 @@ const I = {
   clock: sv('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
   bolt: sv('<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>'),
   spark: sv('<path d="M12 3c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7zM19 15.5c.25 1.6 1 2.3 2.5 2.5-1.5.2-2.25.9-2.5 2.5-.25-1.6-1-2.3-2.5-2.5 1.5-.2 2.25-.9 2.5-2.5z"/>'),
+  stop: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/></svg>',
   send: sv('<path d="M4 12 20 4l-6 16-2.5-6.5z"/><path d="m11.5 13.5 3-3"/>'),
   list: sv('<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>', 2.2),
   table: sv('<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10"/>')
@@ -1717,11 +1782,25 @@ const LIMITS = {
 const Entitlements = {
   source: "demo", // "demo" ahora; "server" cuando se integre una suscripción real
   plan() { const p = store.get("demoPlan", "free"); return PLANS[p] ? p : "free"; },
-  setDemo(p) { if (!PLANS[p]) return; store.set("demoPlan", p); onPlanChange(); } // solo cambia permisos; la configuración del usuario no se toca
+  setDemo(p) { if (!PLANS[p]) return; store.set("demoPlan", p); onPlanChange(); }, // solo cambia permisos; la configuración del usuario no se toca
+  async refresh() { return this.plan(); } // con pagos reales: leer de /api/auth el plan verificado de la cuenta
 };
 const Billing = { // estructura preparada para una pasarela real (Stripe, App Store…); hoy no cobra nada
   available: false,
-  async checkout(plan) { return { ok: false, reason: "not_available", plan }; }
+  async checkout(plan) { return { ok: false, status: "not_available", reason: "not_available", plan }; },
+  /* Punto de integración para el pago real. Se debe llamar con el resultado YA VERIFICADO por el servidor
+     (por ejemplo, el webhook de Stripe guarda el plan en la cuenta y la app lo consulta).
+     La animación nunca concede acceso: solo se muestra si el servidor ya confirma que el plan está activo. */
+  async onResult(r) {
+    if (!r || r.status !== "succeeded" || r.verified !== true || !PAID.includes(r.plan)) {
+      if (r?.status === "canceled") toast("Compra cancelada. No se ha cobrado nada ni se ha activado ningún plan.");
+      else if (r?.status === "failed") toast("El pago no se ha completado. No se ha activado ningún plan.");
+      return false;
+    }
+    await Entitlements.refresh();                   // el plan lo decide el servidor, no la animación
+    if (Entitlements.plan() !== r.plan) return false;
+    onPlanChange(); Unlock.play(r.plan); return true;
+  }
 };
 const planId = () => Entitlements.plan();
 const planRank = () => PLANS[planId()].rank;
@@ -1881,6 +1960,8 @@ VIEWS.premium = v => {
     <section class="sec demo-box"><div class="sh"><div><h2>Selector de demostración</h2><p class="sub">Cambia los permisos al instante. Tus datos y ajustes se conservan. No es una suscripción.</p></div></div>
       <div class="segtabs four" role="radiogroup" aria-label="Plan de demostración">${PLAN_IDS.map(k => `<button type="button" class="${p === k ? "on" : ""}" role="radio" aria-checked="${p === k}" data-act="demo-plan" data-v="${k}">${PLANS[k].short}</button>`).join("")}</div>
       <p class="small muted">Plan simulado ahora: <b style="color:var(--fg)">${PLANS[p].name}</b>.</p>
+      <div class="stack" style="gap:8px"><span class="small muted">Vista previa de la animación de desbloqueo (no es una compra y no cambia tu plan):</span>
+        <div class="row">${PAID.map(k => `<button type="button" class="btn sm" data-act="unlock-preview" data-v="${k}">${I.spark}${PLANS[k].short}</button>`).join("")}</div></div>
     </section>
     <div class="plans">${PLAN_IDS.map(planCard).join("")}</div>
     <section class="sec"><h2>Comparativa completa</h2><div class="tblwrap"><table class="cmp"><thead><tr><th>Función</th>${PLAN_IDS.map(k => `<th class="th-${k}">${PLANS[k].short}</th>`).join("")}</tr></thead><tbody>
@@ -1892,6 +1973,83 @@ VIEWS.premium = v => {
   </div>`;
   if (UI.premFocus) { const el = $("#plan-" + UI.premFocus); UI.premFocus = ""; if (el) requestAnimationFrame(() => el.scrollIntoView({ block: "center", behavior: "smooth" })); }
 };
+/* =================== ANIMACIÓN DE DESBLOQUEO DE PLAN =================== */
+/* Solo la lanza Billing.onResult() tras un pago verificado, o el botón de vista previa (marcado como tal). No cambia permisos. */
+const UNLOCK_FX = {
+  pro: { n: 80, colors: ["#a855f7", "#d8b4fe", "#7c3aed", "#ffffff"], rays: 0, rings: 1, bursts: [0], line: "Has subido de nivel" },
+  elite: { n: 140, colors: ["#8b5cf6", "#60a5fa", "#c4b5fd", "#22d3ee", "#ffffff"], rays: 1, rings: 2, bursts: [0, 650], line: "Nivel avanzado desbloqueado" },
+  ultra: { n: 230, colors: ["#a855f7", "#22d3ee", "#f0abfc", "#7c3aed", "#fde68a", "#ffffff"], rays: 2, rings: 3, bursts: [0, 520, 1100], confetti: true, line: "Nivel máximo alcanzado" }
+};
+const Unlock = {
+  el: null, timers: [], raf: 0, plan: null,
+  play(plan, opt = {}) {
+    if (!UNLOCK_FX[plan]) return;
+    this.close(true); this.plan = plan; const F = UNLOCK_FX[plan], P = PLANS[plan];
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches || S.look.anim === false;
+    const perks = PLAN_PERKS[plan].filter(x => !/^Todo lo de/.test(x)).slice(0, 4);
+    const el = this.el = document.createElement("div");
+    el.className = `unlock u-${plan}`; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", `${P.name} desbloqueado`);
+    el.innerHTML = `<canvas class="ux-cv" aria-hidden="true"></canvas>
+      ${F.rays ? `<div class="ux-rays r${F.rays}" aria-hidden="true"></div>` : ""}
+      ${[...Array(F.rings)].map((_, i) => `<i class="ux-ring" style="--d:${i * 0.16}s" aria-hidden="true"></i>`).join("")}
+      <div class="ux-flash" aria-hidden="true"></div>
+      ${opt.preview ? `<div class="ux-preview">Vista previa · no es una compra y no cambia tu plan</div>` : ""}
+      <button class="ux-skip" data-act="unlock-skip">Omitir</button>
+      <div class="ux-core" aria-hidden="true"><svg viewBox="0 0 120 120"><defs><linearGradient id="uxg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${F.colors[1]}"/><stop offset=".55" stop-color="${F.colors[0]}"/><stop offset="1" stop-color="${F.colors[2]}"/></linearGradient></defs>
+        <path d="M30 20h60l18 26-48 58-48-58z" fill="url(#uxg)" stroke="#fff" stroke-opacity=".7" stroke-width="2"/><path d="M12 46h96M30 20l30 26 30-26M60 104 42 46M60 104l18-58" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.6"/></svg></div>
+      <div class="ux-card"><span class="ux-eyebrow">${opt.preview ? "Vista previa" : "Nuevo plan desbloqueado"}</span>
+        <h1 class="ux-name">${plan === "ultra" ? `<span class="ultra-word">Drop Ultra</span>` : esc(P.name)}</h1><p class="ux-line">${F.line}</p>
+        <ul class="ux-perks">${perks.map((x, i) => `<li style="--i:${i}">${I.check}<span>${x}</span></li>`).join("")}</ul>
+        <button class="btn ${plan === "ultra" ? "ultra-btn" : "pri"} ux-go" data-act="unlock-close">Continuar</button></div>`;
+    document.body.appendChild(el);
+    this.keys = e => { if (e.key === "Escape") { e.stopPropagation(); el.classList.contains("s-done") ? this.close() : this.skip(); } };
+    document.addEventListener("keydown", this.keys, true);
+    if (reduce) { el.classList.add("s-done", "reduced"); requestAnimationFrame(() => el.querySelector(".ux-go").focus()); return; }
+    requestAnimationFrame(() => el.classList.add("s-in"));
+    const at = (ms, fn) => this.timers.push(setTimeout(fn, ms));
+    at(120, () => el.classList.add("s-charge"));
+    at(1000, () => { el.classList.add("s-burst"); this.fx(F); });
+    at(1350, () => el.classList.add("s-reveal"));
+    at(plan === "ultra" ? 2300 : 2000, () => this.done());
+  },
+  done() { const el = this.el; if (!el) return; el.classList.add("s-in", "s-charge", "s-burst", "s-reveal", "s-done"); this.timers.forEach(clearTimeout); this.timers = []; requestAnimationFrame(() => el.querySelector(".ux-go")?.focus()); },
+  skip() { if (!this.el) return; cancelAnimationFrame(this.raf); const c = this.el.querySelector(".ux-cv"); c?.getContext("2d").clearRect(0, 0, c.width, c.height); this.el.classList.add("skipped"); this.done(); },
+  close(now) {
+    this.timers.forEach(clearTimeout); this.timers = []; cancelAnimationFrame(this.raf);
+    if (this.keys) document.removeEventListener("keydown", this.keys, true);
+    const el = this.el; this.el = null; if (!el) return;
+    if (now) return el.remove();
+    el.classList.add("s-out"); setTimeout(() => el.remove(), 320);
+  },
+  fx(F) { // partículas en lienzo: chispas, estrellas y (Ultra) confeti; se detiene solo cuando no queda ninguna
+    const cv = this.el?.querySelector(".ux-cv"); if (!cv) return;
+    const dpr = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight, small = W < 600;
+    cv.width = W * dpr; cv.height = H * dpr; const g = cv.getContext("2d"); g.scale(dpr, dpr);
+    const ps = [], cx = W / 2, cy = H * 0.36, sc = Math.min(W, H) / 700;
+    const burst = (x, y, n) => { for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, v = (2.5 + Math.random() * 9) * sc * 60, kind = F.confetti && i % 4 === 0 ? 2 : i % 3 === 0 ? 1 : 0;
+      ps.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - (kind === 2 ? 120 : 0), life: 0, max: 0.9 + Math.random() * (kind ? 1.6 : 0.9), s: (kind === 2 ? 5 : 1.5) + Math.random() * 3, c: F.colors[(Math.random() * F.colors.length) | 0], k: kind, r: Math.random() * 6, vr: (Math.random() - .5) * 12 }); } };
+    const n = small ? Math.round(F.n * 0.55) : F.n;
+    F.bursts.forEach((d, i) => this.timers.push(setTimeout(() => burst(i ? cx + (i % 2 ? -1 : 1) * W * 0.22 : cx, i ? cy + H * 0.08 : cy, i ? n * 0.5 : n), d)));
+    let last = performance.now(); const t0 = last;
+    const tick = now => {
+      if (!this.el) return; const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      g.clearRect(0, 0, W, H); g.globalCompositeOperation = "lighter";
+      for (let i = ps.length - 1; i >= 0; i--) {
+        const p = ps[i]; p.life += dt; if (p.life > p.max) { ps.splice(i, 1); continue; }
+        const drag = p.k === 2 ? 0.94 : 0.965; p.vx *= Math.pow(drag, dt * 60); p.vy = p.vy * Math.pow(drag, dt * 60) + (p.k === 2 ? 260 : 150) * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.r += p.vr * dt;
+        const al = 1 - p.life / p.max; g.globalAlpha = al; g.fillStyle = p.c; g.strokeStyle = p.c;
+        if (p.k === 0) { g.lineWidth = p.s; g.lineCap = "round"; g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(p.x - p.vx * 0.05, p.y - p.vy * 0.05); g.stroke(); }
+        else if (p.k === 1) { const tw = p.s * (0.6 + 0.4 * Math.sin(now / 70 + i)); g.beginPath(); g.moveTo(p.x, p.y - tw * 2.2); g.lineTo(p.x + tw * .6, p.y); g.lineTo(p.x, p.y + tw * 2.2); g.lineTo(p.x - tw * .6, p.y); g.closePath(); g.fill(); }
+        else { g.globalCompositeOperation = "source-over"; g.save(); g.translate(p.x, p.y); g.rotate(p.r); g.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); g.restore(); g.globalCompositeOperation = "lighter"; }
+      }
+      g.globalAlpha = 1;
+      if (ps.length || now - t0 < 1400) this.raf = requestAnimationFrame(tick); else g.clearRect(0, 0, W, H);
+    };
+    this.raf = requestAnimationFrame(tick);
+  }
+};
+document.addEventListener("visibilitychange", () => { if (document.hidden && Unlock.el && !Unlock.el.classList.contains("s-done")) Unlock.skip(); });
 /* pantalla de bloqueo común para cualquier ruta exclusiva (Widgets, Drop AI) */
 const LOCK_INFO = {
   widgets: { title: "Widgets", ic: "widgets", text: "Convierte el inicio en tu panel: tus estadísticas, la tienda, tus favoritos, tus estrategias, Meta Lab y las novedades, en tarjetas que eliges, ordenas y configuras.", preview: ["Tienda actual", "Victorias", "% victorias", "Favoritos", "Estrategias", "Meta Lab"] },
@@ -2261,8 +2419,9 @@ function addLoadout(s, w) {
    Si el servidor no tiene proveedor configurado, la interfaz lo dice y no envía nada: no hay respuestas simuladas. */
 const AI = { status: "idle", configured: null, provider: null, limit: null, remaining: null, busy: false, err: "" };
 S.aiChats = store.get("aiChats", []); // historial local (solo en este dispositivo)
+S.aiChats.forEach(c => { c.msgs = (c.msgs || []).filter(m => !(m.live && !m.content)); c.msgs.forEach(m => { if (m.live) { delete m.live; m.stopped = true; } }); }); // respuestas que se cortaron al cerrar la app
 UI.aiChat = UI.aiChat || (S.aiChats[0]?.id || null); UI.aiCtx = UI.aiCtx !== false;
-const saveChats = () => store.set("aiChats", S.aiChats.slice(0, 30));
+const saveChats = () => store.set("aiChats", S.aiChats.slice(0, 30).map(c => ({ ...c, msgs: c.msgs.filter(m => !(m.live && !m.content)) })));
 async function aiCheck(force) {
   if (!force && AI.status !== "idle") return;
   AI.status = "loading";
@@ -2341,44 +2500,117 @@ VIEWS.ai = v => { // solo llega aquí con Drop Ultra: render() muestra la pantal
       <p class="small muted">Asistente de IA para Fortnite${AI.provider ? ` · modelo de ${AI.provider === "groq" ? "Groq" : AI.provider === "gemini" ? "Google Gemini" : AI.provider === "anthropic" ? "Anthropic Claude" : "un proveedor compatible"}` : ""}${AI.limit ? ` · ${AI.remaining != null ? AI.remaining + " de " : ""}${AI.limit} mensajes al día` : ""}. Puede equivocarse: comprueba lo importante.</p></div>
     ${banner}
     <div class="chat" id="chat" aria-live="polite">
-      ${msgs.length ? msgs.map((m, k) => `<div class="msg ${m.role === "user" ? "me" : "bot"} ${m.err ? "err" : ""}">${m.role === "user" ? `<p>${esc(m.content)}</p>` : `<div class="md">${mdLite(m.content)}</div><div class="msg-tools"><button class="link small" data-act="ai-copy" data-i="${k}">${I.copy}Copiar</button>${m.ctx ? `<span class="small faint">Con tus datos de DropStats</span>` : ""}</div>`}</div>`).join("")
+      ${msgs.length ? msgs.map((m, k) => m.role === "user" ? `<div class="msg me"><p>${esc(m.content)}</p></div>` : aiBubble(m, k)).join("")
         : `<div class="ai-empty"><span class="si ultra-av">${I.spark}</span><h3>¿En qué te ayudo?</h3><p class="small muted">Estrategia, armas, rotaciones, torneos, tus estadísticas o la tienda. Si lo activas, Drop AI usa los datos reales que tienes en DropStats; si algo no está cargado, te lo dirá.</p>
           <div class="sugg">${AI_SUGGEST.map(s => `<button class="chip" data-act="ai-sugg" data-v="${esc(s)}" ${ready ? "" : "disabled"}>${esc(s)}</button>`).join("")}</div></div>`}
-      ${AI.busy ? `<div class="msg bot typing" role="status"><span></span><span></span><span></span><span class="sr">Drop AI está escribiendo…</span></div>` : ""}
       ${AI.err ? `<div class="note warn">${I.warn}<p>${esc(AI.err)}</p></div>` : ""}
     </div>
     <form class="composer" data-form="ai"><label class="switch tiny"><input type="checkbox" id="aiCtx" ${UI.aiCtx ? "checked" : ""}><span>Usar mis datos de DropStats</span></label>
-      <div class="field"><textarea id="aiq" rows="1" maxlength="2000" placeholder="${ready ? "Pregunta a Drop AI…" : "Drop AI necesita configurarse"}" ${ready && !AI.busy ? "" : "disabled"}></textarea><button class="btn sm pri" aria-label="Enviar" ${ready && !AI.busy ? "" : "disabled"}>${I.send}</button></div></form>
+      <div class="field"><textarea id="aiq" rows="1" maxlength="2000" placeholder="${ready ? "Pregunta a Drop AI…" : "Drop AI necesita configurarse"}" ${ready && !AI.busy ? "" : "disabled"}></textarea>${AI.busy ? `<button type="button" class="btn sm stop-btn" data-act="ai-stop" aria-label="Detener la respuesta">${I.stop}Detener</button>` : `<button class="btn sm pri" aria-label="Enviar" ${ready ? "" : "disabled"}>${I.send}</button>`}</div></form>
+    <button type="button" class="to-end" data-act="ai-end" ${AI.busy && !AI.follow ? "" : "hidden"} aria-label="Ir al final de la respuesta">${I.down}</button>
   </div>`;
-  requestAnimationFrame(() => { const c = $("#view"); if (c && msgs.length) c.scrollTop = c.scrollHeight; });
+  requestAnimationFrame(() => { const c = $("#view"); if (c && msgs.length && AI.follow) c.scrollTop = c.scrollHeight; });
 };
+/* burbuja de respuesta: mientras llega texto se marca como «en directo» y se actualiza sola, sin volver a dibujar la pantalla */
+function aiBubble(m, k) {
+  if (m.live && !m.content) return `<div class="msg bot typing" data-live role="status"><span></span><span></span><span></span><span class="sr">Drop AI está preparando la respuesta…</span></div>`;
+  return `<div class="msg bot ${m.live ? "live" : ""}" ${m.live ? "data-live" : ""}><div class="md">${mdLite(m.content)}</div>${m.live ? "" : `<div class="msg-tools"><button class="link small" data-act="ai-copy" data-i="${k}">${I.copy}Copiar</button>${m.stopped ? `<span class="small faint">Respuesta detenida</span>` : ""}${m.reveal ? `<span class="small faint">Mostrada poco a poco (sin streaming)</span>` : ""}${m.ctx ? `<span class="small faint">Con tus datos de DropStats</span>` : ""}</div>`}</div>`;
+}
+AI.follow = true; AI.ctl = null;
+const aiView = () => $("#view");
+const aiNearEnd = () => { const v = aiView(); return v.scrollHeight - v.scrollTop - v.clientHeight < 140; };
+let aiLastTop = 0;
+document.getElementById("view").addEventListener("scroll", () => { // si el usuario sube a leer, se deja de seguir el final
+  const v = aiView(), t = v.scrollTop, up = t < aiLastTop - 2; aiLastTop = t;
+  if (ROUTE !== "ai" || !AI.busy) return;
+  const f = up ? false : aiNearEnd() ? true : AI.follow; // Drop AI solo baja la pantalla; cualquier subida es del usuario
+  if (f !== AI.follow) { AI.follow = f; const bt = $(".to-end"); if (bt) bt.hidden = f; if (f) aiFollow(); }
+}, { passive: true });
+["wheel", "touchmove"].forEach(t => document.getElementById("view").addEventListener(t, e => { // intención del usuario: dejar de seguir al subir
+  if (ROUTE === "ai" && AI.busy && (t === "touchmove" || e.deltaY < 0)) { AI.follow = false; const b = $(".to-end"); if (b) b.hidden = false; }
+}, { passive: true }));
+function aiFollow() { // desplazamiento suave hacia el final solo si el usuario está cerca del último mensaje
+  if (aiFollow.raf || !AI.follow) return;
+  const step = () => { const v = aiView(); const target = v.scrollHeight - v.clientHeight, d = target - v.scrollTop;
+    if (aiFollow.set != null && v.scrollTop < aiFollow.set - 2) { AI.follow = false; const b = $(".to-end"); if (b) b.hidden = !AI.busy; } // el usuario ha subido
+    if (!AI.follow || ROUTE !== "ai" || d < 1) { aiFollow.raf = 0; aiFollow.set = null; return; }
+    v.scrollTop += Math.max(1, d * 0.28); aiFollow.set = v.scrollTop; aiFollow.raf = requestAnimationFrame(step); };
+  aiFollow.raf = requestAnimationFrame(step);
+}
+function aiPaint(m) { // como mucho ~20 veces por segundo, para que las respuestas largas no ralenticen la interfaz
+  if (aiPaint.t) return;
+  aiPaint.t = setTimeout(() => {
+    aiPaint.t = 0; if (ROUTE !== "ai") return;
+    const el = $("#chat [data-live]"); if (!el) return;
+    if (el.classList.contains("typing")) { el.outerHTML = aiBubble(m, curChat()?.msgs.indexOf(m) ?? 0); }
+    else el.querySelector(".md").innerHTML = mdLite(m.content);
+    aiFollow();
+  }, 50);
+}
 async function aiSend(text) {
   if (!can("ai")) return render(); // ruta y acción protegidas
   text = String(text || "").trim(); if (!text || AI.busy) return;
   if (!AI.configured) { AI.err = AI_ERR.not_configured; return render(); }
   let ch = curChat();
   if (!ch) { ch = { id: uid("c"), title: text.slice(0, 60), msgs: [], updated: Date.now() }; S.aiChats.unshift(ch); UI.aiChat = ch.id; }
+  const history = ch.msgs.filter(m => !m.err && !m.live && m.content).slice(-11).map(m => ({ role: m.role, content: m.content }));
   ch.msgs.push({ role: "user", content: text, at: Date.now() }); ch.updated = Date.now(); saveChats();
-  AI.busy = true; AI.err = ""; render();
-  const payload = { messages: ch.msgs.filter(m => !m.err).slice(-12).map(m => ({ role: m.role, content: m.content })), context: aiContext() };
-  const r = await sendJSON("/api/ai", payload, "POST", 55000);
-  AI.busy = false;
-  if (r.ok && r.j.ok && r.j.text) { ch.msgs.push({ role: "assistant", content: r.j.text, at: Date.now(), ctx: UI.aiCtx }); AI.remaining = r.j.remaining; }
-  else { const e = r.code === 0 ? (/tiempo/.test(r.j?.error || "") ? "timeout" : "network") : r.j?.error || "server"; AI.err = AI_ERR[e] || AI_ERR.server; if (e === "no_session") { ACC.user = null; paintAcc(); } if (e === "rate_limited") AI.remaining = 0; }
-  ch.updated = Date.now(); saveChats(); if (ROUTE === "ai") render();
+  const m = { role: "assistant", content: "", at: Date.now(), ctx: UI.aiCtx, live: true }; ch.msgs.push(m);
+  AI.busy = true; AI.err = ""; AI.follow = true; render(); aiFollow();
+  const ctl = AI.ctl = new AbortController(); const to = setTimeout(() => ctl.abort("timeout"), 70000);
+  let err = null, done = null;
+  try {
+    const r = await fetch("/api/ai", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin", signal: ctl.signal, body: JSON.stringify({ messages: [...history, { role: "user", content: text }], context: aiContext(), stream: true }) });
+    const ct = r.headers.get("content-type") || "";
+    if (ct.includes("ndjson") && r.body) { // streaming real: el texto se muestra según lo genera el modelo
+      const rd = r.body.getReader(), dec = new TextDecoder(); let buf = "";
+      while (true) {
+        const { value, done: end } = await rd.read(); if (end) break;
+        buf += dec.decode(value, { stream: true }); let i;
+        while ((i = buf.indexOf("\n")) >= 0) {
+          const ln = buf.slice(0, i); buf = buf.slice(i + 1); if (!ln.trim()) continue;
+          let o; try { o = JSON.parse(ln); } catch { continue; }
+          if (o.t === "delta") { m.content += o.d; aiPaint(m); } else if (o.t === "done") done = o; else if (o.t === "error") err = o.error;
+        }
+      }
+      if (!done && !err) err = "network";
+    } else { // otros proveedores: respuesta completa de una vez; se muestra poco a poco y se indica
+      let j = {}; try { j = await r.json(); } catch {}
+      if (!r.ok && !j.error) err = "server"; else if (!j.ok || !j.text) err = j.error || "server";
+      else { done = j; await aiReveal(m, j.text, ctl.signal); m.reveal = true; }
+    }
+  } catch (e) { if (ctl.signal.aborted && ctl.signal.reason !== "timeout") { m.stopped = true; } else err = ctl.signal.reason === "timeout" ? "timeout" : "network"; }
+  clearTimeout(to); clearTimeout(aiPaint.t); aiPaint.t = 0; AI.ctl = null; AI.busy = false;
+  delete m.live;
+  if (done?.remaining != null) AI.remaining = done.remaining;
+  if (err) {
+    AI.err = AI_ERR[err] || AI_ERR.server;
+    if (err === "no_session") { ACC.user = null; paintAcc(); } if (err === "rate_limited") AI.remaining = 0;
+    if (!m.content) ch.msgs.splice(ch.msgs.indexOf(m), 1); else m.stopped = true; // nunca se queda una burbuja vacía ni duplicada
+  } else if (!m.content) ch.msgs.splice(ch.msgs.indexOf(m), 1);
+  ch.updated = Date.now(); saveChats(); if (ROUTE === "ai") { render(); if (AI.follow) aiFollow(); }
+}
+async function aiReveal(m, full, signal) { // aparición progresiva para proveedores sin streaming (no se presenta como streaming)
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches || S.look.anim === false;
+  if (reduce) { m.content = full; return; }
+  const words = full.split(/(\s+)/); let k = 0;
+  while (k < words.length && !signal.aborted) { m.content += words.slice(k, k + 6).join(""); k += 6; aiPaint(m); await new Promise(r => setTimeout(r, 30)); }
+  m.content = full;
 }
 function aiAction(act, a) {
   if (!act.startsWith("ai-")) return false;
   if (!can("ai")) { lockedSheet("ai"); return true; }
   switch (act) {
-    case "ai-new": UI.aiChat = null; AI.err = ""; render(); break;
+    case "ai-stop": AI.ctl?.abort("user"); break;
+    case "ai-end": AI.follow = true; aiFollow.set = null; a.hidden = true; aiFollow(); break;
+    case "ai-new": if (AI.busy) { toast("Espera a que termine la respuesta o pulsa «Detener»"); break; } UI.aiChat = null; AI.err = ""; render(); break;
     case "ai-recheck": AI.status = "idle"; aiCheck(true); break;
     case "ai-sugg": aiSend(a.dataset.v); break;
     case "ai-copy": { const m = curChat()?.msgs[+a.dataset.i]; if (m) copyText(m.content); break; }
     case "ai-history": openSheet(`<div class="stack"><h1>Conversaciones</h1><p class="small muted">Se guardan solo en este dispositivo (máximo 30).</p>${S.aiChats.length ? `<div class="list">${S.aiChats.map(c => `<div class="li"><button class="grow" style="background:none;border:0;text-align:left;padding:0;min-width:0" data-act="ai-open" data-id="${c.id}"><span class="t">${esc(c.title)}</span><span class="s">${c.msgs.length} mensajes · ${fmtD(c.updated)}</span></button><button class="ibtn" data-act="ai-del" data-id="${c.id}" aria-label="Borrar">${I.trash}</button></div>`).join("")}</div><button class="btn danger" data-act="ai-wipe">Borrar todo el historial</button>` : `<p class="muted">Aún no hay conversaciones.</p>`}</div>`); break;
-    case "ai-open": UI.aiChat = a.dataset.id; AI.err = ""; closeSheet(); render(); break;
-    case "ai-del": S.aiChats = S.aiChats.filter(c => c.id !== a.dataset.id); if (UI.aiChat === a.dataset.id) UI.aiChat = null; saveChats(); closeSheet(); render(); break;
-    case "ai-wipe": if (!arm(a, "aiwipe")) return true; S.aiChats = []; UI.aiChat = null; saveChats(); closeSheet(); render(); toast("Historial borrado"); break;
+    case "ai-open": if (AI.busy) { toast("Espera a que termine la respuesta o pulsa «Detener»"); break; } UI.aiChat = a.dataset.id; AI.err = ""; closeSheet(); render(); break;
+    case "ai-del": if (AI.busy && a.dataset.id === UI.aiChat) { toast("Espera a que termine la respuesta"); break; } S.aiChats = S.aiChats.filter(c => c.id !== a.dataset.id); if (UI.aiChat === a.dataset.id) UI.aiChat = null; saveChats(); closeSheet(); render(); break;
+    case "ai-wipe": if (AI.busy) { toast("Espera a que termine la respuesta"); break; } if (!arm(a, "aiwipe")) return true; S.aiChats = []; UI.aiChat = null; saveChats(); closeSheet(); render(); toast("Historial borrado"); break;
   }
   return true;
 }
@@ -2763,7 +2995,10 @@ document.addEventListener("click", async e => {
     case "go-premium": UI.premFocus = a.dataset.v || ""; closeSheet(); return go("premium");
     case "locked": return lockedSheet(a.dataset.v);
     case "demo-plan": Entitlements.setDemo(a.dataset.v); closeSheet(); return toast(`Demostración: ${PLANS[a.dataset.v].name}`);
-    case "plan-choose": { const pv = a.dataset.v; const r = await Billing.checkout(pv); if (!r.ok) openSheet(`<div class="stack"><div class="plan-mini t-${pv}"><span class="eyebrow">${PLANS[pv].name}</span><h2>Todavía no está a la venta</h2></div><p class="muted">Las suscripciones de DropStats aún no están activas, así que no se cobra nada y ningún plan queda contratado. El precio de ${priceTxt(PLANS[pv].price)} al mes es provisional.</p><p class="muted">Mientras tanto puedes probar todas sus funciones con el selector de demostración.</p><button class="btn pri" data-act="demo-plan" data-v="${pv}">Probar ${PLANS[pv].short} en demostración</button></div>`); return; }
+    case "unlock-preview": return Unlock.play(a.dataset.v, { preview: true });
+    case "unlock-skip": return Unlock.skip();
+    case "unlock-close": return Unlock.close();
+    case "plan-choose": { const pv = a.dataset.v; const r = await Billing.checkout(pv); if (r.ok) return Billing.onResult(r); if (!r.ok) openSheet(`<div class="stack"><div class="plan-mini t-${pv}"><span class="eyebrow">${PLANS[pv].name}</span><h2>Todavía no está a la venta</h2></div><p class="muted">Las suscripciones de DropStats aún no están activas, así que no se cobra nada y ningún plan queda contratado. El precio de ${priceTxt(PLANS[pv].price)} al mes es provisional.</p><p class="muted">Mientras tanto puedes probar todas sus funciones con el selector de demostración.</p><button class="btn pri" data-act="demo-plan" data-v="${pv}">Probar ${PLANS[pv].short} en demostración</button></div>`); return; }
     case "theme": { const t = THEMES.find(x => x.id === a.dataset.v); if (!t) return; if (!themeOk(t)) return lockedSheet({ pro: "themesPro", elite: "themesElite", ultra: "themesUltra" }[t.need]); S.look.theme = t.id; save("look"); applyLook(); return render(); }
     case "look-accent-clear": S.look.accent = ""; save("look"); applyLook(); return render();
     case "look-reset": S.look = { theme: "base", density: "comfy", accent: "", radius: 16, scale: 1, fx: true, anim: true }; save("look"); applyLook(); toast("Apariencia restablecida"); return render();
