@@ -55,20 +55,24 @@ const WEB_RULES = `\n\nBÚSQUEDA WEB: en esta pregunta tienes una herramienta de
 - Di de qué parche o fecha son los datos. Si las fuentes no coinciden o son antiguas, dilo. El daño suele variar según la rareza: indícalo por rareza si la fuente lo da.
 - Si no encuentras un dato en una fuente fiable, dilo claramente: no inventes cifras.
 - Termina con una línea «Fuentes:» y los enlaces que has usado en formato markdown [título](url). No uses marcas de cita como 【1】.`;
-const NO_WEB = `\n\nDATOS DE ARMAS NO DISPONIBLES: no se ha encontrado esta arma en la Fortnite Wiki. Si te piden cifras actuales, di que no las has encontrado en una fuente fiable, sugiere escribir el nombre del arma de otra forma (o en inglés) y habla solo en términos generales. No des cifras de memoria.`;
+const NO_WEB = `\n\nDATOS DE ARMAS NO DISPONIBLES: no se ha encontrado esta arma en la Fortnite Wiki. DropStats no tiene una sección de armas: no la recomiendes. Si te piden cifras actuales, di que no las has encontrado en una fuente fiable, sugiere escribir el nombre del arma de otra forma (o en inglés) y habla solo en términos generales. No des cifras de memoria.`;
 /* ---- Fortnite Wiki (fortnite.fandom.com, en inglés): API pública y gratuita, datos por parche y rareza ---- */
 const WIKI = "https://fortnite.fandom.com";
 const UA = { "User-Agent": "DropStats/1.0 (+https://dropstats.vercel.app)" };
 async function weaponTerm(p, question, signal) { // nombre oficial en inglés del arma de la pregunta (modelo pequeño y barato)
   if (p.id !== "groq") return null;
   const r = await fetch(p.url + "/chat/completions", { method: "POST", signal, headers: { "Content-Type": "application/json", Authorization: `Bearer ${p.key}` },
-    body: JSON.stringify({ model: process.env.AI_HELPER_MODEL || "llama-3.1-8b-instant", temperature: 0, max_tokens: 30, messages: [
+    body: JSON.stringify({ model: process.env.AI_HELPER_MODEL || "openai/gpt-oss-20b", temperature: 0, max_completion_tokens: 300, reasoning_effort: "low", include_reasoning: false, messages: [
       { role: "system", content: "Devuelve SOLO el nombre oficial en inglés del arma u objeto de Fortnite Battle Royale por el que pregunta el usuario, tal como aparece en la Fortnite Wiki (por ejemplo: Pump Shotgun, Assault Rifle, Hand Cannon). Si pregunta por «la escopeta» sin más, responde Pump Shotgun. Si no pregunta por un arma u objeto concreto, responde NONE." },
       { role: "user", content: question.slice(0, 300) }] }) }).catch(() => null);
-  if (!r?.ok) { weaponTerm.err = r ? `${r.status} ${String((await r.json().catch(() => ({}))).error?.message || "").slice(0, 160)}` : "sin respuesta"; return null; }
+  if (!r?.ok) { const d = dictTerm(question); if (d) return d; weaponTerm.err = r ? `${r.status} ${String((await r.json().catch(() => ({}))).error?.message || "").slice(0, 160)}` : "sin respuesta"; return null; }
   const j = await r.json().catch(() => ({})); const t = String(j.choices?.[0]?.message?.content || "").trim().replace(/^["'«]|["'».]$/g, "");
-  return !t || /^none$/i.test(t) || t.length > 60 ? null : t;
+  return !t || /^none$/i.test(t) || t.length > 60 ? dictTerm(question) : t;
 }
+// reserva sin IA: nombres en español más habituales → nombre de la Fortnite Wiki
+const DICT = [[/escopeta (de )?corredera|escopeta(?! (t[aá]ctica|de combate|autom|de cerrojo|de dos ca))/i, "Pump Shotgun"], [/escopeta t[aá]ctica/i, "Tactical Shotgun"], [/escopeta de combate/i, "Combat Shotgun"],
+  [/rifle de asalto/i, "Assault Rifle"], [/fusil de francotirador|francotirador|sniper/i, "Sniper Rifle"], [/subfusil|\bsmg\b/i, "Submachine Gun"], [/ca[ñn][oó]n de mano/i, "Hand Cannon"], [/pistola/i, "Pistol"], [/lanzacohetes/i, "Rocket Launcher"], [/minigun|ametralladora/i, "Minigun"]];
+function dictTerm(q) { for (const [re, t] of DICT) if (re.test(q)) return t; return null; }
 function wikiExtract(w) { // ficha del arma + estadísticas del parche actual (primera pestaña), sin imágenes
   const clean = x => x.replace(/<gallery>[\s\S]*?<\/gallery>/g, "").replace(/\|\s*Image=[^\n]*/g, "").replace(/\[\[(?:File|Image):[^\]]*\]\]/g, "").replace(/<!--[\s\S]*?-->/g, "").replace(/\n{3,}/g, "\n\n");
   const ib = (w.match(/\{\{Infobox Weaponry[\s\S]*?\n\}\}/) || [""])[0];
