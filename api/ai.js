@@ -46,14 +46,16 @@ Reglas:
 const INFO_KEYS = { wikiFortnite: "extracto de la Fortnite Wiki sobre el arma", misEstadisticas: "estadísticas del usuario", jugadorConsultado: "un jugador consultado", estrategias: "estrategias guardadas", mapaSinGuardar: "mapa sin guardar", lugaresDelMapa: "lugares del mapa", tiendaHoy: "tienda de hoy", torneos: "torneos del usuario", novedadesOficiales: "novedades oficiales", favoritos: "favoritos" };
 // Búsqueda web (herramienta browser_search de Groq, solo modelos gpt-oss): se activa para preguntas sobre armas o datos actuales
 const WEB_RE = /(da[ñn]o|dps|cadencia|cargador|recarga|headshot|cabeza|nerf|buff|parche|actualizaci[oó]n|temporada actual|esta temporada|ahora mismo|actualmente|\bmeta\b|qu[eé] arma|mejor(es)? arma|armas?\b|bot[ií]n|loot|vault|escopeta|rifle|subfusil|\bsmg\b|francotirador|sniper|pistola|lanzacohetes|ballesta|minigun)/i;
-const needsWeb = messages => process.env.AI_WEB_SEARCH !== "off" && WEB_RE.test(messages[messages.length - 1]?.content || "");
+const needsWeb = messages => WEB_RE.test(messages[messages.length - 1]?.content || "");
+// La búsqueda web libre de Groq queda desactivada por defecto: en pruebas reales devolvió notas de parche de 2018 como actuales. AI_WEB_SEARCH=on la activa como reserva.
+const webFallback = () => process.env.AI_WEB_SEARCH === "on";
 const canSearch = (p, model) => p.id === "groq" && /gpt-oss/.test(model);
 const WEB_RULES = `\n\nBÚSQUEDA WEB: en esta pregunta tienes una herramienta de búsqueda web. Úsala para datos actuales (daño y estadísticas de armas, cambios de parche, botín de la temporada).
 - Fuentes fiables, por este orden: notas de parche oficiales de Epic (fortnite.com, epicgames.com), Fortnite Wiki (fortnite.fandom.com) y Fortnite.GG (fortnite.gg). No uses foros, vídeos, redes sociales ni webs de trucos.
 - Di de qué parche o fecha son los datos. Si las fuentes no coinciden o son antiguas, dilo. El daño suele variar según la rareza: indícalo por rareza si la fuente lo da.
 - Si no encuentras un dato en una fuente fiable, dilo claramente: no inventes cifras.
 - Termina con una línea «Fuentes:» y los enlaces que has usado en formato markdown [título](url). No uses marcas de cita como 【1】.`;
-const NO_WEB = `\n\nBÚSQUEDA WEB NO DISPONIBLE ahora (límite del servicio gratuito). Si te piden cifras actuales, di que no has podido buscarlas y que vuelvan a intentarlo en un minuto; habla solo en términos generales.`;
+const NO_WEB = `\n\nDATOS DE ARMAS NO DISPONIBLES: no se ha encontrado esta arma en la Fortnite Wiki. Si te piden cifras actuales, di que no las has encontrado en una fuente fiable, sugiere escribir el nombre del arma de otra forma (o en inglés) y habla solo en términos generales. No des cifras de memoria.`;
 /* ---- Fortnite Wiki (fortnite.fandom.com, en inglés): API pública y gratuita, datos por parche y rareza ---- */
 const WIKI = "https://fortnite.fandom.com";
 const UA = { "User-Agent": "DropStats/1.0 (+https://dropstats.vercel.app)" };
@@ -63,7 +65,7 @@ async function weaponTerm(p, question, signal) { // nombre oficial en inglés de
     body: JSON.stringify({ model: process.env.AI_HELPER_MODEL || "llama-3.1-8b-instant", temperature: 0, max_tokens: 30, messages: [
       { role: "system", content: "Devuelve SOLO el nombre oficial en inglés del arma u objeto de Fortnite Battle Royale por el que pregunta el usuario, tal como aparece en la Fortnite Wiki (por ejemplo: Pump Shotgun, Assault Rifle, Hand Cannon). Si pregunta por «la escopeta» sin más, responde Pump Shotgun. Si no pregunta por un arma u objeto concreto, responde NONE." },
       { role: "user", content: question.slice(0, 300) }] }) }).catch(() => null);
-  if (!r?.ok) return null;
+  if (!r?.ok) { weaponTerm.err = r ? `${r.status} ${String((await r.json().catch(() => ({}))).error?.message || "").slice(0, 160)}` : "sin respuesta"; return null; }
   const j = await r.json().catch(() => ({})); const t = String(j.choices?.[0]?.message?.content || "").trim().replace(/^["'«]|["'».]$/g, "");
   return !t || /^none$/i.test(t) || t.length > 60 ? null : t;
 }
@@ -157,7 +159,7 @@ async function openStream(p, model, sys, messages, maxTokens, signal, web) {
   return { reader: r.body.getReader() };
 }
 async function streamReply(req, res, p, messages, context, onFail, onOk) {
-  let web = needsWeb(messages), wiki = null;
+  const wantData = needsWeb(messages); let web = wantData, wiki = null;
   const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 58000);
   let closed = false; res.on("close", () => { if (!res.writableEnded) { closed = true; ctl.abort(); } }); // el usuario ha pulsado «Detener» o se ha ido
   res.statusCode = 200;
@@ -168,6 +170,7 @@ async function streamReply(req, res, p, messages, context, onFail, onOk) {
     line({ t: "status", d: "wiki" });
     try { const term = await weaponTerm(p, messages[messages.length - 1].content, ctl.signal); if (term) wiki = await wikiLookup(term, ctl.signal); } catch {}
     if (wiki) { context = { ...context, wikiFortnite: wiki }; web = false; }
+    else if (!webFallback()) web = false;
     else { const day = new Date().toISOString().slice(0, 10); if (await tooMany(`ai:web:${day}`, Math.max(0, +process.env.AI_WEB_DAILY || 5), 90000)) web = false; }
   }
   const sys = buildSystem(context) + (wiki ? WIKI_RULES : "");
@@ -179,14 +182,14 @@ async function streamReply(req, res, p, messages, context, onFail, onOk) {
   if (web && tries[0]?.[1]) line({ t: "status", d: "search" });
   try {
     for (const [m, w] of tries) {   // antes de enviar texto, si un modelo está agotado se prueba el siguiente
-      const o = await openStream(p, m, w ? sys : sys + (web ? NO_WEB : ""), messages, 1100, ctl.signal, w);
+      const o = await openStream(p, m, w ? sys : sys + (wantData && !wiki ? NO_WEB : ""), messages, 1100, ctl.signal, w);
       if (!o.err) { opened = o; model = m; usedWeb = w; break; }
       opened = o; if (w) { webFailed = true; continue; }
       if (!["provider_rate", "provider_config"].includes(o.err)) break;
     }
   } catch (e) { clearTimeout(to); if (!closed) { await onFail(); line({ t: "error", error: e.name === "AbortError" ? "timeout" : "unreachable" }); } return res.end(); }
-  if (!opened?.reader) { clearTimeout(to); await onFail(); line({ t: "error", error: opened?.err || "provider_error" }); return res.end(); }
-  if ((web && !usedWeb) || (needsWeb(messages) && !wiki && !web)) line({ t: "status", d: "nosearch" });
+  if (!opened?.reader) { clearTimeout(to); await onFail(); line({ t: "error", error: opened?.err || "provider_error", status: opened?.status, detail: opened?.detail ? String(opened.detail).slice(0, 200) : undefined }); return res.end(); }
+  if (wantData && !wiki && !usedWeb) line({ t: "status", d: "nosearch" });
   const dec = new TextDecoder(); let buf = "", text = "", finish = null;
   try {
     while (true) {
@@ -231,7 +234,7 @@ export default async function handler(req, res) {
     if (req.query.op === "wiki") { // prueba real: nombre del arma + extracto de la wiki (sin datos de nadie)
       const q = String(req.query.q || "¿Cuánto daño hace la escopeta?").slice(0, 200);
       const term = await weaponTerm(p, q); const wk = term ? await wikiLookup(term) : null;
-      return send(res, 200, { ok: !!wk, term, pagina: wk?.pagina, url: wk?.url, editadaEl: wk?.editadaEl, chars: wk?.extracto.length, extracto: wk?.extracto.slice(0, 1500), ms: Date.now() - t0 });
+      return send(res, 200, { ok: !!wk, term, helperError: term ? undefined : weaponTerm.err, pagina: wk?.pagina, url: wk?.url, editadaEl: wk?.editadaEl, chars: wk?.extracto.length, extracto: wk?.extracto.slice(0, 1500), ms: Date.now() - t0 });
     }
     if (req.query.op === "web") { // prueba real de la búsqueda web (sin datos de nadie)
       const model = p.models.find(m => canSearch(p, m)); if (!model) return send(res, 200, { ok: false, error: "no_search_model" });
