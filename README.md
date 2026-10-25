@@ -4,7 +4,7 @@ Tienda diaria, catálogo de cosméticos, mapa interactivo, estadísticas de juga
 
 DropStats es un proyecto independiente. No está afiliado, patrocinado ni aprobado por Epic Games. Fortnite y los nombres e imágenes de sus objetos son marcas de Epic Games, Inc.
 
-Versión del 25 de octubre de 2026 (rediseño, planes premium, Ultra Widgets y mapa táctico).
+Versión del 25 de octubre de 2026 (cuatro planes, Widgets, Meta Lab, Drop AI y mapa táctico).
 
 ---
 
@@ -24,28 +24,45 @@ Versión del 25 de octubre de 2026 (rediseño, planes premium, Ultra Widgets y m
 Favoritos, preferencias, filtros, rutas, marcadores y recordatorios se guardan en el navegador y se mantienen al recargar.
 
 
-## DropStats Premium (Pro, Elite y Drop Ultra)
+## Planes: Gratis, Pro, Elite y Drop Ultra
 
-Tres planes en orden ascendente, con precios **provisionales** (2,99 €, 5,99 € y 9,99 € al mes). No hay cobros ni suscripciones activas: el botón de cada plan explica que aún no está a la venta.
+Cuatro niveles en orden ascendente. Los precios (2,99 €, 5,99 € y 9,99 € al mes) son **provisionales**: no hay pagos ni suscripciones, y el botón de cada plan dice que aún no está a la venta.
 
-- **Pro:** métricas extra en Stats, filtros avanzados del catálogo (precio, orden, «solo hoy»), favoritos por categorías, temas Noche morada y Medianoche, accesos rápidos personalizables. Sin widgets.
-- **Elite:** todo lo de Pro + gráficas de evolución, total y temporada lado a lado, comparar jugadores, análisis competitivo por modo, etiquetas de estrategias, temas Aurora y Cobalto, modo compacto. Sin widgets.
-- **Drop Ultra (nivel máximo):** todo lo anterior + **Ultra Widgets**, personalización total (color de acento, esquinas, tamaño de texto), temas Ultravioleta y Holográfico, efectos visuales, carpetas y estrategias fijadas, insignia Ultra y tarjeta holográfica.
+| | Gratis | Pro | Elite | Drop Ultra |
+|---|---|---|---|---|
+| Stats | Victorias, eliminaciones, partidas, % victorias | + K/D, top 10, métricas extra, desglose por modo y control, gráfico por modo, comparar con 1 jugador, fijar/borrar historial | + gráficas históricas (varias métricas), tendencias, total vs temporada, hasta 3 rivales | Todo |
+| Mapa | Marcadores, rutas, 5 estrategias | 50 estrategias, buscar, categorías, duplicar, colores de ruta, notas, buscar lugares | Sin límite, modo/temporada/estilo, plan por fases, análisis de rutas, comparar estrategias | + carpetas, fijar, armas de Meta Lab en la estrategia |
+| Meta Lab | Lista y stats principales | Filtros, tabla completa, comparar 2 | Comparar 4, gráficas, % diferencia, cambios entre parches, comparaciones guardadas | Todo + integración con estrategias y Drop AI |
+| Catálogo y favoritos | Búsqueda y tipo, 30 favoritos | Rareza, precio, orden, «solo hoy», 300 favoritos, 5 listas, 5 filtros guardados, comparar 2 | Tabla, comparar 4, 20 listas | Sin límites |
+| Interfaz | Tema base | 3 temas, compacto, orden del inicio, acabado negro y morado | 5 temas, acabado violeta y azul | 7 temas, efectos, color/esquinas/texto |
+| **Widgets** y **Drop AI** | — | — | — | **Solo Ultra** |
 
-**Permisos:** todo pasa por una única función, `can()`. Los widgets solo existen con Drop Ultra: el panel no se dibuja en otros planes, la ruta `#widgets` muestra una pantalla de bloqueo y cada acción (añadir, quitar, ordenar, cambiar tamaño o diseño, ocultar datos) vuelve a comprobar el plan.
+**Permisos centralizados:** `can(función)` y `limit(recurso)` en `src/app.html` son el único punto de decisión. `render()` comprueba `ROUTE_FEATURE` antes de dibujar cualquier vista, así que `#widgets` y `#ai` muestran la pantalla de bloqueo aunque se entre con un enlace directo, y cada acción (añadir widget, enviar a Drop AI…) vuelve a comprobar el plan.
 
-**Selector de demostración:** en Premium → «Selector de demostración» se simula Gratis, Pro, Elite o Ultra para probar los permisos. Es una herramienta de desarrollo, guardada solo en el navegador.
+**Selector de demostración:** Premium → «Selector de demostración» (Gratis, Pro, Elite, Ultra). Cambia los permisos al instante y no borra nada: si bajas de plan, la configuración se conserva y vuelve al subir.
 
-**Suscripción real (futuro):** `Entitlements.plan()` es el único sitio que decide el plan. Para cobrar de verdad habría que añadir una pasarela (por ejemplo Stripe) en una función del servidor, guardar el plan verificado de cada cuenta en la base de datos y hacer que `Entitlements.plan()` lo lea de `/api/auth` en lugar del selector. `Billing.checkout()` ya está preparado para conectarse.
+**Suscripción real (futuro):** `Entitlements.plan()` es el único sitio que decide el plan. Para cobrar habría que añadir una pasarela (por ejemplo Stripe) en el servidor, guardar el plan verificado de cada cuenta y que `Entitlements.plan()` lo lea de `/api/auth`. `api/ai.js` tiene marcado dónde comprobar Drop Ultra en el servidor.
 
-## Ultra Widgets
+## Widgets (Drop Ultra)
 
-11 tipos: estadísticas del jugador, victorias, eliminaciones, % de victorias, evolución, tienda actual, cosméticos favoritos, próximos torneos confirmados, acceso rápido al mapa, estrategias guardadas y novedades oficiales del juego. Cada widget se puede añadir, quitar, reordenar, cambiar de tamaño (pequeño, mediano, grande) y de diseño (cristal, sólido, holográfico), y ocultar datos concretos. «Restaurar diseño original» vuelve a la configuración inicial. Si falta información, cada widget muestra un estado vacío explicativo.
+12 tipos: estadísticas del jugador, victorias, eliminaciones, % de victorias, resumen de temporada, tienda actual, cosméticos favoritos, torneos confirmados, rutas y estrategias, accesos rápidos, novedades oficiales y resumen de Meta Lab. Se pueden añadir, quitar, reordenar (botones subir/bajar), cambiar de tamaño y diseño, elegir los datos visibles, configurar (por ejemplo, qué accesos muestra), cambiar la disposición (cuadrícula o lista) y restaurar el diseño original. Se guardan solos en el dispositivo y en la cuenta.
 
-- Los datos de jugador salen de tu cuenta marcada con «Es mi cuenta» en Stats.
-- La evolución usa mediciones reales guardadas por DropStats (una al día cada vez que se consultan las estadísticas). No se rellena con datos inventados.
-- Las novedades son las noticias oficiales del juego (fortnite-api.com, `/v2/news/br`).
-- Los torneos «confirmados» son los recordatorios en los que has marcado que comprobaste la fecha en la web oficial.
+## Meta Lab
+
+Armas del parche actual desde **api-fortnite.com** (no oficial, gratuita hasta 10.000 consultas al día) a través de `/api/meta`. Necesita `METALAB_API_KEY` en Vercel (clave en https://www.api-fortnite.com/login). Los cambios entre parches se calculan comparando los datos que la fuente da para el parche actual y el anterior. Sin clave, la sección explica cómo activarla y no muestra datos inventados.
+
+## Drop AI (Drop Ultra)
+
+Chat con un modelo de IA real a través de `/api/ai`: burbujas, respuestas con formato, copiar, nueva conversación, historial local, preguntas sugeridas, estados de carga y error. Con «Usar mis datos de DropStats» activado envía al modelo solo lo que la app tiene cargado (tus stats, estrategias, Meta Lab, tienda, torneos con su marca de confirmado, novedades) y una lista de lo que **no** está disponible, para que no afirme haberlo consultado.
+
+Configuración (una de estas, en Vercel → Environment Variables):
+
+- `GEMINI_API_KEY` — Google Gemini, tiene nivel gratuito (https://aistudio.google.com/apikey). Modelo por defecto `gemini-flash-latest`.
+- `ANTHROPIC_API_KEY` — Claude (de pago). Modelo por defecto `claude-haiku-5-5`.
+- `AI_API_KEY` + `AI_BASE_URL` + `AI_MODEL` — cualquier API compatible con OpenAI.
+- Opcionales: `AI_MODEL` (cambiar modelo), `AI_PROVIDER` (forzar proveedor), `AI_DAILY_LIMIT` (30 mensajes por cuenta y día por defecto).
+
+Requiere sesión iniciada (para aplicar el límite diario en Redis). Si no hay clave, la pantalla dice que el servicio aún no está configurado y no envía nada.
 
 ## Mapa táctico
 
@@ -69,6 +86,8 @@ dropstats/
   api/_lib.js           Redis, contraseñas, sesiones y protección de peticiones
   api/prices.js         Base de precios compartida (y api/collect.js, tarea diaria)
   api/img.js            Proxy de imágenes de fortnite-api.com para exportar estrategias
+  api/meta.js           Meta Lab: armas por parche (api-fortnite.com); clave METALAB_API_KEY
+  api/ai.js             Drop AI: llama al modelo de IA (Gemini, Claude o compatible) con límite diario
   scripts/snapshot.py   Copia de tienda, mapa y novedades con sus imágenes (public/data/)
   vercel.json           Configuración de despliegue
 ```
