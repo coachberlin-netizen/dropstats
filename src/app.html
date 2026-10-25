@@ -498,6 +498,7 @@ td .pct.up{color:var(--ok)} td .pct.dn{color:var(--bad)}
 .typing .srch{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);animation:caret 1.6s ease-in-out infinite}
 .typing .srch svg{width:16px;height:16px;color:var(--violet2)}
 .msg .md a{color:var(--violet2);overflow-wrap:anywhere}
+.msg .md-t{margin:8px 0;background:var(--bg)}.msg .md-t table{font-size:13.5px}.msg .md-t th{text-align:left}
 .msg-tools .small svg{width:13px;height:13px;vertical-align:-2px;margin-right:3px}
 .stop-btn{background:var(--raise);border:1px solid var(--line2);color:var(--fg)}
 .stop-btn svg{width:14px!important;height:14px!important}
@@ -2248,15 +2249,18 @@ function mdLite(t) {
   const lines = esc(t).split(/\n/); let html = "", list = null;
   const inline = s => s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener nofollow">$1</a>').replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" rel="noopener nofollow">$2</a>').replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/g, "$1<i>$2</i>");
   const close = () => { if (list) { html += `</${list}>`; list = null; } };
+  let tbl = null; const flushT = () => { if (tbl) { html += `<div class="tblwrap md-t"><table>${tbl.map((r, k) => `<tr>${r.map(c => k ? `<td>${inline(c)}</td>` : `<th>${inline(c)}</th>`).join("")}</tr>`).join("")}</table></div>`; tbl = null; } };
   for (const ln of lines) {
     let m;
+    if (/^\s*\|.*\|\s*$/.test(ln)) { close(); if (/^\s*\|[\s:|-]+\|\s*$/.test(ln)) continue; (tbl = tbl || []).push(ln.trim().slice(1, -1).split("|").map(c => c.trim())); continue; } // tablas markdown
+    flushT();
     if ((m = ln.match(/^\s*[-*•]\s+(.*)/))) { if (list !== "ul") { close(); html += "<ul>"; list = "ul"; } html += `<li>${inline(m[1])}</li>`; }
     else if ((m = ln.match(/^\s*\d+[.)]\s+(.*)/))) { if (list !== "ol") { close(); html += "<ol>"; list = "ol"; } html += `<li>${inline(m[1])}</li>`; }
     else if ((m = ln.match(/^#{1,4}\s+(.*)/))) { close(); html += `<h4>${inline(m[1])}</h4>`; }
     else if (!ln.trim()) close();
     else { close(); html += `<p>${inline(ln)}</p>`; }
   }
-  close(); return html;
+  close(); flushT(); return html;
 }
 const AI_ERR = {
   not_configured: "Drop AI aún no tiene un modelo de IA configurado en el servidor.", no_store: "Falta la base de datos del servidor, necesaria para aplicar los límites de uso.",

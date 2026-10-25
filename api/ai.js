@@ -30,7 +30,7 @@ const GLOBAL = () => Math.max(1, +process.env.AI_GLOBAL_LIMIT || 300);
 const SYSTEM = `Eres Drop AI, el asistente de DropStats, una app independiente de Fortnite (no afiliada a Epic Games).
 Ayudas con estrategia, toma de decisiones, armas, mecánicas, rotaciones, mapa y puntos de interés, preparación de torneos, interpretación de estadísticas, comparaciones de jugadores, cosméticos y tienda, y novedades.
 Reglas:
-- Responde en español, claro y bien estructurado (párrafos cortos y listas cuando ayuden). Sé concreto y práctico. No uses tablas.
+- Responde en español, claro y bien estructurado (párrafos cortos y listas cuando ayuden). Sé concreto y práctico. Usa tablas solo para cifras por rareza o comparaciones cortas.
 - Recibirás un bloque CONTEXTO con datos reales que DropStats tiene ahora (estadísticas, estrategias, tienda, torneos). Úsalo cuando sea relevante y di que lo usas ("según tus estadísticas en DropStats…").
 - "noDisponible" lista lo que DropStats NO ha podido darte: no inventes esos datos y, si hacen falta, di cómo conseguirlos en la app.
 - No inventes datos: si algo no está en el CONTEXTO ni es conocimiento general estable del juego, dilo. No afirmes haber consultado nada que no esté en el CONTEXTO. No tienes acceso a internet.
@@ -73,16 +73,22 @@ async function weaponTerm(p, question, signal) { // nombre oficial en inglés de
 const DICT = [[/escopeta (de )?corredera|escopeta(?! (t[aá]ctica|de combate|autom|de cerrojo|de dos ca))/i, "Pump Shotgun"], [/escopeta t[aá]ctica/i, "Tactical Shotgun"], [/escopeta de combate/i, "Combat Shotgun"],
   [/rifle de asalto/i, "Assault Rifle"], [/fusil de francotirador|francotirador|sniper/i, "Sniper Rifle"], [/subfusil|\bsmg\b/i, "Submachine Gun"], [/ca[ñn][oó]n de mano/i, "Hand Cannon"], [/pistola/i, "Pistol"], [/lanzacohetes/i, "Rocket Launcher"], [/minigun|ametralladora/i, "Minigun"]];
 function dictTerm(q) { for (const [re, t] of DICT) if (re.test(q)) return t; return null; }
-function wikiExtract(w) { // ficha del arma + estadísticas del parche actual (primera pestaña), sin imágenes
-  const clean = x => x.replace(/<gallery>[\s\S]*?<\/gallery>/g, "").replace(/\|\s*Image=[^\n]*/g, "").replace(/\[\[(?:File|Image):[^\]]*\]\]/g, "").replace(/<!--[\s\S]*?-->/g, "").replace(/\n{3,}/g, "\n\n");
+function wikiExtract(w) { // ficha del arma + estadísticas del parche actual (primera pestaña), compactadas y sin imágenes
+  const clean = x => x.replace(/<gallery>[\s\S]*?<\/gallery>/g, "").replace(/\|\s*[Ii]mage=[^\n]*/g, "").replace(/\[\[(?:File|Image):[^\]]*\]\]/g, "").replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/\{\{Rarity Text\|(\w+)\|([^}]+)\}\}/g, "$2 ($1)").replace(/\{\{(Common|Uncommon|Rare|Epic|Legendary|Mythic|Exotic)\}\}/g, "$1").replace(/\{\{Ammunition\|([^}]+)\}\}/g, "$1")
+    .replace(/\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g, "$1").replace(/<br\s*\/?>/g, " / ").replace(/\n{3,}/g, "\n\n");
+  const box = t => t.replace(/\{\{Minibox Weapons[^\n]*\n([\s\S]*?)\n\}\}/g, (_, b) => { const f = Object.fromEntries(b.split("\n").map(l => l.replace(/^\|/, "").split("=")).filter(a => a.length > 1).map(([k, ...v]) => [k.trim(), v.join("=").trim()])); const r = f.Rarity || ""; delete f.Rarity; delete f.Image; delete f.Name; return `- ${r}: ${Object.entries(f).map(([k, v]) => `${k} ${v}`).join(", ")}`; });
   const ib = (w.match(/\{\{Infobox Weaponry[\s\S]*?\n\}\}/) || [""])[0];
   let st = ""; const i = w.indexOf("==Stats==");
-  if (i >= 0) { st = w.slice(i, i + 9000); const k = st.indexOf("\n|-|", st.indexOf("|-|") + 3); if (k > 0) st = st.slice(0, k); const e = st.indexOf("\n==", 10); if (e > 0) st = st.slice(0, e); }
-  const fall = (w.match(/'''Damage falloff'''[\s\S]*?\n\n/) || [""])[0];
-  return clean(ib + "\n" + st + "\n" + fall).slice(0, 5000);
+  if (i >= 0) {
+    st = w.slice(i); const end = st.slice(10).search(/\n==[^=]/); if (end > 0) st = st.slice(0, end + 10);   // solo la sección «Stats»
+    const t1 = st.indexOf("|-|"); if (t1 >= 0) { const t2 = st.indexOf("\n|-|", t1 + 3); st = st.slice(0, t2 > 0 ? t2 : undefined); } // solo la primera pestaña (parche actual)
+  }
+  const fall = w.includes("'''Damage falloff'''") && !st.includes("Damage falloff") ? (w.match(/'''Damage falloff'''[\s\S]*?\n\n/) || [""])[0] : "";
+  return clean(box(ib + "\n" + st + "\n" + fall)).split("\n").filter((l, k, arr) => !(l.startsWith("- ") && arr.indexOf(l) < k)).join("\n").replace(/\n{3,}/g, "\n\n").slice(0, 4500);
 }
 async function wikiLookup(term, signal) {
-  const ck = "wiki:" + term.toLowerCase();
+  const ck = "wiki2:" + term.toLowerCase();
   try { const c = await redis("GET", ck); if (c) return JSON.parse(c); } catch {}
   const sr = await fetch(`${WIKI}/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srlimit=6&format=json`, { headers: UA, signal }).then(r => r.json()).catch(() => null);
   const hits = sr?.query?.search || [];
@@ -95,7 +101,7 @@ async function wikiLookup(term, signal) {
   try { await redis("SET", ck, JSON.stringify(out), "EX", 6 * 3600); } catch {}
   return out;
 }
-const WIKI_RULES = `\n\nFORTNITE WIKI: el CONTEXTO incluye "wikiFortnite", un extracto real de la Fortnite Wiki con la ficha del arma y sus estadísticas por rareza del parche actual (la pestaña indica el parche, p. ej. v42.10). Úsalo para responder con cifras: indica el parche y desglosa por rareza cuando la fuente lo da. Explica brevemente cómo leerlo si ayuda (daño por disparo, cadencia, cargador, recarga, multiplicador a la cabeza, caída de daño). Si la pregunta era genérica («la escopeta»), di de qué arma concreta son los datos. Termina con «Fuentes:» y el enlace [Fortnite Wiki – página](url). No inventes cifras que no estén en el extracto.`;
+const WIKI_RULES = `\n\nFORTNITE WIKI: el CONTEXTO incluye "wikiFortnite", un extracto real de la Fortnite Wiki con la ficha del arma y sus estadísticas por rareza del parche actual (la pestaña indica el parche, p. ej. v42.10). Úsalo para responder con cifras: indica el parche y desglosa por rareza cuando la fuente lo da. Explica brevemente cómo leerlo si ayuda (daño por disparo, cadencia, cargador, recarga, multiplicador a la cabeza, caída de daño). Si la pregunta era genérica («la escopeta»), di de qué arma concreta son los datos. Termina con «Fuentes:» y el enlace [Fortnite Wiki – página](url). No inventes cifras que no estén en el extracto. DropStats no tiene una sección de armas ni muestra la wiki: si falta un dato, remite al enlace de la wiki.`;
 function buildSystem(context) {
   const c = context && typeof context === "object" ? context : {};
   const have = Object.keys(INFO_KEYS).filter(k => k in c && !(k === "torneos" && typeof c.torneos === "string")).map(k => INFO_KEYS[k]);
