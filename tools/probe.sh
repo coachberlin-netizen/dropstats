@@ -6,6 +6,7 @@ for q in "¿Cuánto daño hace la escopeta?" "¿Cuánto daño hace el rifle de a
 done
 E="prueba-$(date +%s)@dropstats-test.invalid"; P="Prueba-$(openssl rand -hex 8)"
 curl -s -m 20 -c c.txt -H "$O" -H "$J" -d "{\"action\":\"register\",\"email\":\"$E\",\"password\":\"$P\"}" $B/api/auth > out/probe/1_register.json
+sleep 65
 for q in "¿Cuánto daño hace la escopeta?" "¿Cómo roto mejor al segundo círculo?"; do
 python3 - "{\"messages\":[{\"role\":\"user\",\"content\":\"$q\"}],\"context\":{\"app\":\"DropStats\"},\"stream\":true}" <<'PY' >> out/probe/2_chat.txt
 import sys, time, json, http.cookiejar, urllib.request
