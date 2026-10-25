@@ -1,0 +1,12 @@
+{
+  "name": "dropstats",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "DropStats: tienda, catálogo, mapa, estadísticas y colección de Fortnite. Proyecto independiente, no afiliado a Epic Games.",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "vercel dev"
+  },
+  "engines": { "node": ">=18" }
+}

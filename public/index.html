@@ -1,0 +1,1242 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="icon" href="/icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}*,*::before,*::after{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body><title>DropStats</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#08080d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: app de una pantalla. Móvil: cabecera + vista con scroll propio + barra inferior de 5 pestañas.
+   Escritorio (≥960px): cabecera a lo ancho, navegación lateral, contenido en rejilla más ancha.
+   Look oscuro único y deliberado: negro azulado, superficies gris violáceo, acento morado→azul. */
+:root{
+  --bg:#08080d; --surface:#111119; --surface2:#171722; --raise:#1f1f2c; --line:#24243a; --line2:#34344d;
+  --fg:#f2f0ff; --muted:#a6a3c2; --faint:#706d8f;
+  --violet:#8b5cf6; --violet2:#b7a2ff; --blue:#3b82f6; --cyan:#62c8ff;
+  --ok:#3ddc97; --warn:#fbbf24; --bad:#ff7a7a;
+  --grad:linear-gradient(135deg,#8b5cf6,#3b82f6);
+  --display:"Chakra Petch","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:16px; --r-sm:11px;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;font-family:var(--body);font-size:15px;line-height:1.45;color:var(--fg);-webkit-font-smoothing:antialiased;overflow:hidden;
+  background:radial-gradient(70vmax 45vmax at 100% -10%,#3b82f61c,transparent 60%),radial-gradient(70vmax 45vmax at -15% 110%,#8b5cf61f,transparent 60%),var(--bg)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+a{color:var(--violet2)}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+svg{flex:none}
+
+/* ---------- estructura ---------- */
+#app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"top" "main" "nav";max-width:1360px;margin:0 auto}
+.top{grid-area:top;display:flex;align-items:center;gap:6px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{grid-area:main;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line2) transparent;
+  padding-block:2px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
+main.full{padding:0;overflow:hidden;display:flex;flex-direction:column}
+.nav{grid-area:nav;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#0b0b12f2;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);
+  padding-top:4px;padding-bottom:max(4px,env(safe-area-inset-bottom,0px));padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.nav button{background:none;border:0;padding:4px 0 2px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--faint);font-size:11px;font-weight:600;letter-spacing:.01em}
+.nav .ic{width:46px;height:28px;border-radius:999px;display:grid;place-items:center;transition:background .2s}
+.nav svg{width:21px;height:21px}
+.nav button.on{color:var(--fg)}
+.nav button.on .ic{background:#8b5cf62e;color:var(--violet2)}
+.nav button:active .ic{background:#8b5cf61a}
+@media (min-width:960px){
+  #app{grid-template-columns:220px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"top top" "nav main"}
+  .top{padding-inline:24px}
+  .nav{display:flex;flex-direction:column;gap:2px;background:none;backdrop-filter:none;-webkit-backdrop-filter:none;border-top:0;border-right:1px solid var(--line);padding:8px 12px 24px 16px}
+  .nav button{flex-direction:row;gap:10px;font-size:15px;padding:6px 8px;border-radius:12px;color:var(--muted);justify-content:flex-start}
+  .nav .ic{width:34px;height:34px;border-radius:10px}
+  .nav button:hover{background:var(--surface)}
+  .nav button.on{background:var(--surface2)}
+  main{padding-inline:28px;padding-block:6px 40px}
+}
+
+/* ---------- cabecera ---------- */
+.logo{display:flex;align-items:center;gap:9px;margin-right:auto;background:none;border:0;padding:4px 0;font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:.07em}
+.mark{width:28px;height:28px;border-radius:8px;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:12.5px;letter-spacing:.02em;box-shadow:0 0 0 1px #ffffff1f inset,0 4px 18px #8b5cf640}
+.logo b{color:var(--violet2);font-weight:700}
+.ibtn{width:40px;height:40px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);transition:transform .12s,background .2s,color .2s,border-color .2s;position:relative}
+.ibtn svg{width:19px;height:19px}
+.ibtn:active{transform:scale(.93);background:var(--raise)}
+.ibtn.on{color:var(--fg);border-color:#8b5cf688;background:#8b5cf61f}
+.ibtn:disabled{opacity:.4;cursor:default}
+.ibtn .n{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--violet);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;border:2px solid var(--bg)}
+@media (hover:hover){.ibtn:hover{color:var(--fg);border-color:var(--line2)}}
+
+/* ---------- tipografía ---------- */
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:28px;font-weight:700;letter-spacing:.01em}
+h2{font-size:19px;font-weight:600;letter-spacing:.01em}
+h3{font-size:16px;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.faint{color:var(--faint)}
+.small{font-size:13px}
+.eyebrow{font-size:11.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:700}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- bloques ---------- */
+.page{display:flex;flex-direction:column;gap:26px;padding-top:6px}
+.sec{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ph{display:flex;flex-direction:column;gap:6px}
+.ph .row{justify-content:space-between}
+.sh{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.sh .sub{font-size:13px;color:var(--muted);margin-top:2px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.link{background:none;border:0;color:var(--violet2);font-weight:600;font-size:14px;padding:6px 0;white-space:nowrap}
+.link:active{opacity:.6}
+
+.btn{height:44px;border-radius:12px;border:1px solid var(--line2);background:var(--surface2);padding:0 16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;text-decoration:none;color:var(--fg);transition:transform .12s,filter .2s,background .2s}
+.btn svg{width:18px;height:18px}
+.btn:active{transform:scale(.97);filter:brightness(1.15)}
+.btn.pri{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 6px 20px -8px #8b5cf6aa}
+.btn.sm{height:36px;padding:0 13px;font-size:13.5px;border-radius:10px}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad)}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btn.spin svg{animation:rot .9s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+.field{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:0 6px 0 13px;min-height:48px;transition:border-color .2s,box-shadow .2s}
+.field:focus-within{border-color:#8b5cf6aa;box-shadow:0 0 0 4px #8b5cf61c}
+.field input{background:none;border:0;outline:0;flex:1;min-width:0;height:46px;font-size:16px}
+.field input::placeholder{color:var(--faint)}
+.field>svg{width:19px;height:19px;color:var(--faint)}
+.field .btn{height:36px}
+.sel,.inp{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 12px;height:44px;font-size:16px;min-width:0;color:var(--fg)}
+.sel{appearance:none;-webkit-appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23a6a3c2' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m1 1.5 5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+textarea.inp{height:auto;padding:10px 12px;resize:vertical;width:100%}
+textarea.mono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+label.lbl{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:600;min-width:0}
+label.lbl .inp,label.lbl .sel{color:var(--fg);font-weight:400}
+
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;scroll-padding-inline:16px}
+.chips::-webkit-scrollbar{display:none}
+@media (min-width:960px){.chips{flex-wrap:wrap;margin-inline:0;padding-inline:0}}
+.chip{flex:none;height:34px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13.5px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:6px;transition:background .15s,color .15s,transform .12s}
+.chip:active{transform:scale(.96)}
+.chip .c{font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.chip.on{background:var(--fg);color:#0b0b12;border-color:var(--fg)}
+.chip.on .c{color:#55526e}
+
+.pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--muted);min-width:0}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
+.dot.ok{background:var(--ok);box-shadow:0 0 0 3px #3ddc9726}
+.dot.warn{background:var(--warn)}
+.dot.bad{background:var(--bad)}
+.dot.load{background:var(--violet2);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.3}}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.note{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--line);font-size:14px;color:var(--muted)}
+.note svg{width:18px;height:18px;margin-top:1px;color:var(--cyan)}
+.note b{color:var(--fg)}
+.note.warn{border-color:#fbbf2440;background:#fbbf240b}.note.warn svg{color:var(--warn)}
+
+/* estado: carga / error / vacío */
+.state{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:30px 20px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.state .si{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--surface2);color:var(--muted)}
+.state .si svg{width:22px;height:22px}
+.state.err .si{background:#ff7a7a1a;color:var(--bad)}
+.state h3{font-size:18px}
+.state p{max-width:46ch;color:var(--muted);font-size:14px}
+.state .hint{font-size:13px;color:var(--faint);border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+.state .row{justify-content:center}
+.state.compact{padding:20px 16px;flex-direction:row;text-align:left;align-items:center}
+.state.compact .row{justify-content:flex-start}
+
+/* ---------- tarjetas de cosméticos ---------- */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (min-width:600px){.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}}
+@media (min-width:1100px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (min-width:1300px){.grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.tile{position:relative;display:flex;flex-direction:column;padding:0;border-radius:var(--r);overflow:hidden;background:var(--surface);border:1px solid var(--line);text-align:left;color:var(--fg);transition:transform .16s ease,border-color .2s,box-shadow .2s;min-width:0}
+.tile:active{transform:scale(.975)}
+@media (hover:hover){.tile:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:0 12px 30px -14px #000}}
+.art{position:relative;aspect-ratio:1/1;max-width:100%;overflow:hidden;display:grid;place-items:center;
+  --c1:var(--rc,#4a4a63);--c2:color-mix(in srgb,var(--rc,#4a4a63) 30%,#06060a);
+  background:radial-gradient(110% 85% at 50% 18%,var(--c1) 0%,color-mix(in srgb,var(--c1) 55%,var(--c2)) 48%,var(--c2) 100%)}
+.art::after{content:"";position:absolute;inset:auto 0 0;height:30%;background:linear-gradient(transparent,#0000004d);pointer-events:none}
+.art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%;opacity:0;transition:opacity .35s ease;z-index:1}
+.art.ld img{opacity:1}
+.art .ini{display:none;font-family:var(--display);font-weight:700;font-size:30px;color:#ffffffc0;letter-spacing:.05em;z-index:1}
+.art.noimg .ini{display:block}
+.art .tag{position:absolute;z-index:2;top:8px;left:8px;max-width:calc(100% - 16px);background:#0a0a10d9;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:7px;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.art .tag.today{background:var(--ok);color:#052a1a}
+.art .fv{position:absolute;z-index:2;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:#0a0a10d9;color:var(--warn);display:grid;place-items:center}
+.art .fv svg{width:14px;height:14px}
+.info{display:flex;flex-direction:column;gap:3px;padding:10px 11px 11px;border-top:3px solid var(--rc,#4a4a63);flex:1}
+.info .nm{font-family:var(--display);font-weight:600;font-size:15px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.4em;overflow-wrap:anywhere}
+.info .mt{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info .pr{margin-top:auto;padding-top:3px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.vb{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-variant-numeric:tabular-nums;font-size:14.5px;white-space:nowrap}
+.vb i{width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e0f1ff,#6fb3f5 50%,#2457b8);display:inline-block;box-shadow:inset 0 0 0 1.5px #ffffff4d}
+.vb s{color:var(--faint);font-weight:500;font-size:12px}
+.off{font-size:11px;font-weight:700;color:#052a1a;background:var(--ok);border-radius:6px;padding:1px 6px}
+.hscroll{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,42%);gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;scroll-padding-inline:16px}
+.hscroll::-webkit-scrollbar{display:none}
+.hscroll>*{scroll-snap-align:start}
+@media (min-width:600px){.hscroll{grid-auto-columns:minmax(0,28%)}}
+@media (min-width:960px){.hscroll{grid-auto-columns:minmax(0,19%);margin-inline:0;padding-inline:0}}
+.skel{border-radius:var(--r);background:linear-gradient(100deg,var(--surface) 30%,var(--surface2) 50%,var(--surface) 70%);background-size:300% 100%;animation:sk 1.3s infinite linear;border:1px solid var(--line)}
+@keyframes sk{from{background-position:100% 0}to{background-position:-200% 0}}
+.skel.tilesk{aspect-ratio:3/4}
+
+/* rarezas (color de reserva cuando la oferta no trae colores) */
+.r-common{--rc:#7e879c}.r-uncommon{--rc:#4b9f2c}.r-rare{--rc:#2e86e6}.r-epic{--rc:#9b45db}.r-legendary{--rc:#d9762a}.r-mythic{--rc:#c9a133}.r-exotic{--rc:#48c4d3}.r-transcendent{--rc:#c84a73}
+.r-icon{--rc:#2aa6b5}.r-marvel{--rc:#b8313a}.r-dc{--rc:#3765c4}.r-starwars{--rc:#2b3c87}.r-gaminglegends{--rc:#5b3fc0}.r-dark{--rc:#b02aa3}.r-frozen{--rc:#8db8e3}.r-lava{--rc:#c95228}.r-shadow{--rc:#555568}.r-slurp{--rc:#16a9b8}.r-cube{--rc:#9230c9}.r-bundle{--rc:#5b5bd6}.r-track{--rc:#d9468f}
+
+/* ---------- inicio ---------- */
+.hero{position:relative;overflow:hidden;border-radius:20px;border:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:14px;
+  background:radial-gradient(120% 120% at 100% 0%,#3b82f62e,transparent 55%),radial-gradient(110% 130% at 0% 100%,#8b5cf633,transparent 60%),var(--surface)}
+.hero .big{font-family:var(--display);font-size:30px;font-weight:700;line-height:1.05}
+.hero .big span{color:var(--violet2)}
+.stats3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{background:#0a0a1080;border:1px solid var(--line);border-radius:12px;padding:10px 11px;min-width:0}
+.stat span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.stat b{display:block;font-family:var(--display);font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.strip .art{border-radius:12px}
+.strip .art .ini{font-size:18px}
+.strip>:nth-child(n+5){display:none}
+@media (min-width:960px){.strip{grid-template-columns:repeat(6,minmax(0,1fr))}.strip>:nth-child(n+5){display:block}}
+.stat .vb{font-size:inherit;font-family:var(--display)}.stat .vb i{width:14px;height:14px}
+.quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.qa{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:12px;border-radius:14px;background:var(--surface);border:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--fg);text-align:left;transition:transform .12s,border-color .2s}
+.qa:active{transform:scale(.96)}
+@media (hover:hover){.qa:hover{border-color:var(--line2)}}
+.qa .qi{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#8b5cf624;color:var(--violet2)}
+.qa .qi svg{width:19px;height:19px}
+.qa small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:1px}
+@media (max-width:420px){.qa{padding:10px 8px;align-items:center;text-align:center}.qa small{display:none}}
+.cols{display:grid;gap:26px}
+@media (min-width:1100px){.cols{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+
+/* listas */
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.li{display:flex;align-items:center;gap:12px;padding:12px 14px;border:0;background:none;text-align:left;width:100%;border-top:1px solid var(--line);min-width:0;color:var(--fg);text-decoration:none;transition:background .15s}
+.li:first-child{border-top:0}
+button.li:active,a.li:active{background:var(--surface2)}
+@media (hover:hover){button.li:hover,a.li:hover{background:var(--surface2)}}
+.li .t{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .s{display:block;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .chev{color:var(--faint);width:16px;height:16px}
+.av{width:40px;height:40px;border-radius:12px;flex:none;display:grid;place-items:center;font-family:var(--display);font-weight:700;background:linear-gradient(135deg,#8b5cf633,#3b82f633);color:var(--violet2);font-size:15px}
+.av.cal{flex-direction:column;line-height:1;gap:1px}
+.av.cal small{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--body)}
+
+/* stats */
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (min-width:960px){.kpis{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.kpi span{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.kpi b{font-family:var(--display);font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1;white-space:nowrap}
+.kpi.hl{background:linear-gradient(160deg,#8b5cf62b,#3b82f61a);border-color:#8b5cf666}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:11px 12px;text-align:right;white-space:nowrap;border-top:1px solid var(--line)}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-top:0;font-weight:700}
+th:first-child,td:first-child{text-align:left;font-weight:600}
+.phead{display:flex;align-items:center;gap:12px}
+.phead .av{width:54px;height:54px;font-size:22px;border-radius:16px}
+
+/* mapa */
+.maptools{display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:none;padding-block:4px 10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.maptools::-webkit-scrollbar{display:none}
+@media (min-width:960px){.maptools{padding-inline:28px}}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px;flex:none}
+.seg button{border:0;background:none;height:32px;padding:0 11px;border-radius:9px;font-size:13px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.seg button svg{width:16px;height:16px}
+.seg button.on{background:var(--raise);color:var(--fg);box-shadow:inset 0 0 0 1px #8b5cf699}
+.seg button:disabled{opacity:.4;cursor:default}
+.mapwrap{position:relative;flex:1;min-height:220px;overflow:hidden;touch-action:none;background:#0a1220;user-select:none;-webkit-user-select:none;border-block:1px solid var(--line)}
+@media (min-width:960px){.mapwrap{margin-inline:28px;border:1px solid var(--line);border-radius:var(--r)}}
+.stage{position:absolute;left:0;top:0;width:1000px;height:1000px;transform-origin:0 0}
+.stage img{position:absolute;inset:0;width:1000px;height:1000px;max-width:none;pointer-events:none;-webkit-user-drag:none}
+.stage svg{position:absolute;inset:0;width:1000px;height:1000px;overflow:visible}
+.mapfab{position:absolute;right:max(10px,env(safe-area-inset-right,0px));bottom:10px;display:flex;flex-direction:column;gap:6px;z-index:3}
+.mapfab .ibtn{background:#111119eb;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.mapstatus{position:absolute;left:max(10px,env(safe-area-inset-left,0px));top:10px;z-index:3;background:#08080de0;border:1px solid var(--line);border-radius:10px;padding:6px 10px;max-width:calc(100% - 20px)}
+.mapempty{position:absolute;inset:0;z-index:4;display:grid;place-items:center;padding:16px;background:var(--bg)}
+.mapempty .state{max-width:420px}
+.drawer{max-height:40%;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-block:10px 12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:960px){.drawer{padding-inline:28px}}
+.swatch{width:12px;height:12px;border-radius:4px;flex:none}
+.poilist{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;color:var(--muted)}
+
+/* hoja de detalle */
+.scrim{position:fixed;inset:0;background:#030306c4;z-index:40;opacity:0;transition:opacity .2s}
+.scrim.show{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-width:640px;margin:0 auto;max-height:92%;overflow-y:auto;overscroll-behavior:contain;background:var(--surface);border:1px solid var(--line2);border-bottom:0;border-radius:24px 24px 0 0;
+  padding:8px max(18px,env(safe-area-inset-right,0px)) max(24px,calc(env(safe-area-inset-bottom,0px) + 14px)) max(18px,env(safe-area-inset-left,0px));transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.sheet.show{transform:none}
+@media (min-width:960px){.sheet{top:50%;bottom:auto;border-radius:24px;border-bottom:1px solid var(--line2);max-height:86%;transform:translateY(-46%) scale(.98);opacity:0;transition:transform .25s,opacity .2s}.sheet.show{transform:translateY(-50%);opacity:1}.grab{visibility:hidden}}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line2);margin:4px auto 10px}
+.sheet .close{position:sticky;top:0;float:right;z-index:5;margin:-2px -4px -40px 0;background:var(--surface2)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.dart{border-radius:20px;overflow:hidden;width:100%;max-width:360px;margin:0 auto;border:1px solid var(--line)}
+.dart .art .ini{font-size:56px}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px 16px;font-size:14px;margin:0;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;text-align:right;font-weight:600;overflow-wrap:anywhere}
+.badge{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:7px;font-size:12px;font-weight:700;background:var(--raise);color:var(--fg);white-space:nowrap}
+.badge.rar{background:var(--rc,#4a4a63);color:#fff}
+.badge.ok{background:#3ddc9724;color:var(--ok)}
+.toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);background:var(--fg);color:#0b0b12;padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;z-index:60;opacity:0;transition:all .22s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (min-width:960px){.toast{bottom:28px}}
+.fade{animation:fd .3s ease both}
+@keyframes fd{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+details>summary{cursor:pointer;list-style:none;color:var(--violet2);font-weight:600;font-size:14px}
+details>summary::-webkit-details-marker{display:none}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div id="app">
+  <header class="top">
+    <button class="logo" data-go="home" aria-label="DropStats, inicio"><span class="mark">DS</span>DROP<b>STATS</b></button>
+    <button class="ibtn" data-go="events" aria-label="Torneos" title="Torneos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/></svg></button>
+    <button class="ibtn" data-go="favs" aria-label="Favoritos" title="Favoritos" id="favbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></button>
+    <button class="ibtn" data-go="settings" aria-label="Ajustes" title="Ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg></button>
+  </header>
+  <main id="view"></main>
+  <nav class="nav" aria-label="Secciones">
+    <button data-go="home"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/></svg></span>Inicio</button>
+    <button data-go="shop"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5h16l-1.2 11.6a1 1 0 0 1-1 .9H6.2a1 1 0 0 1-1-.9zM8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/></svg></span>Tienda</button>
+    <button data-go="catalog"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></svg></span>Catálogo</button>
+    <button data-go="map"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m9 4.5-5.5 2.2v12.8L9 17.3l6 2.2 5.5-2.2V4.5L15 6.7zM9 4.5v12.8M15 6.7v12.8"/></svg></span>Mapa</button>
+    <button data-go="stats"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg></span>Stats</button>
+  </nav>
+</div>
+<div id="scrim" class="scrim" hidden></div>
+<div id="sheet" class="sheet" hidden role="dialog" aria-modal="true"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* =================== utilidades =================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const nf = new Intl.NumberFormat("es-ES");
+const fmtN = n => (n == null || isNaN(n)) ? "—" : nf.format(n);
+const fmtD = (d, o = { dateStyle: "medium", timeStyle: "short" }) => { try { return new Intl.DateTimeFormat("es-ES", o).format(new Date(d)); } catch { return "—"; } };
+const fmtDay = d => fmtD(d, { day: "numeric", month: "short", year: "numeric" });
+const fmtTime = d => fmtD(d, { hour: "2-digit", minute: "2-digit" });
+const initials = n => String(n || "?").replace(/[^\p{L}\p{N} ]/gu, "").split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase() || "?";
+function until(ms) {
+  if (ms <= 0) return "ahora";
+  const m = Math.floor(ms / 60e3), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mm = m % 60;
+  return d ? `${d} d ${h} h` : h ? `${h} h ${mm} min` : `${mm} min`;
+}
+const untilShort = ms => { const m = Math.max(0, Math.floor(ms / 60e3)); return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`; };
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("ds." + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("ds." + k, JSON.stringify(v)); return true; } catch { return false; } },
+  del(k) { try { localStorage.removeItem("ds." + k); } catch {} }
+};
+/* Visor de Claude: corre dentro de un marco que bloquea conexiones e imágenes de otras webs. */
+const EMBEDDED = (() => { try { return window.self !== window.top; } catch { return true; } })() || /claude|anthropic|usercontent/i.test(location.hostname);
+
+/* =================== estado guardado =================== */
+(function migrate() {
+  // Versión anterior: la taquilla se ha eliminado; favoritos y lista de deseos se unifican.
+  const old = Object.assign({}, store.get("wish", {}), store.get("favItems", {}));
+  if (Object.keys(old).length) { const f = store.get("favs", {}); store.set("favs", Object.assign(old, f)); }
+  ["locker", "wish", "favItems", "shopCache", "deployed"].forEach(store.del);
+})();
+const S = {
+  favs: store.get("favs", {}), favPlayers: store.get("favPlayers", []), history: store.get("history", []),
+  routes: store.get("routes", []), markers: store.get("markers", []), events: store.get("events", []),
+  prices: store.get("prices", {}),
+  prefs: Object.assign({ lang: "es", platform: "epic", window: "lifetime" }, store.get("prefs", {}))
+};
+const save = k => store.set(k, S[k]);
+const UI = Object.assign({ shopType: "all", shopSort: "section", shopPrice: "", shopQ: "", catType: "all", catRar: "", catQ: "", favTab: "items", mapMode: "pan", mapLayer: "pois", mapGrid: true, drawer: "routes" }, store.get("ui", {}));
+UI.shopQ = ""; UI.catQ = UI.catQ || "";
+const saveUI = () => store.set("ui", { shopType: UI.shopType, shopSort: UI.shopSort, shopPrice: UI.shopPrice, catType: UI.catType, catRar: UI.catRar, catQ: UI.catQ, favTab: UI.favTab, mapLayer: UI.mapLayer, mapGrid: UI.mapGrid, drawer: UI.drawer });
+
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2200); }
+async function copyText(txt) { try { await navigator.clipboard.writeText(txt); toast("Copiado"); return true; } catch { return false; } }
+
+/* =================== iconos =================== */
+const sv = (p, w = 1.9) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const I = {
+  search: sv('<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4-4"/>'),
+  chev: sv('<path d="m9 6 6 6-6 6"/>').replace("<svg", '<svg class="chev"'),
+  refresh: sv('<path d="M20 12a8 8 0 1 1-2.3-5.7M20 4.5V9h-4.5"/>'),
+  info: sv('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.8v.01"/>'),
+  warn: sv('<path d="M10.3 4 2.6 17.5A2 2 0 0 0 4.3 20.5h15.4a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0zM12 9.5v4M12 16.8v.01"/>'),
+  plug: sv('<path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/>'),
+  star: sv('<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>'),
+  starF: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>',
+  x: sv('<path d="M6 6l12 12M18 6 6 18"/>', 2.2),
+  ext: sv('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>'),
+  shop: sv('<path d="M4 7.5h16l-1.2 11.6a1 1 0 0 1-1 .9H6.2a1 1 0 0 1-1-.9zM8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/>'),
+  grid: sv('<rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/>'),
+  map: sv('<path d="m9 4.5-5.5 2.2v12.8L9 17.3l6 2.2 5.5-2.2V4.5L15 6.7zM9 4.5v12.8M15 6.7v12.8"/>'),
+  trophy: sv('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/>'),
+  stats: sv('<path d="M5 20v-8M12 20V5M19 20v-5"/>'),
+  move: sv('<path d="M12 3v18M3 12h18M12 3 9.5 5.5M12 3l2.5 2.5M12 21l-2.5-2.5M12 21l2.5-2.5M3 12l2.5-2.5M3 12l2.5 2.5M21 12l-2.5-2.5M21 12l-2.5 2.5"/>'),
+  pin: sv('<path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0c0 5.2-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>'),
+  route: sv('<circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7"/>'),
+  plus: sv('<path d="M12 5v14M5 12h14"/>', 2.2), minus: sv('<path d="M5 12h14"/>', 2.2),
+  fit: sv('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
+  user: sv('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
+  clock: sv('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>')
+};
+const vb = (p, reg) => p == null ? "" : `<span class="vb"><i></i>${fmtN(p)}${reg && reg > p ? ` <s>${fmtN(reg)}</s>` : ""}</span>`;
+
+/* =================== tipos y rarezas =================== */
+const TYPES = [["all", "Todo"], ["outfit", "Atuendos"], ["pickaxe", "Picos"], ["backpack", "Mochilas"], ["emote", "Gestos"], ["glider", "Planeadores"], ["wrap", "Envoltorios"], ["contrail", "Estelas"], ["bundle", "Lotes"], ["track", "Música"], ["other", "Otros"]];
+const MAIN_TYPES = new Set(["outfit", "pickaxe", "backpack", "emote", "wrap", "glider", "contrail", "bundle", "track"]);
+const typeKey = t => MAIN_TYPES.has(t) ? t : "other";
+const CAT_TYPES = [["all", "Todo"], ["outfit", "Atuendos"], ["pickaxe", "Picos"], ["backpack", "Mochilas"], ["emote", "Gestos"], ["glider", "Planeadores"], ["wrap", "Envoltorios"], ["contrail", "Estelas"], ["loadingscreen", "Pantallas de carga"], ["spray", "Grafitis"]];
+const RARITIES = [["", "Todas las rarezas"], ["common", "Común"], ["uncommon", "Infrecuente"], ["rare", "Raro"], ["epic", "Épico"], ["legendary", "Legendario"], ["mythic", "Mítico"], ["icon", "Serie Ídolos"], ["marvel", "Marvel"], ["dc", "DC"], ["starwars", "Star Wars"], ["gaminglegends", "Leyendas del gaming"], ["dark", "Serie Oscura"], ["frozen", "Serie Congelada"], ["lava", "Serie Lava"], ["shadow", "Serie Sombra"], ["slurp", "Serie Slurp"]];
+const rarCls = r => "r-" + String(r || "common").replace(/[^a-z]/gi, "").toLowerCase();
+const hex = c => /^[0-9a-f]{6,8}$/i.test(c || "") ? "#" + c.slice(0, 6) : null;
+
+/* =================== red =================== */
+async function fetchJSON(url, ms) {
+  const ac = new AbortController(); const t = setTimeout(() => ac.abort(), ms);
+  let r;
+  try { r = await fetch(url, { signal: ac.signal, cache: "no-store" }); }
+  catch (e) { throw Object.assign(new Error(e.name === "AbortError" ? "timeout" : "network"), { kind: e.name === "AbortError" ? "timeout" : "network" }); }
+  finally { clearTimeout(t); }
+  const ct = r.headers.get("content-type") || "";
+  if (!ct.includes("json")) throw Object.assign(new Error("format"), { kind: "format", http: r.status });
+  try { return await r.json(); } catch { throw Object.assign(new Error("format"), { kind: "format" }); }
+}
+/* Fuente: fortnite-api.com (comunitaria, no oficial). Orden: proxy propio /api/fn (si está desplegado) → API directa.
+   Si todo falla se marca la fuente como caída 60 s para no repetir peticiones que fallan; «Reintentar» lo salta. */
+const API = {
+  proxy: null, downUntil: 0, lastErr: null, ok: false,
+  async get(path, params = {}, { force = false, ms = 12000 } = {}) {
+    if (!force && Date.now() < this.downUntil) throw this.lastErr || Object.assign(new Error("down"), { kind: "down" });
+    const qs = new URLSearchParams({ language: S.prefs.lang, ...params }).toString();
+    const tries = [];
+    if (this.proxy !== false) tries.push(["proxy", `/api/fn?p=${encodeURIComponent(path)}&${qs}`, Math.min(ms, 8000)]);
+    tries.push(["direct", `https://fortnite-api.com/${path}?${qs}`, ms]);
+    let err = null;
+    for (const [via, url, t] of tries) {
+      try {
+        const j = await fetchJSON(url, t);
+        if (j && typeof j === "object" && "status" in j) { if (via === "proxy") this.proxy = true; this.ok = true; this.downUntil = 0; return j; }
+        err = Object.assign(new Error("format"), { kind: "format" });
+      } catch (e) { err = e; }
+      if (via === "proxy") this.proxy = false;
+    }
+    this.ok = false; this.lastErr = err; this.downUntil = Date.now() + 60e3;
+    throw err;
+  },
+  async stats(name, accountType, timeWindow) {
+    try { return await fetchJSON("/api/stats?" + new URLSearchParams({ name, accountType, timeWindow }), 12000); }
+    catch (e) { throw Object.assign(new Error("server"), { kind: e.kind === "timeout" ? "timeout" : "server" }); }
+  }
+};
+/* Copia publicada junto a la página (scripts/snapshot.py). Solo se usa si la conexión directa falla
+   y, para la tienda, solo si se obtuvo después del último cambio de tienda (00:00 UTC). */
+const SNAP = { "v2/shop": "data/shop.json", "v1/map": "data/map.json", "v2/cosmetics/new": "data/new.json" };
+async function getSnapshot(path) {
+  if (!SNAP[path]) return null;
+  try { const j = await fetchJSON(SNAP[path], 6000); return j && j.status === 200 && j._snapshot ? j : null; } catch { return null; }
+}
+async function getData(path, opts) {
+  try { return { j: await API.get(path, {}, opts), via: "live", at: Date.now() }; }
+  catch (e) { const s = await getSnapshot(path); if (s) return { j: s, via: "snapshot", at: s._snapshot.fetchedAt, err: e }; throw e; }
+}
+function explain(e) {
+  const k = e?.kind;
+  if (k === "timeout") return "fortnite-api.com no respondió en el tiempo esperado.";
+  if (k === "http") return e.message;
+  return "No se pudo conectar con fortnite-api.com.";
+}
+const embedHint = () => EMBEDDED ? `<p class="hint">Estás viendo DropStats dentro de Claude. Por seguridad, este visor bloquea las conexiones y las imágenes de otras webs, así que aquí no puede pedir datos en directo. En la versión publicada (instrucciones en el README) se cargan solas.</p>` : "";
+function stateErr(title, e, retryAct) {
+  return `<div class="state err fade"><span class="si">${I.plug}</span><h3>${esc(title)}</h3><p>${esc(explain(e))} No se muestra nada inventado en su lugar.</p>
+  <div class="row"><button class="btn pri" data-act="${retryAct}">${I.refresh}Reintentar</button></div>${embedHint()}</div>`;
+}
+const stateEmpty = (title, text, btn = "") => `<div class="state fade"><span class="si">${I.search}</span><h3>${esc(title)}</h3><p>${text}</p>${btn}</div>`;
+
+/* =================== imágenes =================== */
+// load/error no burbujean: se capturan en document para marcar cada imagen sin manejadores en línea.
+document.addEventListener("load", e => { const t = e.target; if (t.tagName === "IMG" && t.parentNode?.classList?.contains("art")) t.parentNode.classList.add("ld"); }, true);
+document.addEventListener("error", e => { const t = e.target; if (t.tagName === "IMG" && t.parentNode?.classList?.contains("art")) { t.parentNode.classList.add("noimg"); t.remove(); } if (t.id === "mapimg") mapImgState("error"); }, true);
+function art(src, name, rarity, { c1, c2, tags = "" } = {}) {
+  const style = c1 ? ` style="--c1:${c1};--c2:${c2 || "#0a0a10"}"` : "";
+  return `<span class="art ${rarCls(rarity)}${src ? "" : " noimg"}"${style}>${src ? `<img src="${esc(src)}" alt="" loading="lazy" decoding="async">` : ""}<span class="ini">${esc(initials(name))}</span>${tags}</span>`;
+}
+
+/* =================== objetos conocidos =================== */
+const KNOWN = new Map(); // id → objeto mínimo (para favoritos y fichas)
+const mini = it => ({ id: it.id, name: it.name, type: it.type?.value || "other", typeName: it.type?.displayValue || "", rarity: it.rarity?.value || "common", rarityName: it.rarity?.displayValue || "", series: it.series?.value || "", img: it.images?.icon || it.images?.smallIcon || "", set: it.set?.text || it.set?.value || "", added: it.added || null, desc: it.description || "", intro: it.introduction?.text || "" });
+const remember = it => { if (it?.id) KNOWN.set(it.id, Object.assign(KNOWN.get(it.id) || {}, it)); return it; };
+Object.values(S.favs).forEach(remember);
+
+/* =================== tienda =================== */
+const SHOP = { status: "idle", entries: [], date: null, at: null, via: null, error: null, byItem: new Map() };
+function normEntry(e) {
+  const items = (e.brItems || []).map(mini).map(remember);
+  const f = e.brItems?.[0];
+  const other = e.tracks?.length ? ["track", "Música", e.tracks[0].title + (e.tracks[0].artist ? " · " + e.tracks[0].artist : ""), e.tracks[0].albumArt]
+    : e.cars?.length ? ["car", "Vehículo", e.cars[0].name, e.cars[0].images?.large || e.cars[0].images?.small]
+    : e.instruments?.length ? ["instrument", "Instrumento", e.instruments[0].name, e.instruments[0].images?.large || e.instruments[0].images?.small]
+    : e.legoKits?.length ? ["legokit", "Kit LEGO", e.legoKits[0].name, e.legoKits[0].images?.large || e.legoKits[0].images?.small] : null;
+  const isBundle = !!e.bundle || items.length > 1;
+  const rarity = isBundle ? "bundle" : f ? (f.rarity?.value || "common") : (other?.[0] === "track" ? "track" : "common");
+  return {
+    key: e.offerId || e.devName || ("o" + Math.random().toString(36).slice(2)),
+    name: e.bundle?.name || f?.name || other?.[2] || "Oferta",
+    img: e.newDisplayAsset?.renderImages?.[0]?.image || e.bundle?.image || f?.images?.featured || f?.images?.icon || other?.[3] || "",
+    type: isBundle ? "bundle" : (f?.type?.value || other?.[0] || "other"),
+    typeName: isBundle ? (e.bundle?.info || "Lote") : (f?.type?.displayValue || other?.[1] || ""),
+    rarity, rarityName: isBundle ? `${items.length} objetos` : (f?.rarity?.displayValue || ""),
+    c1: hex(e.colors?.color1), c2: hex(e.colors?.color2) || hex(e.colors?.color3),
+    price: e.finalPrice, regular: e.regularPrice, inDate: e.inDate || null, outDate: e.outDate || null,
+    section: e.layout?.name || "Tienda", sIndex: e.layout?.index ?? 999, prio: e.sortPriority ?? 0,
+    banner: e.banner?.value || "", giftable: !!e.giftable, items, desc: isBundle ? "" : (f?.description || "")
+  };
+}
+function applyShop({ j, via, at }) {
+  const now = Date.now(), seen = new Set();
+  const entries = (j.data.entries || []).map(normEntry).filter(e => {
+    if (e.price == null || seen.has(e.key)) return false;
+    seen.add(e.key);
+    return !e.outDate || new Date(e.outDate).getTime() > now; // nunca mostrar ofertas ya caducadas
+  });
+  entries.sort((a, b) => a.sIndex - b.sIndex || a.section.localeCompare(b.section) || b.prio - a.prio);
+  (j.data.entries || []).forEach(e => { if (!e.bundle && (e.brItems || []).length === 1) S.prices[e.brItems[0].id] = e.regularPrice; });
+  save("prices");
+  const byItem = new Map(); entries.forEach(e => e.items.forEach(it => byItem.has(it.id) || byItem.set(it.id, e)));
+  Object.assign(SHOP, { status: "ok", entries, date: j.data.date, at, via, byItem, error: null });
+  scheduleReset();
+}
+const lastResetUTC = () => { const d = new Date(); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); };
+const nextResetUTC = () => lastResetUTC() + 864e5;
+function scheduleReset() { clearTimeout(scheduleReset.t); const ms = nextResetUTC() - Date.now() + 90e3; if (ms > 0 && ms < 2 ** 31) scheduleReset.t = setTimeout(() => loadShop(true), ms); }
+async function loadShop(force) {
+  if (SHOP.status === "loading") return;
+  if (!force && SHOP.status === "error") return; // sin reintentos automáticos
+  if (!force && SHOP.status === "ok" && Date.now() - SHOP.at < 10 * 60e3 && SHOP.at >= lastResetUTC()) return;
+  SHOP.status = "loading"; SHOP.error = null; paintShop();
+  try {
+    const r = await getData("v2/shop", { force });
+    if (r.j.status !== 200 || !r.j.data) throw Object.assign(new Error(`La fuente respondió con el código ${r.j.status}.`), { kind: "http" });
+    if (r.via === "snapshot" && r.at < lastResetUTC()) throw r.err; // copia de una tienda anterior: no se presenta como actual
+    applyShop(r);
+  } catch (e) { SHOP.status = "error"; SHOP.error = e; }
+  paintShop();
+}
+function paintShop() { rerender("home", "shop", "favs", "catalog"); }
+function shopLine() {
+  if (SHOP.status === "loading") return `<span class="pill"><span class="dot load"></span>Conectando con la fuente…</span>`;
+  if (SHOP.status === "error") return `<span class="pill"><span class="dot bad"></span>Sin conexión con la fuente</span>`;
+  if (SHOP.status !== "ok") return "";
+  const src = SHOP.via === "snapshot" ? `copia publicada · obtenida ${fmtD(SHOP.at)}` : `actualizada a las ${fmtTime(SHOP.at)}`;
+  return `<span class="pill"><span class="dot ok"></span>${SHOP.entries.length} ofertas · ${src}</span>`;
+}
+
+/* =================== componentes =================== */
+function entryTile(e) {
+  const fav = e.items.length === 1 && S.favs[e.items[0].id];
+  const pct = e.regular > e.price ? Math.round((1 - e.price / e.regular) * 100) : 0;
+  return `<button class="tile fade" data-act="entry" data-id="${esc(e.key)}">
+    ${art(e.img, e.name, e.rarity, { c1: e.c1, c2: e.c2, tags: (e.banner ? `<span class="tag">${esc(e.banner)}</span>` : "") + (fav ? `<span class="fv">${I.starF}</span>` : "") })}
+    <span class="info"><span class="nm">${esc(e.name)}</span><span class="mt">${esc([e.typeName, e.rarityName].filter(Boolean).join(" · "))}</span>
+    <span class="pr">${vb(e.price, e.regular)}${pct ? `<span class="off">-${pct}%</span>` : ""}</span></span></button>`;
+}
+function itemTile(it) {
+  const inShop = SHOP.byItem.get(it.id);
+  const p = inShop && inShop.items.length === 1 ? inShop.price : S.prices[it.id];
+  return `<button class="tile fade" data-act="item" data-id="${esc(it.id)}">
+    ${art(it.img, it.name, it.rarity, { tags: (inShop ? `<span class="tag today">Hoy en tienda</span>` : "") + (S.favs[it.id] ? `<span class="fv">${I.starF}</span>` : "") })}
+    <span class="info"><span class="nm">${esc(it.name)}</span><span class="mt">${esc([it.typeName || it.type, it.rarityName].filter(Boolean).join(" · "))}</span>
+    <span class="pr">${p != null ? vb(p) : `<span class="small faint">Precio no verificado</span>`}</span></span></button>`;
+}
+const skelTiles = n => `<div class="grid">${`<div class="skel tilesk"></div>`.repeat(n)}</div>`;
+const chips = (name, opts, cur) => `<div class="chips" role="tablist">${opts.map(([v, l, c]) => `<button class="chip ${v === cur ? "on" : ""}" role="tab" aria-selected="${v === cur}" data-chip="${name}" data-v="${esc(v)}">${esc(l)}${c != null ? `<span class="c">${c}</span>` : ""}</button>`).join("")}</div>`;
+
+/* =================== router =================== */
+let ROUTE = "home";
+const VIEWS = {};
+function go(r) {
+  if (!VIEWS[r]) r = "home";
+  ROUTE = r; closeSheet();
+  $$(".nav [data-go]").forEach(b => b.classList.toggle("on", b.dataset.go === r));
+  $$(".top .ibtn[data-go]").forEach(b => b.classList.toggle("on", b.dataset.go === r));
+  render(); $("#view").scrollTop = 0;
+  try { if (location.hash.slice(1) !== r) history.replaceState(null, "", "#" + r); } catch {}
+}
+function render() { const v = $("#view"); v.className = ""; VIEWS[ROUTE](v); updateFavCount(); }
+function rerender(...rs) {
+  if (!rs.includes(ROUTE)) return;
+  const v = $("#view"), st = v.scrollTop, a = document.activeElement, id = a && a.id, pos = a && a.selectionStart;
+  render(); v.scrollTop = st;
+  if (id) { const n = document.getElementById(id); if (n && n.tagName === "INPUT" && n !== document.activeElement) { n.focus({ preventScroll: true }); try { n.setSelectionRange(pos, pos); } catch {} } }
+}
+function updateFavCount() { const n = Object.keys(S.favs).length + S.favPlayers.length, b = $("#favbtn"); b.querySelector(".n")?.remove(); if (n) b.insertAdjacentHTML("beforeend", `<span class="n">${n > 99 ? "99+" : n}</span>`); }
+
+/* =================== INICIO =================== */
+VIEWS.home = v => {
+  queueMicrotask(() => loadShop());
+  const ok = SHOP.status === "ok";
+  const outfits = ok ? SHOP.entries.filter(e => e.type === "outfit") : [];
+  const feat = ok ? (outfits.length >= 4 ? outfits : SHOP.entries).slice(0, 12) : [];
+  const favToday = ok ? Object.values(S.favs).filter(f => SHOP.byItem.has(f.id)) : [];
+  const upcoming = S.events.filter(e => new Date(e.when) > Date.now()).sort((a, b) => new Date(a.when) - new Date(b.when)).slice(0, 3);
+  const minP = ok && SHOP.entries.length ? Math.min(...SHOP.entries.map(e => e.price)) : null;
+  const deals = ok ? SHOP.entries.filter(e => e.regular > e.price).length : 0;
+  let hero;
+  if (ok) hero = `<div class="hero fade">
+      <div class="row" style="justify-content:space-between"><span class="eyebrow">Tienda de hoy</span>${shopLine()}</div>
+      <div class="big">${SHOP.entries.length} <span>ofertas</span></div>
+      <div class="strip">${SHOP.entries.filter(e => e.img).slice(0, 6).map(e => `<button class="tile" style="border:0;background:none" data-act="entry" data-id="${esc(e.key)}" aria-label="${esc(e.name)}">${art(e.img, e.name, e.rarity, { c1: e.c1, c2: e.c2 })}</button>`).join("")}</div>
+      <div class="stats3"><div class="stat"><span>Cambia en</span><b data-cd="short">${untilShort(nextResetUTC() - Date.now())}</b></div><div class="stat"><span>Desde</span><b>${vb(minP)}</b></div><div class="stat"><span>Rebajas</span><b>${deals}</b></div></div>
+      <button class="btn pri" data-go="shop">${I.shop}Ver la tienda completa</button></div>`;
+  else if (SHOP.status === "error") hero = stateErr("La tienda no está disponible", SHOP.error, "retry-shop");
+  else hero = `<div class="hero"><div class="row" style="justify-content:space-between"><span class="eyebrow">Tienda de hoy</span>${shopLine()}</div><div class="strip">${`<div class="skel" style="aspect-ratio:1"></div>`.repeat(4)}</div><div class="skel" style="height:44px"></div></div>`;
+  v.innerHTML = `<div class="page">
+    <section class="sec">${hero}</section>
+    <section class="sec">
+      <form class="field" data-form="homesearch" role="search">${I.search}<input id="homeq" placeholder="Buscar jugador de Epic Games" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button class="btn sm pri">Buscar</button></form>
+      <div class="quick">
+        <button class="qa" data-go="catalog"><span class="qi">${I.grid}</span><span>Catálogo<small>Todos los cosméticos</small></span></button>
+        <button class="qa" data-go="map"><span class="qi">${I.map}</span><span>Mapa<small>Marcadores y rutas</small></span></button>
+        <button class="qa" data-go="stats"><span class="qi">${I.stats}</span><span>Stats<small>Busca jugadores</small></span></button>
+        <button class="qa" data-go="events"><span class="qi">${I.trophy}</span><span>Torneos<small>FNCS y Cash Cups</small></span></button>
+      </div>
+    </section>
+    ${feat.length ? `<section class="sec"><div class="sh"><div><h2>Destacados de hoy</h2><p class="sub">${outfits.length >= 4 ? "Atuendos a la venta ahora" : "Ofertas a la venta ahora"}</p></div><button class="link" data-go="shop">Ver todo</button></div><div class="hscroll">${feat.map(entryTile).join("")}</div></section>` : ""}
+    ${favToday.length ? `<section class="sec"><div class="sh"><div><h2>Tus favoritos en la tienda</h2><p class="sub">Disponibles hoy</p></div></div><div class="hscroll">${favToday.map(f => entryTile(SHOP.byItem.get(f.id))).join("")}</div></section>` : ""}
+    <div class="cols">
+      <section class="sec"><div class="sh"><h2>Torneos</h2><button class="link" data-go="events">Calendario</button></div>
+        <div class="list">${upcoming.map(eventLi).join("")}
+          <a class="li" href="https://www.fortnite.com/competitive?lang=es-ES" target="_blank" rel="noopener"><span class="av">${I.trophy}</span><span class="grow"><span class="t">Calendario competitivo oficial</span><span class="s">fortnite.com · horarios verificados por Epic</span></span>${I.chev}</a>
+        </div>
+        ${upcoming.length ? `<p class="small faint">Los recordatorios los has añadido tú; comprueba los horarios en la web oficial.</p>` : ""}
+      </section>
+      <section class="sec"><div class="sh"><h2>Jugadores favoritos</h2>${S.favPlayers.length ? `<button class="link" data-act="favs-players">Ver todos</button>` : ""}</div>
+        ${S.favPlayers.length ? `<div class="list">${S.favPlayers.slice(0, 4).map(p => `<button class="li" data-act="player" data-name="${esc(p.name)}" data-type="${esc(p.type)}"><span class="av">${esc(initials(p.name))}</span><span class="grow"><span class="t">${esc(p.name)}</span><span class="s">${esc(p.type.toUpperCase())}</span></span>${I.chev}</button>`).join("")}</div>`
+          : `<div class="state compact"><span class="si">${I.user}</span><p class="small muted">Busca un jugador en Stats y pulsa la estrella para tenerlo aquí.</p></div>`}
+      </section>
+    </div>
+  </div>`;
+};
+
+/* =================== TIENDA =================== */
+VIEWS.shop = v => {
+  queueMicrotask(() => loadShop());
+  const ok = SHOP.status === "ok";
+  const counts = {}; if (ok) SHOP.entries.forEach(e => counts[typeKey(e.type)] = (counts[typeKey(e.type)] || 0) + 1);
+  let list = ok ? SHOP.entries.slice() : [];
+  if (UI.shopType !== "all") list = list.filter(e => typeKey(e.type) === UI.shopType);
+  if (UI.shopPrice) { const [a, b] = UI.shopPrice.split("-").map(Number); list = list.filter(e => e.price >= a && e.price <= b); }
+  if (UI.shopQ) { const q = UI.shopQ.toLowerCase(); list = list.filter(e => e.name.toLowerCase().includes(q) || e.items.some(i => i.name.toLowerCase().includes(q))); }
+  if (UI.shopSort === "asc") list.sort((a, b) => a.price - b.price);
+  else if (UI.shopSort === "desc") list.sort((a, b) => b.price - a.price);
+  else if (UI.shopSort === "name") list.sort((a, b) => a.name.localeCompare(b.name, "es"));
+  const filtered = UI.shopType !== "all" || UI.shopPrice || UI.shopQ;
+  let body;
+  if (SHOP.status === "error") body = stateErr("No se puede mostrar la tienda", SHOP.error, "retry-shop");
+  else if (!ok) body = skelTiles(8);
+  else if (!SHOP.entries.length) body = stateEmpty("La fuente no trae ofertas", "fortnite-api.com ha respondido, pero sin objetos a la venta. Suele pasar unos minutos después del cambio de tienda.", `<button class="btn" data-act="retry-shop">${I.refresh}Volver a comprobar</button>`);
+  else if (!list.length) body = stateEmpty("Nada con estos filtros", "Prueba otro tipo, precio o nombre.", `<button class="btn" data-act="clear-shop">Quitar filtros</button>`);
+  else if (UI.shopSort === "section" && !filtered) {
+    const groups = new Map(); list.forEach(e => { if (!groups.has(e.section)) groups.set(e.section, []); groups.get(e.section).push(e); });
+    body = [...groups].map(([g, es]) => `<section class="sec"><div class="sh"><h2>${esc(g)}</h2><span class="small muted num">${es.length}</span></div><div class="grid">${es.map(entryTile).join("")}</div></section>`).join("");
+  } else body = `<p class="small muted">${list.length} de ${SHOP.entries.length} ofertas</p><div class="grid">${list.map(entryTile).join("")}</div>`;
+  v.innerHTML = `<div class="page">
+    <div class="ph"><div class="row"><h1>Tienda</h1><button class="btn sm ${SHOP.status === "loading" ? "spin" : ""}" data-act="retry-shop" ${SHOP.status === "loading" ? "disabled" : ""}>${I.refresh}Actualizar</button></div>
+      ${shopLine()}
+      ${ok ? `<p class="small muted">Cambia en <b class="num" data-cd>${until(nextResetUTC() - Date.now())}</b> (a las ${fmtTime(nextResetUTC())}, tu hora). Datos de fortnite-api.com, sin relación con Epic Games. Para comprar, usa el juego o la <a href="https://www.fortnite.com/item-shop?lang=es-ES" target="_blank" rel="noopener">tienda oficial</a>.</p>` : ""}
+    </div>
+    ${ok && SHOP.entries.length ? `<div class="sec">
+      <div class="field">${I.search}<input id="shopq" placeholder="Buscar en la tienda de hoy" value="${esc(UI.shopQ)}" autocomplete="off" enterkeyhint="search"></div>
+      ${chips("shopType", TYPES.filter(([k]) => k === "all" || counts[k]).map(([k, l]) => [k, l, k === "all" ? SHOP.entries.length : counts[k]]), UI.shopType)}
+      <div class="row"><select class="sel grow" id="shopPrice" aria-label="Precio"><option value="">Cualquier precio</option><option value="0-800">Hasta 800</option><option value="801-1500">801 – 1.500</option><option value="1501-999999">Más de 1.500</option></select>
+      <select class="sel grow" id="shopSort" aria-label="Orden"><option value="section">Por sección</option><option value="asc">Precio: menor a mayor</option><option value="desc">Precio: mayor a menor</option><option value="name">Nombre</option></select></div>
+    </div>` : ""}
+    ${body}</div>`;
+  const ps = $("#shopPrice"); if (ps) { ps.value = UI.shopPrice; $("#shopSort").value = UI.shopSort; }
+};
+
+/* =================== fichas =================== */
+function openSheet(html) {
+  const sh = $("#sheet"), sc = $("#scrim");
+  sh.innerHTML = `<div class="grab"></div><button class="ibtn close" data-act="close" aria-label="Cerrar">${I.x}</button>` + html;
+  sh.hidden = false; sc.hidden = false; sh.scrollTop = 0;
+  requestAnimationFrame(() => { sh.classList.add("show"); sc.classList.add("show"); });
+}
+function closeSheet() {
+  const sh = $("#sheet"), sc = $("#scrim");
+  if (sh.hidden) return;
+  sh.classList.remove("show"); sc.classList.remove("show");
+  setTimeout(() => { if (!sh.classList.contains("show")) { sh.hidden = true; sc.hidden = true; sh.innerHTML = ""; } }, 280);
+}
+const favBtn = id => `<button class="btn ${S.favs[id] ? "" : "pri"} grow" data-act="fav" data-id="${esc(id)}">${S.favs[id] ? I.starF + "En favoritos" : I.star + "Añadir a favoritos"}</button>`;
+function entrySheet(key) {
+  const e = SHOP.entries.find(x => x.key === key); if (!e) return;
+  const single = e.items.length === 1 && e.type !== "bundle" ? e.items[0] : null;
+  const pct = e.regular > e.price ? Math.round((1 - e.price / e.regular) * 100) : 0;
+  openSheet(`<div class="stack" data-sheet="${esc(key)}">
+    <div class="dart">${art(e.img, e.name, e.rarity, { c1: e.c1, c2: e.c2 })}</div>
+    <div class="stack" style="gap:8px"><div class="row"><span class="badge rar ${rarCls(e.rarity)}">${esc(e.typeName || "Oferta")}</span>${e.rarityName ? `<span class="badge">${esc(e.rarityName)}</span>` : ""}${e.banner ? `<span class="badge ok">${esc(e.banner)}</span>` : ""}</div>
+      <h1>${esc(e.name)}</h1>${e.desc ? `<p class="muted">${esc(e.desc)}</p>` : ""}</div>
+    <div class="row" style="justify-content:space-between"><span style="font-size:20px">${vb(e.price, e.regular)}</span>${pct ? `<span class="off">-${pct}%</span>` : ""}</div>
+    <dl class="kv">
+      <dt>Sección</dt><dd>${esc(e.section)}</dd>
+      ${e.inDate ? `<dt>En tienda desde</dt><dd>${fmtDay(e.inDate)}</dd>` : ""}
+      ${e.outDate ? `<dt>Sale de la tienda</dt><dd>${fmtD(e.outDate)}<br><span class="small muted">dentro de ${until(new Date(e.outDate) - Date.now())}</span></dd>` : ""}
+      <dt>Se puede regalar</dt><dd>${e.giftable ? "Sí" : "No"}</dd>
+      ${single?.set ? `<dt>Conjunto</dt><dd>${esc(single.set)}</dd>` : ""}
+      ${single?.intro ? `<dt>Introducido</dt><dd>${esc(single.intro)}</dd>` : ""}
+    </dl>
+    ${single ? `<div id="hist"></div>` : ""}
+    ${e.items.length > 1 ? `<h2>Incluye ${e.items.length} objetos</h2><div class="grid">${e.items.map(itemTile).join("")}</div>` : ""}
+    <div class="row">${single ? favBtn(single.id) : ""}<a class="btn ${single ? "" : "grow"}" href="https://www.fortnite.com/item-shop?lang=es-ES" target="_blank" rel="noopener">${I.ext}Tienda oficial</a></div>
+  </div>`);
+  if (single) loadHistory(single.id);
+}
+function itemSheet(id) {
+  const it = KNOWN.get(id); if (!it) return;
+  const inShop = SHOP.byItem.get(id);
+  const p = S.prices[id];
+  openSheet(`<div class="stack" data-sheet="${esc(id)}">
+    <div class="dart">${art(it.img, it.name, it.rarity)}</div>
+    <div class="stack" style="gap:8px"><div class="row"><span class="badge rar ${rarCls(it.rarity)}">${esc(it.typeName || it.type)}</span>${it.rarityName ? `<span class="badge">${esc(it.rarityName)}</span>` : ""}${inShop ? `<span class="badge ok">Hoy en tienda</span>` : ""}</div>
+      <h1>${esc(it.name)}</h1>${it.desc ? `<p class="muted">${esc(it.desc)}</p>` : ""}</div>
+    <dl class="kv">
+      <dt>Precio original</dt><dd>${p != null ? vb(p) : `<span class="muted">No verificado</span>`}</dd>
+      ${inShop ? `<dt>Precio hoy</dt><dd>${vb(inShop.price, inShop.items.length === 1 ? inShop.regular : null)}${inShop.items.length > 1 ? `<br><span class="small muted">dentro de «${esc(inShop.name)}»</span>` : ""}</dd>` : ""}
+      ${it.set ? `<dt>Conjunto</dt><dd>${esc(it.set)}</dd>` : ""}
+      ${it.intro ? `<dt>Introducido</dt><dd>${esc(it.intro)}</dd>` : ""}
+      ${it.added ? `<dt>Añadido a los archivos</dt><dd>${fmtDay(it.added)}</dd>` : ""}
+    </dl>
+    ${p == null ? `<p class="small faint">El precio solo se muestra cuando DropStats ha visto el objeto a la venta por separado en la tienda. No se estima.</p>` : ""}
+    <div id="hist"></div>
+    <div class="row">${favBtn(id)}${inShop ? `<button class="btn" data-act="entry" data-id="${esc(inShop.key)}">${I.shop}Ver oferta</button>` : ""}</div>
+  </div>`);
+  loadHistory(id);
+}
+async function loadHistory(id) {
+  const box = () => $(`#sheet [data-sheet] #hist`);
+  if (!box()) return;
+  box().innerHTML = `<div class="skel" style="height:62px"></div>`;
+  try {
+    const j = await API.get("v2/cosmetics/br/" + encodeURIComponent(id), {}, { ms: 10000 });
+    if (!box()) return;
+    if (j.status !== 200 || !j.data) throw new Error();
+    const d = j.data; remember(mini(d));
+    const today = lastResetUTC();
+    const hist = (d.shopHistory || []).map(x => new Date(x)).filter(x => x.getTime() < today).sort((a, b) => b - a);
+    const dd = $("#sheet [data-sheet]"); if (d.description && dd && !dd.querySelector("h1 + p")) dd.querySelector("h1").insertAdjacentHTML("afterend", `<p class="muted">${esc(d.description)}</p>`);
+    box().innerHTML = `<dl class="kv"><dt>Veces en tienda (antes de hoy)</dt><dd>${hist.length}</dd><dt>Última aparición anterior</dt><dd>${hist.length ? fmtDay(hist[0]) : "Ninguna registrada"}</dd>${d.introduction?.text ? `<dt>Introducido</dt><dd>${esc(d.introduction.text)}</dd>` : ""}</dl>
+      ${hist.length > 1 ? `<details><summary>Ver todas las fechas (${hist.length})</summary><p class="small muted" style="margin-top:8px">${hist.slice(0, 60).map(fmtDay).join(" · ")}${hist.length > 60 ? " …" : ""}</p></details>` : ""}`;
+  } catch { if (box()) box().innerHTML = `<p class="small faint">Historial de apariciones no disponible ahora mismo.</p>`; }
+}
+
+/* =================== CATÁLOGO =================== */
+const CAT = { status: "idle", items: [], key: "", error: null, limit: 60, mode: "new", date: null, via: null };
+async function loadCatalog(force) {
+  const key = [UI.catQ, UI.catType, UI.catRar, S.prefs.lang].join("|");
+  if (!force && CAT.key === key && CAT.status !== "idle") return;
+  CAT.key = key; CAT.status = "loading"; CAT.limit = 60; rerender("catalog");
+  const isNew = !UI.catQ && !UI.catRar && UI.catType === "all";
+  try {
+    let raw, via = "live", date = null;
+    if (isNew) {
+      const r = await getData("v2/cosmetics/new", { force, ms: 15000 });
+      if (r.j.status !== 200) throw Object.assign(new Error(`La fuente respondió con el código ${r.j.status}.`), { kind: "http" });
+      raw = r.j.data?.items?.br || []; via = r.via; date = r.j.data?.date || r.at;
+    } else {
+      const p = { matchMethod: "contains", searchLanguage: S.prefs.lang };
+      if (UI.catQ) p.name = UI.catQ;
+      if (UI.catType !== "all") p.type = UI.catType;
+      if (UI.catRar) p.rarity = UI.catRar;
+      const j = await API.get("v2/cosmetics/br/search/all", p, { force, ms: 25000 });
+      if (j.status === 404) raw = [];
+      else if (j.status !== 200) throw Object.assign(new Error(`La fuente respondió con el código ${j.status}.`), { kind: "http" });
+      else raw = j.data || [];
+    }
+    if (CAT.key !== key) return;
+    CAT.items = raw.map(mini).map(remember).sort((a, b) => (b.added ? Date.parse(b.added) : 0) - (a.added ? Date.parse(a.added) : 0));
+    Object.assign(CAT, { status: "ok", mode: isNew ? "new" : "search", date, via, error: null });
+  } catch (e) { if (CAT.key !== key) return; CAT.status = "error"; CAT.error = e; }
+  rerender("catalog");
+}
+VIEWS.catalog = v => {
+  queueMicrotask(() => { loadCatalog(); loadShop(); });
+  const shown = CAT.items.slice(0, CAT.limit);
+  const todayN = CAT.status === "ok" ? CAT.items.filter(i => SHOP.byItem.has(i.id)).length : 0;
+  let body;
+  if (CAT.status === "error") body = stateErr("No se puede consultar el catálogo", CAT.error, "retry-cat");
+  else if (CAT.status !== "ok") body = skelTiles(8);
+  else if (!CAT.items.length) body = stateEmpty("Sin resultados", "No hay cosméticos que coincidan. Prueba con otro nombre o quita algún filtro.", `<button class="btn" data-act="clear-cat">Quitar filtros</button>`);
+  else body = `<p class="small muted">${CAT.mode === "new" ? `Últimos cosméticos añadidos a los archivos del juego${CAT.date ? ` (actualización del ${fmtDay(CAT.date)})` : ""}${CAT.via === "snapshot" ? " · copia publicada" : ""}. ` : ""}${fmtN(CAT.items.length)} resultados${todayN ? ` · <b style="color:var(--ok)">${todayN} a la venta hoy</b>` : ""}.</p>
+    <div class="grid">${shown.map(itemTile).join("")}</div>
+    ${CAT.items.length > CAT.limit ? `<button class="btn" data-act="more-cat">Mostrar más (${fmtN(CAT.items.length - CAT.limit)} restantes)</button>` : ""}`;
+  v.innerHTML = `<div class="page">
+    <div class="ph"><h1>Catálogo</h1><p class="small muted">Archivo histórico de cosméticos de Battle Royale. No indica qué se vende hoy: los objetos a la venta llevan la etiqueta <span class="badge ok" style="height:20px">Hoy en tienda</span></p></div>
+    <div class="sec">
+      <form class="field" data-form="catq" role="search">${I.search}<input id="catq" placeholder="Buscar por nombre" value="${esc(UI.catQ)}" autocomplete="off" enterkeyhint="search">${UI.catQ ? `<button type="button" class="btn sm ghost" data-act="clear-catq" aria-label="Borrar búsqueda">${I.x}</button>` : ""}<button class="btn sm pri">Buscar</button></form>
+      ${chips("catType", CAT_TYPES, UI.catType)}
+      <select class="sel" id="catRar" aria-label="Rareza">${RARITIES.map(([k, l]) => `<option value="${k}">${l}</option>`).join("")}</select>
+      ${UI.catType !== "all" && !UI.catQ && CAT.status === "loading" ? `<p class="small faint">Descargando todos los objetos de este tipo; puede tardar unos segundos.</p>` : ""}
+    </div>
+    ${body}</div>`;
+  $("#catRar").value = UI.catRar;
+};
+
+/* =================== ESTADÍSTICAS =================== */
+const ST = { status: "idle", data: null, error: null, q: "", type: null };
+async function loadStats(name, type, win) {
+  name = (name || "").trim(); if (!name) return toast("Escribe un nombre de Epic Games");
+  Object.assign(ST, { status: "loading", q: name, type, error: null });
+  if (ROUTE !== "stats") go("stats"); else render();
+  try {
+    const j = await API.stats(name, type, win);
+    if (j.status === 200 && j.data?.account) {
+      Object.assign(ST, { status: "ok", data: j.data });
+      S.history = [{ name: j.data.account.name, type, at: Date.now() }, ...S.history.filter(h => h.name.toLowerCase() !== j.data.account.name.toLowerCase())].slice(0, 12); save("history");
+    } else {
+      ST.status = "error";
+      ST.error = j.error === "missing_key" ? { kind: "key" }
+        : j.status === 403 ? { kind: "msg", text: "Las estadísticas de esta cuenta son privadas. El jugador tiene que activarlas en Fortnite (Ajustes → Cuenta y privacidad → mostrar en clasificaciones)." }
+        : j.status === 404 ? { kind: "msg", text: `No hay ninguna cuenta ${type === "epic" ? "de Epic" : type === "psn" ? "de PlayStation" : "de Xbox"} con ese nombre, o no tiene partidas de Battle Royale en este periodo.` }
+        : { kind: "msg", text: `La fuente respondió con el código ${j.status}${j.error ? ": " + j.error : ""}.` };
+    }
+  } catch (e) { ST.status = "error"; ST.error = { kind: e.kind === "timeout" ? "timeout" : "server" }; }
+  rerender("stats");
+}
+VIEWS.stats = v => {
+  let body = "";
+  if (ST.status === "loading") body = `<div class="skel" style="height:64px"></div><div class="kpis">${'<div class="skel" style="height:76px"></div>'.repeat(6)}</div>`;
+  else if (ST.status === "error") {
+    const k = ST.error.kind;
+    body = k === "msg" ? `<div class="state err fade"><span class="si">${I.user}</span><h3>Sin resultados para «${esc(ST.q)}»</h3><p>${esc(ST.error.text)}</p></div>`
+      : `<div class="state err fade"><span class="si">${I.plug}</span><h3>Las estadísticas no están conectadas</h3><p>${k === "key" ? "El servidor de DropStats funciona, pero falta la clave de fortnite-api.com (variable FORTNITE_API_KEY)." : k === "timeout" ? "El servidor de estadísticas no respondió a tiempo." : "Esta versión no tiene acceso al servidor de DropStats, que es quien guarda la clave de la API."} No se muestran estadísticas inventadas.</p>
+        <p class="hint">La clave es gratuita en dash.fortnite-api.com y se configura solo en el servidor (README, apartado «Activar las estadísticas»).${EMBEDDED ? " Dentro de Claude no hay servidor, así que aquí no pueden funcionar." : ""}</p>
+        <div class="row"><button class="btn" data-act="retry-stats">${I.refresh}Reintentar</button></div></div>`;
+  } else if (ST.status === "ok") body = statsBlock(ST.data);
+  else body = S.history.length ? `<section class="sec"><div class="sh"><h2>Búsquedas recientes</h2><button class="link" data-act="clear-history">Borrar</button></div><div class="list">${S.history.map(h => `<button class="li" data-act="player" data-name="${esc(h.name)}" data-type="${esc(h.type)}"><span class="av">${esc(initials(h.name))}</span><span class="grow"><span class="t">${esc(h.name)}</span><span class="s">${esc(h.type.toUpperCase())} · ${fmtD(h.at)}</span></span>${I.chev}</button>`).join("")}</div></section>`
+    : stateEmpty("Busca cualquier jugador", "Escribe su nombre de Epic Games. Solo aparecen las cuentas con estadísticas públicas.");
+  v.innerHTML = `<div class="page"><div class="ph"><h1>Estadísticas</h1><p class="small muted">Battle Royale · fuente: fortnite-api.com</p></div>
+    <form class="sec" data-form="stats" style="gap:8px">
+      <div class="field">${I.search}<input id="statq" placeholder="Nombre de Epic Games" value="${esc(ST.q)}" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"></div>
+      <div class="row"><select class="sel grow" id="statType" aria-label="Plataforma"><option value="epic">Epic</option><option value="psn">PlayStation</option><option value="xbl">Xbox</option></select>
+        <select class="sel grow" id="statWin" aria-label="Periodo"><option value="lifetime">Total</option><option value="season">Temporada</option></select>
+        <button class="btn pri" ${ST.status === "loading" ? "disabled" : ""}>Buscar</button></div>
+    </form>
+    ${body}</div>`;
+  $("#statType").value = ST.type || S.prefs.platform; $("#statWin").value = S.prefs.window;
+};
+function statsBlock(d) {
+  const o = d.stats?.all?.overall;
+  const fav = S.favPlayers.some(f => f.name.toLowerCase() === d.account.name.toLowerCase());
+  const modes = [["Solo", "solo"], ["Dúo", "duo"], ["Trío", "trio"], ["Escuadrón", "squad"], ["Modos temporales", "ltm"]].filter(([, k]) => d.stats?.all?.[k]);
+  const inputs = [["Teclado y ratón", "keyboardMouse"], ["Mando", "gamepad"], ["Táctil", "touch"]].filter(([, k]) => d.stats?.[k]?.overall);
+  const f2 = x => x == null ? "—" : (+x).toFixed(2), f1 = x => x == null ? "—" : (+x).toFixed(1);
+  return `<section class="sec fade">
+  <div class="phead"><span class="av">${esc(initials(d.account.name))}</span><div class="grow"><h2 style="font-size:22px;overflow-wrap:anywhere">${esc(d.account.name)}</h2><span class="small muted">${d.battlePass ? `Nivel ${d.battlePass.level} · ` : ""}${S.prefs.window === "season" ? "Temporada actual" : "Total"}</span></div>
+  <button class="ibtn ${fav ? "on" : ""}" data-act="favplayer" aria-label="${fav ? "Quitar de favoritos" : "Añadir a favoritos"}" style="${fav ? "color:var(--warn)" : ""}">${fav ? I.starF : I.star}</button></div>
+  ${o ? `<div class="kpis">
+    <div class="kpi hl"><span>Victorias</span><b>${fmtN(o.wins)}</b></div><div class="kpi"><span>Elim.</span><b>${fmtN(o.kills)}</b></div><div class="kpi"><span>Partidas</span><b>${fmtN(o.matches)}</b></div>
+    <div class="kpi"><span>K/D</span><b>${f2(o.kd)}</b></div><div class="kpi"><span>% victorias</span><b>${f1(o.winRate)}</b></div><div class="kpi"><span>Top 10</span><b>${fmtN(o.top10)}</b></div></div>`
+    : `<div class="note warn">${I.warn}<p>Esta cuenta no tiene estadísticas generales en este periodo.</p></div>`}
+  ${modes.length ? `<h2>Por modo</h2>${statTable(modes.map(([l, k]) => [l, d.stats.all[k]]))}` : ""}
+  ${inputs.length ? `<h2>Por control</h2>${statTable(inputs.map(([l, k]) => [l, d.stats[k].overall]))}` : ""}
+  ${o?.lastModified ? `<p class="small faint">Datos actualizados por la fuente el ${fmtD(o.lastModified)}.</p>` : ""}</section>`;
+}
+const statTable = rows => `<div class="tblwrap"><table><thead><tr><th>Modo</th><th>Vict.</th><th>Elim.</th><th>Partidas</th><th>K/D</th><th>% V</th></tr></thead><tbody>${rows.map(([l, s]) => `<tr><td>${l}</td><td>${fmtN(s.wins)}</td><td>${fmtN(s.kills)}</td><td>${fmtN(s.matches)}</td><td>${s.kd == null ? "—" : (+s.kd).toFixed(2)}</td><td>${s.winRate == null ? "—" : (+s.winRate).toFixed(1)}</td></tr>`).join("")}</tbody></table></div>`;
+
+/* =================== MAPA =================== */
+const MAP = { status: "idle", img: {}, pois: [], at: null, via: null, error: null, imgState: "none" };
+async function loadMap(force) {
+  if (MAP.status === "loading" || (!force && MAP.status !== "idle")) return;
+  MAP.status = "loading"; MAP.imgState = "none"; paintMap();
+  try {
+    const r = await getData("v1/map", { force });
+    if (r.j.status !== 200 || !r.j.data?.images) throw Object.assign(new Error(`La fuente respondió con el código ${r.j.status}.`), { kind: "http" });
+    Object.assign(MAP, { status: "ok", img: r.j.data.images, pois: (r.j.data.pois || []).filter(p => p.name), at: r.at, via: r.via, error: null });
+  } catch (e) { MAP.status = "error"; MAP.error = e; }
+  paintMap();
+}
+const mapReady = () => MAP.status === "ok" && MAP.imgState === "ok";
+function mapImgState(s) { MAP.imgState = s; if (s === "error") MAP.error = { kind: "network" }; paintMap(); }
+function paintMap() { if (ROUTE !== "map") return; mapApplyLayer(); renderMapStatus(); renderMapEmpty(); renderDrawer(); $$("[data-mode],[data-layer],[data-act=grid]").forEach(b => b.disabled = !mapReady()); }
+const COLORS = ["#b7a2ff", "#62c8ff", "#f472b6", "#fbbf24", "#3ddc97", "#fb923c"];
+const MV = { x: 0, y: 0, k: 1, pts: new Map(), g: null, drawing: null, dragM: null };
+VIEWS.map = v => {
+  v.className = "full";
+  queueMicrotask(() => loadMap());
+  v.innerHTML = `
+  <div class="maptools">
+    <div class="seg" role="group" aria-label="Herramienta">
+      <button data-mode="pan" class="${UI.mapMode === "pan" ? "on" : ""}">${I.move}Mover</button>
+      <button data-mode="pin" class="${UI.mapMode === "pin" ? "on" : ""}">${I.pin}Marcador</button>
+      <button data-mode="draw" class="${UI.mapMode === "draw" ? "on" : ""}">${I.route}Ruta</button>
+    </div>
+    <div class="seg" role="group" aria-label="Capa"><button data-layer="pois" class="${UI.mapLayer === "pois" ? "on" : ""}">Con nombres</button><button data-layer="blank" class="${UI.mapLayer === "blank" ? "on" : ""}">Limpio</button></div>
+    <div class="seg"><button data-act="grid" class="${UI.mapGrid ? "on" : ""}">Cuadrícula</button></div>
+  </div>
+  <div class="mapwrap" id="mapwrap">
+    <div class="stage" id="stage"><img id="mapimg" alt="Mapa actual de Battle Royale" hidden><svg id="ov" viewBox="0 0 1000 1000"></svg></div>
+    <div class="mapstatus" id="mapstatus"></div>
+    <div class="mapfab"><button class="ibtn" data-act="zin" aria-label="Acercar">${I.plus}</button><button class="ibtn" data-act="zout" aria-label="Alejar">${I.minus}</button><button class="ibtn" data-act="zfit" aria-label="Encuadrar">${I.fit}</button></div>
+    <div class="mapempty" id="mapempty" hidden></div>
+  </div>
+  <div class="drawer" id="drawer"></div>`;
+  bindMap(); paintMap();
+  requestAnimationFrame(mapFit);
+};
+function mapApplyLayer() {
+  const im = $("#mapimg"); if (!im) return;
+  const src = MAP.status === "ok" ? (UI.mapLayer === "pois" ? (MAP.img.pois || MAP.img.blank) : (MAP.img.blank || MAP.img.pois)) : null;
+  if (!src) { im.hidden = true; renderOverlay(); return; }
+  if (im.getAttribute("src") !== src) {
+    MAP.imgState = "loading"; im.hidden = true;
+    im.onload = () => { im.hidden = false; MAP.imgState = "ok"; paintMap(); };
+    im.src = src;
+  } else if (MAP.imgState === "ok") im.hidden = false;
+  renderOverlay();
+}
+function renderMapStatus() {
+  const el = $("#mapstatus"); if (!el) return;
+  el.hidden = !(MAP.status === "loading" || MAP.imgState === "loading" || mapReady());
+  el.innerHTML = mapReady() ? `<span class="pill"><span class="dot ok"></span>Mapa actual · ${MAP.via === "snapshot" ? "copia del " + fmtDay(MAP.at) : "obtenido " + fmtTime(MAP.at)}</span>`
+    : `<span class="pill"><span class="dot load"></span>Cargando mapa…</span>`;
+}
+function renderMapEmpty() {
+  const el = $("#mapempty"); if (!el) return;
+  const failed = MAP.status === "error" || MAP.imgState === "error";
+  el.hidden = !failed;
+  if (failed) el.innerHTML = stateErr("No se puede cargar el mapa", MAP.error, "mapretry").replace("No se muestra nada inventado en su lugar.", "Tus rutas y marcadores siguen guardados.");
+}
+function mapFit() {
+  const w = $("#mapwrap"); if (!w) return;
+  const r = w.getBoundingClientRect();
+  MV.k = Math.min(r.width, r.height) / 1000; MV.x = (r.width - 1000 * MV.k) / 2; MV.y = (r.height - 1000 * MV.k) / 2; applyView();
+}
+function applyView() { const st = $("#stage"); if (!st) return; st.style.transform = `translate(${MV.x}px,${MV.y}px) scale(${MV.k})`; renderOverlay(); }
+function zoomAt(cx, cy, f) { const k = Math.min(8, Math.max(0.2, MV.k * f)); const sx = (cx - MV.x) / MV.k, sy = (cy - MV.y) / MV.k; MV.k = k; MV.x = cx - sx * k; MV.y = cy - sy * k; applyView(); }
+const routeLen = pts => { let d = 0; for (let i = 1; i < pts.length; i++) d += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); return d / 100; };
+const fmtLen = c => c.toLocaleString("es-ES", { maximumFractionDigits: 1 }) + " casillas";
+const gridRef = (x, y) => "ABCDEFGHIJ"[Math.min(9, Math.max(0, Math.floor(x / 100)))] + (Math.min(9, Math.max(0, Math.floor(y / 100))) + 1);
+function renderOverlay(temp) {
+  const ov = $("#ov"); if (!ov) return;
+  if (!mapReady()) { ov.innerHTML = ""; return; }
+  const s = 1 / MV.k; let h = "";
+  if (UI.mapGrid) {
+    for (let i = 0; i <= 10; i++) h += `<line x1="${i * 100}" y1="0" x2="${i * 100}" y2="1000" stroke="#ffffff40" stroke-width="${s}"/><line x1="0" y1="${i * 100}" x2="1000" y2="${i * 100}" stroke="#ffffff40" stroke-width="${s}"/>`;
+    const fs = Math.min(40, 13 * s);
+    for (let i = 0; i < 10; i++) h += `<text x="${i * 100 + 50}" y="${fs + 3 * s}" fill="#fff" fill-opacity=".85" stroke="#000" stroke-opacity=".5" stroke-width="${2 * s}" paint-order="stroke" font-size="${fs}" text-anchor="middle" font-family="Chakra Petch,sans-serif" font-weight="700">${"ABCDEFGHIJ"[i]}</text><text x="${5 * s}" y="${i * 100 + 50 + fs / 3}" fill="#fff" fill-opacity=".85" stroke="#000" stroke-opacity=".5" stroke-width="${2 * s}" paint-order="stroke" font-size="${fs}" font-family="Chakra Petch,sans-serif" font-weight="700">${i + 1}</text>`;
+  }
+  S.routes.forEach((r, i) => { if (r.hidden) return; const c = r.c || COLORS[i % 6], pts = r.p.map(q => q.join(",")).join(" "); h += `<polyline points="${pts}" fill="none" stroke="#000" stroke-opacity=".55" stroke-width="${7 * s}" stroke-linecap="round" stroke-linejoin="round"/><polyline points="${pts}" fill="none" stroke="${c}" stroke-width="${4 * s}" stroke-linecap="round" stroke-linejoin="round"/>`; const a = r.p[0], e = r.p[r.p.length - 1]; h += `<circle cx="${a[0]}" cy="${a[1]}" r="${4 * s}" fill="#fff" stroke="${c}" stroke-width="${2 * s}"/><circle cx="${e[0]}" cy="${e[1]}" r="${6 * s}" fill="${c}" stroke="#000" stroke-width="${1.5 * s}"/>`; });
+  if (temp && temp.length > 1) h += `<polyline points="${temp.map(q => q.join(",")).join(" ")}" fill="none" stroke="#fff" stroke-width="${4 * s}" stroke-dasharray="${8 * s} ${6 * s}" stroke-linecap="round"/>`;
+  S.markers.forEach((m, i) => { h += `<g data-mk="${i}" transform="translate(${m.x},${m.y}) scale(${s})" style="cursor:pointer"><path d="M0 0c-2-7-11-12-11-21a11 11 0 0 1 22 0c0 9-9 14-11 21z" fill="${m.c || COLORS[0]}" stroke="#08080d" stroke-width="2"/><circle cy="-21" r="4" fill="#08080d"/>${m.n ? `<text y="-38" text-anchor="middle" fill="#fff" stroke="#08080d" stroke-width="3" paint-order="stroke" font-size="13" font-weight="700" font-family="Barlow,sans-serif">${esc(m.n)}</text>` : ""}</g>`; });
+  ov.innerHTML = h;
+}
+function bindMap() {
+  const w = $("#mapwrap");
+  const rel = e => { const r = w.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const clampS = ([x, y]) => [Math.max(0, Math.min(1000, x)), Math.max(0, Math.min(1000, y))];
+  const toS = ([cx, cy]) => [Math.round((cx - MV.x) / MV.k), Math.round((cy - MV.y) / MV.k)];
+  w.addEventListener("wheel", e => { if (!mapReady()) return; e.preventDefault(); const [cx, cy] = rel(e); zoomAt(cx, cy, e.deltaY < 0 ? 1.15 : 1 / 1.15); }, { passive: false });
+  w.addEventListener("pointerdown", e => {
+    if (!mapReady() || e.target.closest(".mapfab,.mapstatus,.mapempty")) return;
+    w.setPointerCapture(e.pointerId);
+    const p = rel(e); MV.pts.set(e.pointerId, p);
+    if (MV.pts.size === 2) {
+      const [a, b] = [...MV.pts.values()]; MV.drawing = null; MV.dragM = null; renderOverlay();
+      MV.g = { t: "pinch", d0: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, k0: MV.k, m0: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], x0: MV.x, y0: MV.y };
+      return;
+    }
+    const mk = e.target.closest("[data-mk]");
+    MV.g = { t: "pan", p0: p, x0: MV.x, y0: MV.y, moved: false, mk: mk ? +mk.dataset.mk : null };
+    if (UI.mapMode === "draw") MV.drawing = [clampS(toS(p))];
+    else if (UI.mapMode === "pin" && mk) MV.dragM = +mk.dataset.mk;
+  });
+  w.addEventListener("pointermove", e => {
+    if (!MV.pts.has(e.pointerId)) return;
+    const p = rel(e); MV.pts.set(e.pointerId, p);
+    const g = MV.g; if (!g) return;
+    if (g.t === "pinch" && MV.pts.size >= 2) {
+      const [a, b] = [...MV.pts.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]); const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      const k = Math.min(8, Math.max(0.2, g.k0 * d / g.d0)); const sx = (g.m0[0] - g.x0) / g.k0, sy = (g.m0[1] - g.y0) / g.k0;
+      MV.k = k; MV.x = m[0] - sx * k; MV.y = m[1] - sy * k; applyView(); return;
+    }
+    if (Math.hypot(p[0] - g.p0[0], p[1] - g.p0[1]) > 6) g.moved = true;
+    if (MV.drawing) { const q = clampS(toS(p)), l = MV.drawing[MV.drawing.length - 1]; if (Math.hypot(q[0] - l[0], q[1] - l[1]) * MV.k > 5) { MV.drawing.push(q); renderOverlay(MV.drawing); } return; }
+    if (MV.dragM != null) { const q = clampS(toS(p)); S.markers[MV.dragM].x = q[0]; S.markers[MV.dragM].y = q[1]; renderOverlay(); return; }
+    if (g.t === "pan") { MV.x = g.x0 + p[0] - g.p0[0]; MV.y = g.y0 + p[1] - g.p0[1]; applyView(); }
+  });
+  const end = e => {
+    if (!MV.pts.has(e.pointerId)) return;
+    const p = MV.pts.get(e.pointerId); MV.pts.delete(e.pointerId);
+    const g = MV.g;
+    if (g && g.t === "pinch") { if (!MV.pts.size) MV.g = null; else { const [q] = [...MV.pts.values()]; MV.g = { t: "pan", p0: q, x0: MV.x, y0: MV.y, moved: true }; } return; }
+    MV.g = null;
+    if (MV.drawing) { const d = MV.drawing; MV.drawing = null; if (d.length > 2 && routeLen(d) > 0.05) newRouteSheet(d); else renderOverlay(); return; }
+    if (MV.dragM != null) { const i = MV.dragM; MV.dragM = null; save("markers"); renderDrawer(); if (!g?.moved) markerSheet(i); return; }
+    if (g && !g.moved) {
+      if (g.mk != null) return markerSheet(g.mk);
+      if (UI.mapMode === "pin") { const [x, y] = toS(p); if (x >= 0 && y >= 0 && x <= 1000 && y <= 1000) { S.markers.push({ x, y, n: "", c: COLORS[S.markers.length % 6] }); save("markers"); renderOverlay(); UI.drawer = "markers"; renderDrawer(); toast("Marcador añadido · arrástralo para moverlo"); } }
+    }
+  };
+  w.addEventListener("pointerup", end); w.addEventListener("pointercancel", end);
+}
+function renderDrawer() {
+  const d = $("#drawer"); if (!d) return;
+  const tab = UI.drawer;
+  const names = [...new Set(MAP.pois.map(p => p.name))].sort((a, b) => a.localeCompare(b, "es"));
+  d.innerHTML = chips("drawer", [["routes", "Rutas", S.routes.length], ["markers", "Marcadores", S.markers.length], ["places", "Lugares", names.length || null], ["info", "Info"]], tab) +
+  (tab === "routes" ? (S.routes.length ? `<div class="list">${S.routes.map((r, i) => `<button class="li" data-act="route" data-i="${i}"><span class="swatch" style="background:${r.c || COLORS[i % 6]};${r.hidden ? "opacity:.35" : ""}"></span><span class="grow"><span class="t">${esc(r.n)}${r.hidden ? " (oculta)" : ""}</span><span class="s">${fmtLen(routeLen(r.p))} · ${gridRef(...r.p[0])} → ${gridRef(...r.p[r.p.length - 1])}</span></span>${I.chev}</button>`).join("")}</div>`
+      : `<p class="small muted">Elige «Ruta» y dibuja con un dedo sobre el mapa. Con dos dedos te mueves y haces zoom.</p>`) + `<div class="row"><button class="btn sm" data-act="route-import">Importar ruta</button></div>` : "") +
+  (tab === "markers" ? (S.markers.length ? `<div class="list">${S.markers.map((m, i) => `<button class="li" data-act="marker" data-i="${i}"><span class="swatch" style="background:${m.c}"></span><span class="grow"><span class="t">${esc(m.n || "Marcador " + (i + 1))}</span><span class="s">Casilla ${gridRef(m.x, m.y)}</span></span>${I.chev}</button>`).join("")}</div>`
+      : `<p class="small muted">Elige «Marcador» y toca el mapa. Arrastra un marcador para moverlo; tócalo para renombrarlo o borrarlo.</p>`) : "") +
+  (tab === "places" ? (names.length ? `<p class="small muted">Ubicaciones con nombre en el mapa actual. Aparecen rotuladas en la capa «Con nombres».</p><div class="poilist">${names.map(n => `<span>${esc(n)}</span>`).join("")}</div>`
+      : `<p class="small muted">${MAP.status === "ok" ? "La fuente no ha devuelto ubicaciones." : "Las ubicaciones llegan con el mapa."}</p>`) : "") +
+  (tab === "info" ? `<p class="small muted">Imagen oficial del mapa de Battle Royale que publica fortnite-api.com con cada actualización del juego${mapReady() ? `; esta copia se obtuvo ${fmtD(MAP.at)}` : ""}. Distancias en casillas de la cuadrícula (A–J, 1–10); la escala en metros cambia cada temporada, así que no se estima. No hay vista 3D: no existe una fuente pública autorizada del terreno. Rutas y marcadores se guardan en este dispositivo.</p>` : "");
+}
+function newRouteSheet(pts) {
+  renderOverlay(pts); newRouteSheet.pts = pts;
+  openSheet(`<form class="stack" data-form="newroute"><h1>Guardar ruta</h1><p class="muted">${fmtLen(routeLen(pts))} · de ${gridRef(...pts[0])} a ${gridRef(...pts[pts.length - 1])}</p>
+  <label class="lbl">Nombre<input class="inp" id="rname" value="Ruta ${S.routes.length + 1}" maxlength="40"></label>
+  <div class="row"><button class="btn pri grow">Guardar</button><button type="button" class="btn" data-act="discard-route">Descartar</button></div></form>`);
+}
+const colorRow = (act, i, cur) => `<div class="row">${COLORS.map(c => `<button type="button" class="ibtn" data-act="${act}" data-c="${c}" data-i="${i}" aria-label="Color" style="background:${c};border-color:${cur === c ? "var(--fg)" : "transparent"};${cur === c ? "box-shadow:0 0 0 2px var(--bg) inset" : ""}"></button>`).join("")}</div>`;
+function routeSheet(i) {
+  const r = S.routes[i];
+  openSheet(`<form class="stack" data-form="editroute" data-i="${i}"><h1>${esc(r.n)}</h1><p class="muted">${fmtLen(routeLen(r.p))} · ${gridRef(...r.p[0])} → ${gridRef(...r.p[r.p.length - 1])}</p>
+  <label class="lbl">Nombre<input class="inp" id="rname" value="${esc(r.n)}" maxlength="40"></label>${colorRow("rcolor", i, r.c)}
+  <div class="row"><button class="btn pri grow">Guardar</button><button type="button" class="btn" data-act="rhide" data-i="${i}">${r.hidden ? "Mostrar" : "Ocultar"}</button></div>
+  <div class="row"><button type="button" class="btn grow" data-act="rshare" data-i="${i}">Compartir</button><button type="button" class="btn danger" data-act="rdel" data-i="${i}">Borrar</button></div><div id="sharebox"></div></form>`);
+}
+function markerSheet(i) {
+  const m = S.markers[i];
+  openSheet(`<form class="stack" data-form="editmarker" data-i="${i}"><h1>Marcador</h1><p class="muted">Casilla ${gridRef(m.x, m.y)}</p>
+  <label class="lbl">Nombre<input class="inp" id="mname" value="${esc(m.n)}" maxlength="30" placeholder="Por ejemplo: aterrizaje"></label>${colorRow("mcolor", i, m.c)}
+  <div class="row"><button class="btn pri grow">Guardar</button><button type="button" class="btn danger" data-act="mdel" data-i="${i}">Borrar</button></div></form>`);
+}
+const encodeRoute = r => "DS1:" + btoa(unescape(encodeURIComponent(JSON.stringify({ n: r.n, c: r.c, p: r.p }))));
+function decodeRoute(t) { const m = String(t).trim().match(/DS1:([A-Za-z0-9+/=]+)/); if (!m) return null; try { const o = JSON.parse(decodeURIComponent(escape(atob(m[1])))); if (!Array.isArray(o.p) || o.p.length < 2 || o.p.length > 5000 || !o.p.every(q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite))) return null; return { n: String(o.n || "Ruta importada").slice(0, 40), c: COLORS.includes(o.c) ? o.c : COLORS[0], p: o.p.map(q => q.map(v => Math.max(0, Math.min(1000, Math.round(v))))) }; } catch { return null; } }
+
+/* =================== TORNEOS =================== */
+function eventLi(e) {
+  const d = new Date(e.when), past = d < Date.now();
+  return `<button class="li" data-act="event" data-id="${esc(e.id)}"><span class="av cal" style="${past ? "opacity:.5" : ""}">${d.getDate()}<small>${fmtD(d, { month: "short" }).replace(".", "")}</small></span><span class="grow"><span class="t">${esc(e.name)}</span><span class="s">${fmtD(d, { weekday: "short", hour: "2-digit", minute: "2-digit" })} · ${esc(e.region)}${e.mode ? " · " + esc(e.mode) : ""}</span></span>${I.chev}</button>`;
+}
+VIEWS.events = v => {
+  const up = S.events.filter(e => new Date(e.when) >= Date.now()).sort((a, b) => new Date(a.when) - new Date(b.when));
+  const past = S.events.filter(e => new Date(e.when) < Date.now()).sort((a, b) => new Date(b.when) - new Date(a.when));
+  v.innerHTML = `<div class="page">
+    <div class="ph"><h1>Torneos</h1><p class="small muted">FNCS, Cash Cups y eventos competitivos</p></div>
+    <section class="sec"><h2>Fuentes oficiales</h2>
+      <div class="list">
+        <a class="li" href="https://www.fortnite.com/competitive?lang=es-ES" target="_blank" rel="noopener"><span class="av">${I.trophy}</span><span class="grow"><span class="t">Fortnite Competitivo</span><span class="s">Calendario, reglas y formatos · fortnite.com</span></span>${I.ext.replace("<svg", '<svg class="chev"')}</a>
+        <a class="li" href="https://www.fortnite.com/competitive/news?lang=es-ES" target="_blank" rel="noopener"><span class="av">${I.info}</span><span class="grow"><span class="t">Noticias competitivas</span><span class="s">Anuncios de FNCS y cambios de formato</span></span>${I.ext.replace("<svg", '<svg class="chev"')}</a>
+      </div>
+      <div class="note">${I.info}<p>No hay una fuente pública y autorizada con el calendario competitivo: Epic lo publica en el juego (pestaña «Competir») y en su web. Por eso DropStats no muestra horarios ni clasificaciones automáticos ni inventados.</p></div>
+    </section>
+    <section class="sec"><div class="sh"><div><h2>Tus recordatorios</h2><p class="sub">Torneos que añades tú con la fecha oficial; se muestran en tu hora local</p></div><button class="btn sm pri" data-act="event-new">${I.plus}Añadir</button></div>
+      ${up.length ? `<div class="list">${up.map(eventLi).join("")}</div>` : `<div class="state compact"><span class="si">${I.clock}</span><p class="small muted">No tienes torneos próximos guardados.</p></div>`}
+    </section>
+    ${past.length ? `<section class="sec"><h2>Pasados</h2><div class="list">${past.map(eventLi).join("")}</div></section>` : ""}
+  </div>`;
+};
+function eventSheet(id) {
+  const e = S.events.find(x => x.id === id) || { id: "", name: "", when: "", region: "EU", mode: "", format: "", link: "", result: "" };
+  const local = e.when ? new Date(new Date(e.when).getTime() - new Date(e.when).getTimezoneOffset() * 60e3).toISOString().slice(0, 16) : "";
+  openSheet(`<form class="stack" data-form="event" data-id="${esc(e.id)}"><h1>${e.id ? "Editar recordatorio" : "Nuevo recordatorio"}</h1>
+    <label class="lbl">Nombre<input class="inp" id="ev-name" value="${esc(e.name)}" required maxlength="60" placeholder="FNCS · Ronda 1"></label>
+    <label class="lbl">Fecha y hora (tu hora local)<input class="inp" type="datetime-local" id="ev-when" value="${local}" required></label>
+    <div class="row" style="align-items:flex-start"><label class="lbl grow">Región<select class="sel" id="ev-region">${["EU", "NAC", "NAW", "BR", "ASIA", "ME", "OCE"].map(r => `<option ${r === e.region ? "selected" : ""}>${r}</option>`).join("")}</select></label>
+    <label class="lbl grow">Modo<input class="inp" id="ev-mode" value="${esc(e.mode)}" maxlength="30" placeholder="Trío, Zero Build…"></label></div>
+    <label class="lbl">Formato y requisitos<textarea class="inp" id="ev-format" rows="2" maxlength="300">${esc(e.format)}</textarea></label>
+    <label class="lbl">Enlace oficial<input class="inp" type="url" id="ev-link" value="${esc(e.link)}" placeholder="https://www.fortnite.com/competitive/…"></label>
+    <label class="lbl">Resultado o puesto<input class="inp" id="ev-result" value="${esc(e.result)}" maxlength="60"></label>
+    <div class="row"><button class="btn pri grow">Guardar</button>${e.id ? `<button type="button" class="btn danger" data-act="event-del" data-id="${esc(e.id)}">Borrar</button>` : ""}</div>
+    ${e.link ? `<a class="btn" href="${esc(e.link)}" target="_blank" rel="noopener">${I.ext}Abrir enlace oficial</a>` : ""}
+  </form>`);
+}
+
+/* =================== FAVORITOS =================== */
+VIEWS.favs = v => {
+  queueMicrotask(() => loadShop());
+  const t = UI.favTab, items = Object.values(S.favs);
+  const today = items.filter(i => SHOP.byItem.has(i.id));
+  v.innerHTML = `<div class="page"><div class="ph"><h1>Favoritos</h1><p class="small muted">Guardados en este dispositivo</p></div>
+  ${chips("favTab", [["items", "Cosméticos", items.length], ["players", "Jugadores", S.favPlayers.length]], t)}
+  ${t === "players" ? (S.favPlayers.length ? `<div class="list">${S.favPlayers.map((p, i) => `<div class="li"><span class="av">${esc(initials(p.name))}</span><button class="grow" style="background:none;border:0;text-align:left;padding:0;min-width:0" data-act="player" data-name="${esc(p.name)}" data-type="${esc(p.type)}"><span class="t">${esc(p.name)}</span><span class="s">${esc(p.type.toUpperCase())} · ver estadísticas</span></button><button class="btn sm danger" data-act="unfavplayer" data-i="${i}">Quitar</button></div>`).join("")}</div>`
+      : stateEmpty("Sin jugadores favoritos", "Busca un jugador en Stats y pulsa la estrella.", `<button class="btn" data-go="stats">Ir a Stats</button>`))
+    : items.length ? `${today.length ? `<div class="note">${I.shop}<p><b>${today.length} ${today.length === 1 ? "favorito está" : "favoritos están"} hoy en la tienda.</b></p></div>` : SHOP.status === "ok" ? `<p class="small muted">Ninguno de tus favoritos está hoy en la tienda.</p>` : ""}<div class="grid">${[...today, ...items.filter(i => !SHOP.byItem.has(i.id))].map(itemTile).join("")}</div>`
+      : stateEmpty("Aún no tienes favoritos", "Abre cualquier cosmético de la tienda o del catálogo y pulsa «Añadir a favoritos». Aquí verás si vuelve a la tienda.", `<button class="btn" data-go="catalog">Explorar el catálogo</button>`)}
+  </div>`;
+};
+
+/* =================== AJUSTES =================== */
+VIEWS.settings = v => {
+  const p = S.prefs;
+  v.innerHTML = `<div class="page"><div class="ph"><h1>Ajustes</h1></div>
+  <section class="sec"><h2>Preferencias</h2>
+    <label class="lbl">Idioma de los nombres de cosméticos<select class="sel" id="pref-lang"><option value="es">Español</option><option value="en">English</option><option value="de">Deutsch</option></select></label>
+    <div class="row" style="align-items:flex-start"><label class="lbl grow">Plataforma por defecto<select class="sel" id="pref-platform"><option value="epic">Epic</option><option value="psn">PlayStation</option><option value="xbl">Xbox</option></select></label>
+    <label class="lbl grow">Periodo de estadísticas<select class="sel" id="pref-window"><option value="lifetime">Total</option><option value="season">Temporada</option></select></label></div>
+  </section>
+  <section class="sec"><h2>Fuentes de datos</h2>
+    <div class="list">
+      <div class="li"><span class="grow"><span class="t">Tienda, catálogo y mapa</span><span class="s">fortnite-api.com · gratuita · no oficial</span></span><button class="btn sm" data-act="test-shop">Comprobar</button></div>
+      <div class="li"><span class="grow"><span class="t">Estadísticas</span><span class="s">fortnite-api.com · clave en el servidor</span></span><button class="btn sm" data-act="test-stats">Comprobar</button></div>
+      <div class="li"><span class="grow"><span class="t">Torneos</span><span class="s">Sin fuente pública · enlaces oficiales</span></span></div>
+    </div>
+    <div id="testout"></div>
+  </section>
+  <section class="sec"><h2>Datos guardados</h2>
+    <div class="list">${[["favs", "Cosméticos favoritos", Object.keys(S.favs).length], ["favPlayers", "Jugadores favoritos", S.favPlayers.length], ["history", "Historial de búsquedas", S.history.length], ["routes", "Rutas del mapa", S.routes.length], ["markers", "Marcadores", S.markers.length], ["events", "Recordatorios de torneos", S.events.length], ["prices", "Precios vistos en la tienda", Object.keys(S.prices).length]].map(([k, l, n]) => `<div class="li"><span class="grow"><span class="t">${l}</span><span class="s">${n} ${n === 1 ? "elemento" : "elementos"}</span></span><button class="btn sm danger" data-act="wipe" data-k="${k}" ${n ? "" : "disabled"}>Borrar</button></div>`).join("")}</div>
+    <div class="row"><button class="btn sm" data-act="export">Copia de seguridad</button><button class="btn sm" data-act="import">Restaurar copia</button></div>
+  </section>
+  <p class="small faint">DropStats es un proyecto independiente. No está afiliado, patrocinado ni aprobado por Epic Games. Fortnite y los nombres e imágenes de sus objetos son marcas de Epic Games, Inc. DropStats nunca pide tu contraseña de Epic ni hace compras.</p>
+  </div>`;
+  $("#pref-lang").value = p.lang; $("#pref-platform").value = p.platform; $("#pref-window").value = p.window;
+};
+
+/* =================== eventos =================== */
+const armed = {};
+function arm(btn, key) { if (armed[key]) { armed[key] = 0; return true; } armed[key] = 1; const t = btn.textContent; btn.textContent = "¿Seguro?"; setTimeout(() => { armed[key] = 0; if (btn.isConnected) btn.textContent = t; }, 3000); return false; }
+function toggleFav(id) {
+  const it = KNOWN.get(id); if (!it) return;
+  if (S.favs[id]) delete S.favs[id]; else S.favs[id] = { id: it.id, name: it.name, type: it.type, typeName: it.typeName, rarity: it.rarity, rarityName: it.rarityName, img: it.img, set: it.set || "" };
+  save("favs"); toast(S.favs[id] ? "Añadido a favoritos" : "Quitado de favoritos");
+  $$(`#sheet [data-act=fav][data-id="${CSS.escape(id)}"]`).forEach(b => b.outerHTML = favBtn(id));
+  rerender("home", "shop", "catalog", "favs"); updateFavCount();
+}
+document.addEventListener("click", async e => {
+  const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); return go(g.dataset.go); }
+  const c = e.target.closest("[data-chip]");
+  if (c) { UI[c.dataset.chip] = c.dataset.v; saveUI(); if (c.dataset.chip === "drawer") return renderDrawer(); if (c.dataset.chip === "catType") CAT.key = ""; return render(); }
+  const m = e.target.closest("[data-mode]"); if (m) { if (m.disabled) return; UI.mapMode = m.dataset.mode; $$("[data-mode]").forEach(b => b.classList.toggle("on", b === m)); toast(UI.mapMode === "draw" ? "Dibuja con un dedo · muévete con dos" : UI.mapMode === "pin" ? "Toca el mapa para poner un marcador" : "Arrastra y pellizca para moverte"); return; }
+  const l = e.target.closest("[data-layer]"); if (l) { if (l.disabled) return; UI.mapLayer = l.dataset.layer; saveUI(); $$("[data-layer]").forEach(b => b.classList.toggle("on", b === l)); return mapApplyLayer(); }
+  if (e.target === $("#scrim")) return closeSheet();
+  const a = e.target.closest("[data-act]"); if (!a || a.disabled) return;
+  const act = a.dataset.act, id = a.dataset.id, i = +a.dataset.i;
+  switch (act) {
+    case "close": return closeSheet();
+    case "entry": return entrySheet(id);
+    case "item": return itemSheet(id);
+    case "fav": return toggleFav(id);
+    case "retry-shop": return loadShop(true);
+    case "clear-shop": UI.shopType = "all"; UI.shopPrice = ""; UI.shopQ = ""; saveUI(); return render();
+    case "retry-cat": return loadCatalog(true);
+    case "clear-cat": UI.catQ = ""; UI.catType = "all"; UI.catRar = ""; saveUI(); return render();
+    case "clear-catq": UI.catQ = ""; saveUI(); return render();
+    case "more-cat": CAT.limit += 60; return rerender("catalog");
+    case "retry-stats": return loadStats(ST.q, ST.type || S.prefs.platform, S.prefs.window);
+    case "player": return loadStats(a.dataset.name, a.dataset.type || S.prefs.platform, S.prefs.window);
+    case "favs-players": UI.favTab = "players"; saveUI(); return go("favs");
+    case "favplayer": { const n = ST.data?.account?.name; if (!n) return; const ix = S.favPlayers.findIndex(f => f.name.toLowerCase() === n.toLowerCase()); if (ix >= 0) S.favPlayers.splice(ix, 1); else S.favPlayers.push({ name: n, type: ST.type || "epic" }); save("favPlayers"); toast(ix >= 0 ? "Quitado de favoritos" : "Jugador guardado en favoritos"); return render(); }
+    case "unfavplayer": S.favPlayers.splice(i, 1); save("favPlayers"); return render();
+    case "clear-history": S.history = []; save("history"); return render();
+    case "export": {
+      const txt = JSON.stringify({ dropstats: 2, ...Object.fromEntries(["favs", "favPlayers", "routes", "markers", "events", "prices", "prefs"].map(k => [k, S[k]])) });
+      const ok = await copyText(txt);
+      return openSheet(`<div class="stack"><h1>Copia de seguridad</h1><p class="muted">${ok ? "Copiada al portapapeles. Guárdala en Notas o en un mensaje para ti." : "Selecciona el texto, cópialo y guárdalo en Notas."}</p><textarea class="inp mono" rows="7" readonly id="exptxt">${esc(txt)}</textarea></div>`);
+    }
+    case "import": return openSheet(`<form class="stack" data-form="import"><h1>Restaurar copia</h1><p class="muted">Pega el texto de una copia de seguridad de DropStats. Se combina con lo que ya tienes.</p><textarea class="inp mono" id="imp" rows="7" placeholder='{"dropstats":2,…}'></textarea><button class="btn pri">Restaurar</button></form>`);
+    case "wipe": { const k = a.dataset.k; if (!arm(a, "w" + k)) return; S[k] = Array.isArray(S[k]) ? [] : {}; save(k); toast("Borrado"); return render(); }
+    case "test-shop": case "test-stats": {
+      const out = $("#testout"); out.innerHTML = `<p class="small muted">Comprobando…</p>`;
+      if (act === "test-shop") {
+        try { const j = await API.get("v2/shop", {}, { force: true, ms: 10000 }); out.innerHTML = j.status === 200 ? `<div class="note">${I.info}<p><b>Conectada.</b> La fuente devuelve ${(j.data?.entries || []).length} ofertas (${API.proxy ? "a través del servidor de DropStats" : "conexión directa"}).</p></div>` : `<div class="note warn">${I.warn}<p>La fuente respondió con el código ${esc(j.status)}.</p></div>`; }
+        catch (e) { const s = await getSnapshot("v2/shop"); out.innerHTML = `<div class="note warn">${I.warn}<p><b>Sin conexión directa.</b> ${esc(explain(e))}${s ? ` Hay una copia publicada obtenida ${fmtD(s._snapshot.fetchedAt)}.` : ""}${EMBEDDED ? " El visor de Claude bloquea las conexiones a otras webs." : ""}</p></div>`; }
+      } else {
+        try { const j = await API.stats("Ninja", "epic", "lifetime"); out.innerHTML = j.status === 200 ? `<div class="note">${I.info}<p><b>Conectadas.</b> El servidor tiene la clave y la fuente responde.</p></div>` : j.error === "missing_key" ? `<div class="note warn">${I.warn}<p>El servidor responde, pero falta la variable FORTNITE_API_KEY.</p></div>` : `<div class="note warn">${I.warn}<p>Respuesta ${esc(j.status)}: ${esc(j.error || "")}</p></div>`; }
+        catch { out.innerHTML = `<div class="note warn">${I.warn}<p><b>No hay servidor de DropStats accesible</b> desde esta versión, así que las estadísticas no pueden funcionar aquí.</p></div>`; }
+      }
+      return;
+    }
+    case "event-new": return eventSheet(null);
+    case "event": return eventSheet(id);
+    case "event-del": if (!arm(a, "e" + id)) return; S.events = S.events.filter(x => x.id !== id); save("events"); closeSheet(); return render();
+    case "zin": case "zout": { if (!mapReady()) return; const r = $("#mapwrap").getBoundingClientRect(); return zoomAt(r.width / 2, r.height / 2, act === "zin" ? 1.4 : 1 / 1.4); }
+    case "zfit": return mapFit();
+    case "grid": UI.mapGrid = !UI.mapGrid; saveUI(); a.classList.toggle("on", UI.mapGrid); return renderOverlay();
+    case "mapretry": MAP.status = "idle"; MAP.error = null; $("#mapimg")?.removeAttribute("src"); return loadMap(true);
+    case "route": return routeSheet(i);
+    case "marker": return markerSheet(i);
+    case "discard-route": closeSheet(); return renderOverlay();
+    case "rcolor": S.routes[i].c = a.dataset.c; save("routes"); renderOverlay(); renderDrawer(); return routeSheet(i);
+    case "mcolor": S.markers[i].c = a.dataset.c; save("markers"); renderOverlay(); renderDrawer(); return markerSheet(i);
+    case "rhide": S.routes[i].hidden = !S.routes[i].hidden; save("routes"); renderOverlay(); renderDrawer(); return routeSheet(i);
+    case "rdel": if (!arm(a, "r" + i)) return; S.routes.splice(i, 1); save("routes"); closeSheet(); renderOverlay(); return renderDrawer();
+    case "mdel": S.markers.splice(i, 1); save("markers"); closeSheet(); renderOverlay(); return renderDrawer();
+    case "rshare": { const code = encodeRoute(S.routes[i]); const ok = await copyText(code); $("#sharebox").innerHTML = `<p class="small muted">${ok ? "Código copiado. Envíalo por mensaje: en DropStats se importa desde Mapa → Rutas → Importar ruta." : "Copia este código y envíalo:"}</p><textarea class="inp mono" rows="3" readonly>${esc(code)}</textarea>`; return; }
+    case "route-import": return openSheet(`<form class="stack" data-form="rimport"><h1>Importar ruta</h1><p class="muted">Pega el código que empieza por DS1:</p><textarea class="inp mono" id="rimp" rows="4" placeholder="DS1:…"></textarea><button class="btn pri">Importar</button></form>`);
+  }
+});
+document.addEventListener("focusin", e => { if (e.target.readOnly && e.target.tagName === "TEXTAREA") e.target.select(); });
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "shopPrice") { UI.shopPrice = t.value; saveUI(); render(); }
+  else if (t.id === "shopSort") { UI.shopSort = t.value; saveUI(); render(); }
+  else if (t.id === "catRar") { UI.catRar = t.value; saveUI(); render(); }
+  else if (t.id === "statWin" || t.id === "statType") { /* se aplica al buscar */ }
+  else if (t.id?.startsWith("pref-")) {
+    const k = t.id.slice(5); S.prefs[k] = t.value; save("prefs");
+    if (k === "lang") { SHOP.status = "idle"; CAT.key = ""; MAP.status = "idle"; API.downUntil = 0; loadShop(true); }
+    toast("Preferencia guardada");
+  }
+});
+let shopT;
+document.addEventListener("input", e => {
+  if (e.target.id === "shopq") { UI.shopQ = e.target.value; clearTimeout(shopT); shopT = setTimeout(() => rerender("shop"), 200); }
+});
+document.addEventListener("submit", e => {
+  const f = e.target.closest("[data-form]"); if (!f) return; e.preventDefault();
+  const k = f.dataset.form;
+  if (k === "homesearch") loadStats($("#homeq").value, S.prefs.platform, S.prefs.window);
+  else if (k === "stats") { S.prefs.window = $("#statWin").value; save("prefs"); loadStats($("#statq").value, $("#statType").value, S.prefs.window); }
+  else if (k === "catq") { UI.catQ = $("#catq").value.trim(); saveUI(); $("#catq").blur(); render(); }
+  else if (k === "newroute") { S.routes.push({ n: $("#rname").value.trim() || "Ruta", c: COLORS[S.routes.length % 6], p: newRouteSheet.pts, at: Date.now() }); save("routes"); closeSheet(); renderOverlay(); UI.drawer = "routes"; renderDrawer(); toast("Ruta guardada"); }
+  else if (k === "editroute") { S.routes[+f.dataset.i].n = $("#rname").value.trim() || "Ruta"; save("routes"); closeSheet(); renderDrawer(); toast("Ruta guardada"); }
+  else if (k === "editmarker") { S.markers[+f.dataset.i].n = $("#mname").value.trim(); save("markers"); closeSheet(); renderOverlay(); renderDrawer(); }
+  else if (k === "rimport") { const r = decodeRoute($("#rimp").value); if (!r) return toast("Ese código no es una ruta de DropStats"); S.routes.push(r); save("routes"); closeSheet(); renderOverlay(); UI.drawer = "routes"; renderDrawer(); toast("Ruta importada"); }
+  else if (k === "event") {
+    const when = $("#ev-when").value, name = $("#ev-name").value.trim(); if (!when || !name) return toast("Faltan el nombre o la fecha");
+    const link = $("#ev-link").value.trim();
+    const ev = { id: f.dataset.id || "e" + Date.now(), name, when: new Date(when).toISOString(), region: $("#ev-region").value, mode: $("#ev-mode").value.trim(), format: $("#ev-format").value.trim(), link: /^https?:\/\//.test(link) ? link : "", result: $("#ev-result").value.trim() };
+    S.events = S.events.filter(x => x.id !== ev.id).concat(ev); save("events"); closeSheet(); render(); toast("Recordatorio guardado");
+  }
+  else if (k === "import") {
+    let o; try { o = JSON.parse($("#imp").value); } catch { return toast("El texto no es una copia válida"); }
+    if (!o || !o.dropstats) return toast("El texto no es una copia de DropStats");
+    let n = 0;
+    const favSrc = Object.assign({}, o.favItems || {}, o.wish || {}, o.favs || {});
+    for (const [id, it] of Object.entries(favSrc)) if (it && typeof it.name === "string") { S.favs[id] = it; remember(it); n++; }
+    if (o.prices) for (const [id, p] of Object.entries(o.prices)) if (Number.isFinite(p)) S.prices[id] = p;
+    ["favPlayers", "routes", "markers", "events"].forEach(key => { if (Array.isArray(o[key])) { S[key] = S[key].concat(o[key].slice(0, 500)); n += Math.min(500, o[key].length); } });
+    ["favs", "prices", "favPlayers", "routes", "markers", "events"].forEach(save);
+    closeSheet(); render(); toast(`${n} elementos restaurados`);
+  }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
+window.addEventListener("resize", () => { if (ROUTE === "map") mapFit(); });
+window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (VIEWS[h] && h !== ROUTE) go(h); });
+setInterval(() => $$("[data-cd]").forEach(el => el.textContent = (el.dataset.cd === "short" ? untilShort : until)(nextResetUTC() - Date.now())), 30e3);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && SHOP.status === "ok" && (Date.now() - SHOP.at > 10 * 60e3 || SHOP.at < lastResetUTC())) loadShop(true); });
+
+/* =================== arranque =================== */
+go(VIEWS[(location.hash || "").slice(1)] ? location.hash.slice(1) : "home");
+</script>
+</body></html>
