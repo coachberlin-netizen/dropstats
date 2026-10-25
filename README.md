@@ -55,12 +55,14 @@ Armas del parche actual desde **api-fortnite.com** (no oficial, gratuita hasta 1
 
 Chat con un modelo de IA real a través de `/api/ai`: burbujas, respuestas con formato, copiar, nueva conversación, historial local, preguntas sugeridas, estados de carga y error. Con «Usar mis datos de DropStats» activado envía al modelo solo lo que la app tiene cargado (tus stats, estrategias, Meta Lab, tienda, torneos con su marca de confirmado, novedades) y una lista de lo que **no** está disponible, para que no afirme haberlo consultado.
 
-Configuración (una de estas, en Vercel → Environment Variables):
+Configuración (Vercel → Settings → Environment Variables):
 
-- `GEMINI_API_KEY` — Google Gemini, tiene nivel gratuito (https://aistudio.google.com/apikey). Modelo por defecto `gemini-flash-latest`.
-- `ANTHROPIC_API_KEY` — Claude (de pago). Modelo por defecto `claude-haiku-5-5`.
-- `AI_API_KEY` + `AI_BASE_URL` + `AI_MODEL` — cualquier API compatible con OpenAI.
-- Opcionales: `AI_MODEL` (cambiar modelo), `AI_PROVIDER` (forzar proveedor), `AI_DAILY_LIMIT` (30 mensajes por cuenta y día por defecto).
+- `GROQ_API_KEY` — **recomendado.** Groq tiene nivel gratuito sin tarjeta (https://console.groq.com/keys). Modelo principal `openai/gpt-oss-120b`; si está saturado, prueba `llama-3.3-70b-versatile` y `llama-3.1-8b-instant` (cambiables con `AI_MODEL` y `AI_FALLBACK_MODELS`). El nivel gratuito limita peticiones y tokens por minuto y por día; los valores exactos se ven en console.groq.com/settings/limits.
+- `ANTHROPIC_API_KEY` — Claude (de pago). `AI_API_KEY` + `AI_BASE_URL` + `AI_MODEL` — cualquier API compatible con OpenAI.
+- `GEMINI_API_KEY` — admitido, pero las condiciones de Google no permiten usar su nivel gratuito para dar servicio a usuarios del EEE (España incluida); solo con facturación activada.
+- Opcionales: `AI_PROVIDER` (forzar proveedor), `AI_DAILY_LIMIT` (30 mensajes por cuenta y día), `AI_GLOBAL_LIMIT` (300 al día en total), `AI_PING_LIMIT` (20 pruebas al día).
+
+Prueba real: Ajustes → Fuentes de datos → Drop AI → «Comprobar» (llama a `/api/ai?op=ping`, que hace una petición mínima al proveedor).
 
 Requiere sesión iniciada (para aplicar el límite diario en Redis). Si no hay clave, la pantalla dice que el servicio aún no está configurado y no envía nada.
 

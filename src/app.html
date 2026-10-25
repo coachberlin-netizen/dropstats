@@ -1654,7 +1654,7 @@ VIEWS.settings = v => {
       <div class="li"><span class="grow"><span class="t">Estadísticas</span><span class="s">fortnite-api.com · clave en el servidor</span></span><button class="btn sm" data-act="test-stats">Comprobar</button></div>
       <div class="li"><span class="grow"><span class="t">Cuentas y sincronización</span><span class="s">${ACC.configured ? "Base de datos conectada" : ACC.configured === false ? "Falta conectar la base de datos" : "Sin servidor en esta versión"}</span></span><button class="btn sm" data-go="account">Abrir</button></div>
       <div class="li"><span class="grow"><span class="t">Meta Lab (armas)</span><span class="s">api-fortnite.com · clave METALAB_API_KEY en el servidor</span></span><button class="btn sm" data-act="test-meta">Comprobar</button></div>
-      <div class="li"><span class="grow"><span class="t">Drop AI</span><span class="s">Gemini o Claude · clave en el servidor</span></span><button class="btn sm" data-act="test-ai">Comprobar</button></div>
+      <div class="li"><span class="grow"><span class="t">Drop AI</span><span class="s">Groq (nivel gratuito) · clave GROQ_API_KEY en el servidor</span></span><button class="btn sm" data-act="test-ai">Comprobar</button></div>
       <div class="li"><span class="grow"><span class="t">Torneos</span><span class="s">Sin fuente pública · enlaces oficiales</span></span></div>
     </div>
     <div id="testout"></div>
@@ -2064,7 +2064,7 @@ async function loadMeta(force) {
   try {
     const j = await fetchJSON("/api/meta?op=weapons", 20000);
     if (j.status === 200) { META.items = j.items || []; META.patch = j.patch; META.status = "ok"; META.at = Date.now(); META.items.forEach(w => WKNOWN.set(w.id, w)); }
-    else { META.status = j.error === "missing_key" ? "nokey" : "error"; META.err = j.error === "invalid_key" ? "La clave de Meta Lab no es válida." : j.error === "rate_limited" ? "La fuente ha alcanzado su límite de peticiones. Vuelve a intentarlo más tarde." : "La fuente de armas no responde ahora mismo."; }
+    else { META.status = j.error === "missing_key" ? "nokey" : "error"; META.err = j.error === "invalid_key" ? "La clave de Meta Lab no es válida." : j.error === "plan_required" ? "La fuente de armas no permite estos datos con el plan gratuito de la clave configurada." : j.error === "rate_limited" ? "La fuente ha alcanzado su límite de peticiones. Vuelve a intentarlo más tarde." : "La fuente de armas no responde ahora mismo."; }
   } catch { META.status = "error"; META.err = API.proxy === false || EMBEDDED ? "Esta versión no tiene servidor (por ejemplo, dentro de Claude). Ábrela en dropstats.vercel.app." : "No hay conexión con el servidor de Meta Lab."; }
   rerender("meta", "home", "widgets");
 }
@@ -2277,7 +2277,7 @@ function aiContext() {
   } else c.noDisponible.push(S.myPlayer ? "estadísticas del jugador (no se han podido cargar)" : "estadísticas del jugador (el usuario no ha elegido su cuenta en Stats)");
   if (ST.status === "ok" && ST.data?.account && ST.data.account.id !== MY.data?.account?.id) c.jugadorConsultado = { nombre: ST.data.account.name, general: (s => s && { victorias: s.wins, eliminaciones: s.kills, partidas: s.matches, kd: s.kd, porcentajeVictorias: s.winRate })(ST.data.stats?.all?.overall) };
   const cs = curStrat();
-  if (S.strategies.length) c.estrategias = S.strategies.slice(0, 8).map(s => ({ nombre: s.name, actual: s.id === S.curStrat || undefined, notas: s.notes || undefined, categoria: s.tag || undefined, modo: s.mode || undefined, estilo: s.style || undefined, fases: s.phases && Object.values(s.phases).some(Boolean) ? s.phases : undefined, armas: s.loadout?.length ? s.loadout.map(w => w.name) : undefined, marcadores: s.markers.slice(0, 20).map(m => ({ tipo: (MT[m.t] || MT.point).n, nombre: m.n || undefined, casilla: gridRef(m.x, m.y), nota: m.note || undefined })), rutas: s.routes.slice(0, 10).map(r => ({ nombre: r.n, desde: gridRef(...r.p[0]), hasta: gridRef(...r.p[r.p.length - 1]), longitudCasillas: +routeLen(r.p).toFixed(1) })) }));
+  if (S.strategies.length) c.estrategias = S.strategies.slice().sort((a, b) => (b.id === S.curStrat) - (a.id === S.curStrat)).slice(0, 8).map(s => ({ nombre: s.name, actual: s.id === S.curStrat || undefined, notas: s.notes || undefined, categoria: s.tag || undefined, modo: s.mode || undefined, estilo: s.style || undefined, fases: s.phases && Object.values(s.phases).some(Boolean) ? s.phases : undefined, armas: s.loadout?.length ? s.loadout.map(w => w.name) : undefined, marcadores: s.markers.slice(0, 20).map(m => ({ tipo: (MT[m.t] || MT.point).n, nombre: m.n || undefined, casilla: gridRef(m.x, m.y), nota: m.note || undefined })), rutas: s.routes.slice(0, 10).map(r => ({ nombre: r.n, desde: gridRef(...r.p[0]), hasta: gridRef(...r.p[r.p.length - 1]), longitudCasillas: +routeLen(r.p).toFixed(1) })) }));
   else c.noDisponible.push("estrategias del mapa (no hay ninguna guardada)");
   if (!cs && (S.markers.length || S.routes.length)) c.mapaSinGuardar = { marcadores: S.markers.length, rutas: S.routes.length };
   c.cuadriculaMapa = "Casillas A–J (columnas, oeste a este) y 1–10 (filas, norte a sur)";
@@ -2289,7 +2289,12 @@ function aiContext() {
   const evs = S.events.filter(e => new Date(e.when) > Date.now()).slice(0, 8);
   c.torneos = evs.length ? evs.map(e => ({ nombre: e.name, fecha: e.when, region: e.region, modo: e.mode || undefined, confirmado: !!e.confirmed })) : "El usuario no tiene recordatorios de torneos. No hay calendario automático: la fuente oficial es fortnite.com/competitive.";
   if (NEWS.status === "ok" && NEWS.items.length) c.novedadesOficiales = NEWS.items.slice(0, 5).map(n => ({ titulo: n.title, texto: (n.body || "").slice(0, 160) }));
-  const fv = Object.values(S.favs); if (fv.length) c.favoritos = fv.slice(0, 20).map(f => f.name);
+  const fv = Object.values(S.favs); if (fv.length) c.favoritos = fv.slice(0, 15).map(f => f.name);
+  // el nivel gratuito del proveedor limita los tokens por minuto: se recorta lo menos importante hasta que quepa
+  const cut = [() => { delete c.favoritos; }, () => { delete c.lugaresDelMapa; }, () => { delete c.novedadesOficiales; }, () => { if (c.tiendaHoy) c.tiendaHoy.ejemplos = c.tiendaHoy.ejemplos.slice(0, 5); },
+    () => { if (c.metaLab) c.metaLab.armasEnBotin = c.metaLab.armasEnBotin.slice(0, 12); }, () => { if (c.estrategias) c.estrategias = c.estrategias.slice(0, 3).map(s => ({ ...s, marcadores: s.marcadores.slice(0, 8), rutas: s.rutas.slice(0, 4) })); },
+    () => { if (c.metaLab) c.metaLab.armasEnBotin = c.metaLab.armasEnBotin.slice(0, 6); }, () => { if (c.estrategias) c.estrategias = c.estrategias.slice(0, 1); }];
+  for (const f of cut) { if (JSON.stringify(c).length <= 7000) break; f(); }
   return c;
 }
 const curChat = () => S.aiChats.find(c => c.id === UI.aiChat) || null;
@@ -2310,7 +2315,8 @@ function mdLite(t) {
 const AI_ERR = {
   not_configured: "Drop AI aún no tiene un modelo de IA configurado en el servidor.", no_store: "Falta la base de datos del servidor, necesaria para aplicar los límites de uso.",
   no_session: "Inicia sesión en tu cuenta de DropStats para usar Drop AI.", rate_limited: "Has llegado al límite diario de mensajes de Drop AI. Vuelve mañana.",
-  provider_rate: "El proveedor de IA ha alcanzado su límite de uso por ahora. Inténtalo dentro de un rato.", provider_config: "El proveedor de IA ha rechazado la petición: revisa la clave o el modelo configurados.",
+  provider_rate: "El servicio de IA gratuito está saturado ahora mismo (límite por minuto o por día). Espera un minuto y vuelve a intentarlo.", provider_config: "El proveedor de IA ha rechazado la petición: revisa el modelo configurado.", provider_key: "El proveedor de IA no acepta la clave configurada en el servidor.",
+  global_limit: "Drop AI ha llegado a su límite de uso de hoy para toda la app. Vuelve mañana.",
   provider_error: "El proveedor de IA ha devuelto un error. Inténtalo de nuevo.", timeout: "La IA ha tardado demasiado en responder. Inténtalo de nuevo.", unreachable: "El servidor no ha podido conectar con el proveedor de IA.",
   empty: "La IA no ha devuelto texto. Prueba a reformular la pregunta.", too_big: "El mensaje es demasiado largo.", origin: "Petición bloqueada por seguridad.", server: "Error del servidor de DropStats.", bad_request: "Mensaje no válido.", network: "No hay conexión con el servidor de DropStats."
 };
@@ -2321,12 +2327,12 @@ VIEWS.ai = v => { // solo llega aquí con Drop Ultra: render() muestra la pantal
   let banner = "";
   if (AI.status === "noserver") banner = `<div class="note warn">${I.plug}<p><b>Sin servidor.</b> Esta versión de DropStats no tiene servidor (por ejemplo, dentro de Claude), así que Drop AI no puede funcionar aquí. Ábrela en dropstats.vercel.app.</p></div>`;
   else if (AI.status === "ok" && !AI.configured) banner = `<div class="note warn">${I.plug}<div><p><b>Drop AI está preparado, pero el servicio de IA aún no está configurado.</b> No se envía nada ni se simulan respuestas hasta que el servidor tenga una clave.</p>
-    <ol class="steps"><li>Crea una clave gratuita de Google Gemini en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> (o usa una de Anthropic).</li><li>Vercel → <b>Settings → Environment Variables</b> → <b>GEMINI_API_KEY</b> (o <b>ANTHROPIC_API_KEY</b>) → <b>Save</b>.</li><li><b>Redeploy</b> y vuelve aquí.</li></ol>
+    <ol class="steps"><li>Crea una cuenta gratuita en <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a> y pulsa «Create API Key».</li><li>Vercel → <b>Settings → Environment Variables</b> → <b>GROQ_API_KEY</b> → <b>Save</b>.</li><li><b>Redeploy</b> y vuelve aquí.</li></ol>
     <button class="btn sm" data-act="ai-recheck">${I.refresh}Comprobar de nuevo</button></div></div>`;
   else if (AI.configured && AI.needsLogin && ACC.checked && !ACC.user) banner = `<div class="note">${I.user}<p><b>Inicia sesión para usar Drop AI.</b> Los mensajes cuentan para un límite diario por cuenta. <button class="link" data-go="account">Iniciar sesión</button></p></div>`;
   v.innerHTML = `<div class="page ai-page">
     <div class="ph"><div class="row" style="justify-content:space-between"><h1><span class="ultra-word">Drop AI</span></h1><div class="row" style="gap:6px"><button class="btn sm" data-act="ai-history">${I.clock}Historial</button><button class="btn sm pri" data-act="ai-new">${I.plus}Nueva</button></div></div>
-      <p class="small muted">Asistente de IA para Fortnite${AI.provider ? ` · modelo de ${AI.provider === "gemini" ? "Google Gemini" : AI.provider === "anthropic" ? "Anthropic Claude" : "un proveedor compatible"}` : ""}${AI.limit ? ` · ${AI.remaining != null ? AI.remaining + " de " : ""}${AI.limit} mensajes al día` : ""}. Puede equivocarse: comprueba lo importante.</p></div>
+      <p class="small muted">Asistente de IA para Fortnite${AI.provider ? ` · modelo de ${AI.provider === "groq" ? "Groq" : AI.provider === "gemini" ? "Google Gemini" : AI.provider === "anthropic" ? "Anthropic Claude" : "un proveedor compatible"}` : ""}${AI.limit ? ` · ${AI.remaining != null ? AI.remaining + " de " : ""}${AI.limit} mensajes al día` : ""}. Puede equivocarse: comprueba lo importante.</p></div>
     ${banner}
     <div class="chat" id="chat" aria-live="polite">
       ${msgs.length ? msgs.map((m, k) => `<div class="msg ${m.role === "user" ? "me" : "bot"} ${m.err ? "err" : ""}">${m.role === "user" ? `<p>${esc(m.content)}</p>` : `<div class="md">${mdLite(m.content)}</div><div class="msg-tools"><button class="link small" data-act="ai-copy" data-i="${k}">${I.copy}Copiar</button>${m.ctx ? `<span class="small faint">Con tus datos de DropStats</span>` : ""}</div>`}</div>`).join("")
@@ -2782,8 +2788,8 @@ document.addEventListener("click", async e => {
     case "test-meta": case "test-ai": {
       const out = $("#testout"); out.innerHTML = `<p class="small muted">Comprobando…</p>`;
       try {
-        if (act === "test-meta") { const j = await fetchJSON("/api/meta?op=probe", 15000); out.innerHTML = j.status === 200 ? `<div class="note">${I.info}<p><b>Conectada.</b> La fuente devuelve ${j.count} armas con ${j.statKeys.length} estadísticas numéricas por arma.</p></div>` : `<div class="note warn">${I.warn}<p>${j.error === "missing_key" ? "Falta la variable METALAB_API_KEY en el servidor." : j.error === "invalid_key" ? "La clave METALAB_API_KEY no es válida." : "La fuente respondió con el código " + esc(j.status) + "."}</p></div>`; }
-        else { const j = await fetchJSON("/api/ai", 8000); out.innerHTML = j.configured ? `<div class="note">${I.info}<p><b>Configurado.</b> Proveedor: ${esc(j.provider)} · modelo ${esc(j.model)} · ${j.limit} mensajes al día por cuenta. La conexión real se comprueba al enviar el primer mensaje.</p></div>` : `<div class="note warn">${I.warn}<p>Falta una clave de IA en el servidor (GEMINI_API_KEY o ANTHROPIC_API_KEY).</p></div>`; }
+        if (act === "test-meta") { const j = await fetchJSON("/api/meta?op=probe", 15000); out.innerHTML = j.status === 200 ? `<div class="note">${I.info}<p><b>Conectada.</b> La fuente devuelve ${j.count} armas (parche ${esc(j.patch || "—")}): ${j.withStats} con estadísticas, ${j.withImage} con imagen, ${j.inPool} en el botín actual.</p></div>` : `<div class="note warn">${I.warn}<p>${j.error === "missing_key" ? "Falta la variable METALAB_API_KEY en el servidor." : j.error === "invalid_key" ? "La clave METALAB_API_KEY no es válida." : j.error === "plan_required" ? "La clave funciona, pero su plan no incluye las armas." : "La fuente respondió con el código " + esc(j.status) + "."}</p></div>`; }
+        else { const j = await fetchJSON("/api/ai?op=ping", 55000); out.innerHTML = j.ok ? `<div class="note">${I.info}<p><b>Funciona.</b> ${esc(j.provider)} ha respondido con el modelo ${esc(j.model)} en ${(j.ms / 1000).toFixed(1)} s.</p></div>` : `<div class="note warn">${I.warn}<p>${j.error === "not_configured" ? "Falta la clave de IA en el servidor (GROQ_API_KEY)." : j.error === "ping_limit" ? "Ya se han hecho hoy todas las pruebas permitidas." : esc(AI_ERR[j.error] || "Error: " + j.error)}${j.detail ? " · " + esc(j.detail) : ""}</p></div>`; }
       } catch { out.innerHTML = `<div class="note warn">${I.warn}<p><b>No hay servidor de DropStats accesible</b> desde esta versión.</p></div>`; }
       return;
     }

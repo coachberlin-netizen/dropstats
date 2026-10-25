@@ -5,6 +5,8 @@
 import { send } from "./_lib.js";
 const BASE = "https://prod.api-fortnite.com";
 
+const errOf = st => st === 401 ? "invalid_key" : st === 403 ? "plan_required" : st === 429 ? "rate_limited" : "source_error";
+const RL = h => Object.fromEntries([...h.entries()].filter(([k]) => /ratelimit|rate-limit|quota/i.test(k)).slice(0, 6));
 const num = v => typeof v === "number" && Number.isFinite(v) ? v : typeof v === "string" && /^-?\d+(\.\d+)?$/.test(v.trim()) ? +v : null;
 function flatStats(stats, rarity) {
   const out = {};
@@ -50,7 +52,7 @@ export default async function handler(req, res) {
     if (op === "patches") {
       const r = await fetch(`${BASE}/api/v2/weapons/patches`, { headers });
       const j = await r.json().catch(() => null);
-      if (!r.ok || !j) return send(res, 200, { status: r.status, error: r.status === 401 ? "invalid_key" : "source_error" });
+      if (!r.ok || !j) return send(res, 200, { status: r.status, error: errOf(r.status) });
       const list = Array.isArray(j) ? j : Array.isArray(j.patches) ? j.patches : [];
       const patches = list.map(p => typeof p === "string" ? { patch: p } : { patch: String(p.patch || p.version || p.name || ""), current: !!(p.current || p.isCurrent), date: p.date || p.releaseDate || null }).filter(p => p.patch);
       res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=600");
@@ -60,11 +62,15 @@ export default async function handler(req, res) {
     const patch = String(req.query.patch || ""), gm = String(req.query.gamemode || "");
     if (/^\d{1,3}\.\d{1,3}$/.test(patch)) qs.set("patch", patch);
     if (/^[A-Za-z]{2,30}$/.test(gm)) qs.set("gamemode", gm);
-    const r = await fetch(`${BASE}/api/v2/weapons?${qs}`, { headers });
+    let r = await fetch(`${BASE}/api/v2/weapons?${qs}`, { headers });
+    if (r.status === 400) { qs.delete("lang"); r = await fetch(`${BASE}/api/v2/weapons?${qs}`, { headers }); } // por si la fuente no acepta el idioma
     const j = await r.json().catch(() => null);
-    if (!r.ok || !j) return send(res, 200, { status: r.status, error: r.status === 401 ? "invalid_key" : r.status === 429 ? "rate_limited" : "source_error" });
+    if (!r.ok || !j) return send(res, 200, { status: r.status, error: errOf(r.status), detail: op === "probe" && j ? String(j.message || j.error || j.title || "").slice(0, 160) : undefined });
     const raw = Array.isArray(j) ? j : Array.isArray(j.data) ? j.data : Array.isArray(j.items) ? j.items : [];
-    if (op === "probe") return send(res, 200, { status: 200, count: raw.length, fields: raw[0] ? Object.keys(raw[0]) : [], statKeys: raw[0] ? Object.keys(flatStats(raw[0].stats, raw[0].rarity)) : [], imageKeys: raw[0]?.images && typeof raw[0].images === "object" ? Object.keys(raw[0].images) : [] });
+    if (op === "probe") { // diagnóstico: nombres de campos y un ejemplo normalizado de la primera arma con estadísticas (datos públicos del juego)
+      const withStats = raw.find(w => Object.keys(flatStats(w.stats, w.rarity)).length) || raw[0];
+      return send(res, 200, { status: 200, count: raw.length, withStats: raw.filter(w => Object.keys(flatStats(w.stats, w.rarity)).length).length, withImage: raw.filter(w => firstImage(w.images)).length, inPool: raw.filter(w => w.inCurrentLootPool).length, patch: raw[0]?.patch || null, fields: raw[0] ? Object.keys(raw[0]) : [], statsShape: withStats?.stats ? JSON.stringify(withStats.stats).slice(0, 400) : null, imageKeys: withStats?.images && typeof withStats.images === "object" ? Object.keys(withStats.images) : [], sample: withStats ? normalize(withStats) : null, rateLimit: RL(r.headers) });
+    }
     const items = raw.map(normalize).filter(x => x.id && x.name);
     res.setHeader("Cache-Control", "s-maxage=1800, stale-while-revalidate=600");
     return send(res, 200, { status: 200, patch: items[0]?.patch || patch || null, items, source: "api-fortnite.com" });
