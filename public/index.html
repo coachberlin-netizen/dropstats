@@ -1787,7 +1787,7 @@ const Entitlements = {
 };
 /* MODO PRUEBA TEMPORAL (pedido por Su para ver la experiencia completa): el botón de cada plan lo activa en
    demostración, sin pago, y lanza la animación. Para volver al comportamiento normal: TEST_UNLOCK = false. */
-const TEST_UNLOCK = true;
+const TEST_UNLOCK = false;
 const Billing = { // estructura preparada para una pasarela real (Stripe, App Store…); hoy no cobra nada
   available: false,
   async checkout(plan) { return { ok: false, status: "not_available", reason: "not_available", plan }; },
