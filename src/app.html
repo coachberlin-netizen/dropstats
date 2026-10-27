@@ -2371,7 +2371,7 @@ function recordPR(id, p) { // una medición real al día; si el PR de la fuente 
   save("prSnaps");
 }
 const COMP_ERR = {
-  missing_key: "La fuente de datos no está configurada en el servidor.", invalid_key: "La clave de la fuente de datos no es válida.", plan_required: "La fuente no incluye estos datos en su plan gratuito.",
+  missing_key: "La fuente de datos no está configurada en el servidor.", invalid_key: "La clave de la fuente de datos no es válida.", plan_required: "La fuente solo ofrece estos datos en su plan de pago, y DropStats usa el plan gratuito. Se activarán solos si algún día se usa un plan que los incluya.",
   rate_limited: "La fuente ha limitado las consultas por ahora. Vuelve a intentarlo en un rato.", source_error: "La fuente no responde ahora mismo.", unreachable: "La fuente no responde ahora mismo.",
   network: "No hay conexión con el servidor de DropStats.", no_store: "Falta la base de datos del servidor.", index_building: "Se está preparando la lista de jugadores con premios. Vuelve a intentarlo en un minuto."
 };
