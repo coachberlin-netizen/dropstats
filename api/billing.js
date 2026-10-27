@@ -1,6 +1,7 @@
 // Suscripciones con Stripe (Checkout + portal de cliente). La clave secreta vive solo en el servidor.
 //   STRIPE_SECRET_KEY   sk_test_… (modo de prueba, sin dinero real) o sk_live_… (cobros reales)
 //   BILLING_LIVE=on     obligatorio para aceptar una clave sk_live_ (evita cobrar por error)
+//   BILLING_ENABLED=on  interruptor general: sin él, el sistema de pagos está apagado (estado actual: «Próximamente»)
 // El plan de cada cuenta lo decide SIEMPRE el servidor consultando a Stripe; la app nunca lo concede por su cuenta.
 // GET  /api/billing                       → { configured, mode, plan, status, periodEnd, cancelAtPeriodEnd, prices }
 // POST /api/billing { op:"checkout", plan } → { url }  (página de pago de Stripe)
@@ -14,6 +15,8 @@ const LOOKUP = p => `dropstats_${p}_monthly_eur`;
 const ACTIVE = new Set(["active", "trialing"]);                      // sin pago al día no hay plan (past_due, unpaid… = Gratis)
 
 export function billingMode() {
+  // Bloqueo de seguridad: sin BILLING_ENABLED=on no hay pagos aunque exista una clave de Stripe (decisión de la propietaria del proyecto)
+  if (process.env.BILLING_ENABLED !== "on") return null;
   const k = process.env.STRIPE_SECRET_KEY || "";
   if (k.startsWith("sk_test_") || k.startsWith("rk_test_")) return "test";
   if ((k.startsWith("sk_live_") || k.startsWith("rk_live_")) && process.env.BILLING_LIVE === "on") return "live";

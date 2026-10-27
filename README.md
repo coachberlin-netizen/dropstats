@@ -63,10 +63,28 @@ Prueba real: Ajustes → Fuentes de datos → Drop AI → «Comprobar» (llama a
 
 Requiere sesión iniciada (para aplicar el límite diario en Redis). Si no hay clave, la pantalla dice que el servicio aún no está configurado y no envía nada.
 
+## Funciones en desarrollo («Próximamente»)
+
+El registro `SOON` de `src/app.html` guarda cada función que depende de un servicio no disponible: su estado («Próximamente», «No disponible aún» o «En desarrollo»), el motivo y lo que falta. Sus botones explican el motivo al pulsarlos; no se muestran datos inventados ni de ejemplo.
+
+| Función | Estado | Para activarla |
+|---|---|---|
+| Suscripciones Pro, Elite y Ultra | Próximamente | `BILLING_ENABLED=on` + clave de Stripe (ver «Pagos»). Requiere revisar antes las condiciones de Epic y que un adulto responsable lleve la cuenta. |
+| Meta Lab | Próximamente | `METALAB_ENABLED=on` + `METALAB_API_KEY` con un plan que incluya armas. El módulo completo de la app está en el historial de git (commit `252a965`, sección «META LAB» de `src/app.html`). |
+| Calendario automático de torneos | No disponible aún | Una fuente oficial de Epic. |
+| Vista 3D y distancias en metros | No disponible aún | Una fuente oficial del terreno y de la escala. |
+
+## Publicidad (preparada, desactivada)
+
+`ADS.enabled = false` en `src/app.html`. Los espacios (`adSlot()`: inicio, tienda, catálogo y estadísticas) no se dibujan, no cargan scripts, no crean cookies y no recogen datos. Para ver cómo quedarían: añade `?adpreview=1` a la dirección.
+
+Antes de activar cualquier publicidad hay que confirmar que está permitida: la política de contenido de fans de Epic (sección 1.4: sin objetivo comercial), el plan Hobby de Vercel (solo uso no comercial) y los requisitos de la plataforma (edad, aviso de consentimiento certificado en el EEE).
+
 ## Pagos (Stripe)
 
 `api/billing.js` crea la página de pago de Stripe (Checkout), comprueba cada pago con Stripe en el servidor antes de activar el plan y abre el portal de cliente (cambiar de plan, cancelar, facturas, tarjeta). No hace falta configurar webhooks: el plan se vuelve a comprobar con Stripe cada 30 minutos y al volver del portal.
 
+- **Interruptor general:** sin `BILLING_ENABLED=on` el sistema de pagos está apagado aunque haya una clave (estado actual).
 - `STRIPE_SECRET_KEY` = `sk_test_…` → **modo de prueba** (tarjeta 4242 4242 4242 4242, sin dinero real). Se mantiene el selector de demostración.
 - `STRIPE_SECRET_KEY` = `sk_live_…` + `BILLING_LIVE=on` → **cobros reales**. Sin `BILLING_LIVE=on` una clave real se ignora. En este modo el selector de demostración desaparece y Drop AI exige Ultra pagado también en el servidor.
 - Los productos y precios (2,99 €, 5,99 € y 9,99 € al mes, IVA incluido) se crean solos en Stripe la primera vez.

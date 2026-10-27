@@ -43,7 +43,7 @@ svg{flex:none}
 main{grid-area:main;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line2) transparent;
   padding-block:2px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
 main.full{padding:0;overflow:hidden;display:flex;flex-direction:column}
-.nav{grid-area:nav;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#0b0b12f2;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);
+.nav{grid-area:nav;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));background:#0b0b12f2;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);
   padding-top:4px;padding-bottom:max(4px,env(safe-area-inset-bottom,0px));padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 .nav button{background:none;border:0;padding:4px 0 2px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--faint);font-size:11px;font-weight:600;letter-spacing:.01em}
 .nav .ic{width:46px;height:28px;border-radius:999px;display:grid;place-items:center;transition:background .2s}
@@ -507,6 +507,30 @@ td .pct.up{color:var(--ok)} td .pct.dn{color:var(--bad)}
 .msg .md-t{margin:8px 0;background:var(--bg)}.msg .md-t table{font-size:13.5px}.msg .md-t th{text-align:left}
 .msg-tools .small svg{width:13px;height:13px;vertical-align:-2px;margin-right:3px}
 .sub-box{padding:14px 16px;display:flex;align-items:center;gap:12px}.sub-box h2{font-size:20px;margin:2px 0}
+/* ---------- «Próximamente» y espacios publicitarios ---------- */
+.soon-tag{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:999px;font:700 10.5px/1 var(--display);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;vertical-align:middle;
+  color:#c4b5fd;background:#8b5cf61f;border:1px solid #8b5cf655}
+.soon-tag svg{width:11px;height:11px}
+.soon-tag.s-na{color:#a6a3c2;background:#ffffff0a;border-color:#ffffff22}
+.soon-tag.s-dev{color:#7dd3fc;background:#0ea5e91a;border-color:#0ea5e955}
+.btn.is-soon{opacity:.62;filter:saturate(.6);cursor:help;box-shadow:none}
+.btn.is-soon:hover{opacity:.75}
+.soon-pill{margin-left:8px;padding:2px 8px;border-radius:999px;background:#00000040;font:700 10.5px/1.4 var(--display);letter-spacing:.06em;text-transform:uppercase}
+.soon-li .t{display:flex;flex-wrap:wrap;gap:6px;align-items:center;white-space:normal}
+.soon-li .s{white-space:normal}
+.soon-head{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.nav .ic{position:relative}
+.nav-soon{position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--violet2);box-shadow:0 0 0 2px #0b0b12}
+.soon-hero{border:1px dashed var(--line2);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;background:repeating-linear-gradient(135deg,transparent 0 12px,#ffffff04 12px 24px)}
+.soon-preview{display:grid;gap:8px;opacity:.55}
+.sp-card{display:flex;gap:12px;align-items:center;padding:10px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.sp-img{width:52px;height:52px;border-radius:12px;background:var(--surface2);flex:none}
+.sp-lines{flex:1;display:flex;flex-direction:column;gap:7px}.sp-lines>i{display:block;height:9px;border-radius:5px;background:var(--surface2)}.sp-lines>i:first-child{width:60%}.sp-lines>i:nth-child(2){width:35%}
+.sp-lines span{display:flex;gap:10px}.sp-lines b{display:block;width:34px;height:16px;border-radius:5px;background:var(--surface2)}
+.ad-slot{margin-top:4px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);min-height:90px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;gap:6px;contain:layout paint}
+.ad-slot.preview{border-style:dashed;background:repeating-linear-gradient(135deg,transparent 0 10px,#ffffff05 10px 20px)}
+.ad-slot p{margin:0;font-size:13px;color:var(--muted)}
+.ad-lbl{font:700 10.5px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
 .stop-btn{background:var(--raise);border:1px solid var(--line2);color:var(--fg)}
 .stop-btn svg{width:14px!important;height:14px!important}
 .to-end{position:sticky;bottom:118px;align-self:center;width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:var(--surface2);color:var(--fg);display:grid;place-items:center;box-shadow:0 8px 24px -8px #000;margin-top:-40px;z-index:2}
@@ -595,6 +619,7 @@ td .pct.up{color:var(--ok)} td .pct.dn{color:var(--bad)}
     <button data-go="shop"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5h16l-1.2 11.6a1 1 0 0 1-1 .9H6.2a1 1 0 0 1-1-.9zM8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/></svg></span>Tienda</button>
     <button data-go="catalog"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></svg></span>Catálogo</button>
     <button data-go="map"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m9 4.5-5.5 2.2v12.8L9 17.3l6 2.2 5.5-2.2V4.5L15 6.7zM9 4.5v12.8M15 6.7v12.8"/></svg></span>Mapa</button>
+    <button data-go="meta"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></svg><i class="nav-soon" aria-label="Próximamente"></i></span>Meta</button>
     <button data-go="stats"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg></span>Stats</button>
   </nav>
 </div>
@@ -960,7 +985,7 @@ VIEWS.home = v => {
   };
   const order = can("homeLayout") ? S.homeOrder.filter(k => !S.homeHide[k]) : HOME_DEFAULT;
   v.innerHTML = `<div class="page">
-    ${order.map(k => SEC[k] || "").join("")}
+    ${order.map(k => (SEC[k] || "") + (k === "featured" ? adSlot("home") : "")).join("")}
     ${planId() !== "ultra" ? `<section class="sec"><button class="prem-banner" data-go="premium"><span class="av">${I.gem}</span><span class="grow"><span class="t" style="font-weight:700">DropStats Premium</span><span class="s">${planId() === "free" ? "Pro, Elite y Drop Ultra · compara los cuatro planes" : "Sube a Drop Ultra: Widgets y Drop AI"}</span></span>${I.chev}</button></section>` : ""}
   </div>`;
 };
@@ -998,7 +1023,7 @@ VIEWS.shop = v => {
       <div class="row"><select class="sel grow" id="shopPrice" aria-label="Precio"><option value="">Cualquier precio</option><option value="0-800">Hasta 800</option><option value="801-1500">801 – 1.500</option><option value="1501-999999">Más de 1.500</option></select>
       <select class="sel grow" id="shopSort" aria-label="Orden"><option value="section">Por sección</option><option value="asc">Precio: menor a mayor</option><option value="desc">Precio: mayor a menor</option><option value="name">Nombre</option></select></div>
     </div>` : ""}
-    ${body}</div>`;
+    ${body}${ok ? adSlot("shop") : ""}</div>`;
   const ps = $("#shopPrice"); if (ps) { ps.value = UI.shopPrice; $("#shopSort").value = UI.shopSort; }
 };
 
@@ -1135,7 +1160,7 @@ VIEWS.catalog = v => {
         ${UI.itemCmp.length ? `<button class="btn sm pri" data-act="icmp-open">Comparar (${UI.itemCmp.length})</button>` : ""}</div>
       ${UI.catType !== "all" && !UI.catQ && CAT.status === "loading" ? `<p class="small faint">Descargando todos los objetos de este tipo; puede tardar unos segundos.</p>` : ""}
     </div>
-    ${body}</div>`;
+    ${body}${CAT.status === "ok" ? adSlot("catalog") : ""}</div>`;
   const cp = $("#catPrice"); if (cp) { $("#catRar").value = UI.catRar; cp.value = UI.catPrice; $("#catSort").value = UI.catSort; }
 };
 
@@ -1201,7 +1226,7 @@ VIEWS.stats = v => {
         <button class="btn pri" ${ST.status === "loading" ? "disabled" : ""}>Buscar</button></div>
       <details><summary class="small">¿Dónde veo mi nombre o mi ID?</summary><p class="small muted" style="margin-top:8px">El <b>nombre</b> es el que aparece en Fortnite y en epicgames.com (Cuenta → Configuración → Nombre público). El <b>ID de cuenta</b> son 32 letras y números que aparecen en epicgames.com → Cuenta → Configuración, debajo del nombre. Si juegas en PlayStation o Xbox sin nombre de Epic, elige esa plataforma y usa tu nombre de esa consola.</p></details>
     </form>
-    ${body}</div>`;
+    ${body}${ST.status === "ok" ? adSlot("stats") : ""}</div>`;
   $("#statType").value = ST.type || S.prefs.platform; $("#statWin").value = S.prefs.window;
 };
 function statsBlock(d) {
@@ -1447,7 +1472,8 @@ function renderDrawer() {
       ${can("poiSearch") ? `<p class="small faint">Resaltados: lugares que tienen un marcador tuyo con el mismo nombre.</p>` : lockRow("poiSearch", "Busca lugares y ve cuáles usas en tus estrategias")}`
       : `<p class="small muted">${MAP.status === "ok" ? "La fuente no ha devuelto ubicaciones." : "Las ubicaciones llegan con el mapa."}</p>`;
   } else {
-    body = `<p class="small muted">Imagen oficial del mapa de Battle Royale que publica fortnite-api.com con cada actualización del juego${mapReady() ? `; esta copia se obtuvo ${fmtD(MAP.at)}` : ""}. Distancias en casillas de la cuadrícula (A–J, 1–10); la escala en metros cambia cada temporada, así que no se estima. No hay vista 3D: no existe una fuente pública autorizada del terreno. Las estrategias se guardan en este dispositivo y en tu cuenta si has iniciado sesión.</p>`;
+    body = `<p class="small muted">Imagen oficial del mapa de Battle Royale que publica fortnite-api.com con cada actualización del juego${mapReady() ? `; esta copia se obtuvo ${fmtD(MAP.at)}` : ""}. Distancias en casillas de la cuadrícula (A–J, 1–10); la escala en metros cambia cada temporada, así que no se estima. Las estrategias se guardan en este dispositivo y en tu cuenta si has iniciado sesión.</p>
+      <div class="list">${soonCard("map3d", "map")}${soonCard("mapMeters", "route")}</div>`;
   }
   d.innerHTML = chips("drawer", [["strats", "Estrategias", S.strategies.length], ["markers", "Marcadores", S.markers.length], ["routes", "Rutas", S.routes.length], ["legend", "Leyenda"], ["places", "Lugares", names.length || null], ["info", "Info"]], tab) + body;
 }
@@ -1635,7 +1661,7 @@ VIEWS.events = v => {
         <a class="li" href="https://www.fortnite.com/competitive?lang=es-ES" target="_blank" rel="noopener"><span class="av">${I.trophy}</span><span class="grow"><span class="t">Fortnite Competitivo</span><span class="s">Calendario, reglas y formatos · fortnite.com</span></span>${I.ext.replace("<svg", '<svg class="chev"')}</a>
         <a class="li" href="https://www.fortnite.com/competitive/news?lang=es-ES" target="_blank" rel="noopener"><span class="av">${I.info}</span><span class="grow"><span class="t">Noticias competitivas</span><span class="s">Anuncios de FNCS y cambios de formato</span></span>${I.ext.replace("<svg", '<svg class="chev"')}</a>
       </div>
-      <div class="note">${I.info}<p>No hay una fuente pública y autorizada con el calendario competitivo: Epic lo publica en el juego (pestaña «Competir») y en su web. Por eso DropStats no muestra horarios ni clasificaciones automáticos ni inventados.</p></div>
+      <div class="list" style="margin-top:10px">${soonCard("tourneyFeed", "trophy")}</div>
     </section>
     <section class="sec"><div class="sh"><div><h2>Tus recordatorios</h2><p class="sub">Torneos que añades tú con la fecha oficial; se muestran en tu hora local con cuenta atrás</p></div><button class="btn sm pri" data-act="event-new">${I.plus}Añadir</button></div>
       ${regs.length > 1 ? chips("evRegion", [["", "Todas las regiones"], ...regs.map(r => [r, r])], UI.evRegion) : ""}
@@ -1711,6 +1737,8 @@ VIEWS.settings = v => {
     <div class="row" style="align-items:flex-start"><label class="lbl grow">Plataforma por defecto<select class="sel" id="pref-platform"><option value="epic">Epic</option><option value="psn">PlayStation</option><option value="xbl">Xbox</option></select></label>
     <label class="lbl grow">Periodo de estadísticas<select class="sel" id="pref-window"><option value="lifetime">Total</option><option value="season">Temporada</option></select></label></div>
   </section>
+  <section class="sec"><h2>En desarrollo</h2><p class="small muted">Funciones que dependen de servicios que aún no están disponibles. No muestran datos inventados.</p>
+    <div class="list">${soonCard("subscriptions", "gem")}${soonCard("metaLab", "bolt")}${soonCard("tourneyFeed", "trophy")}${soonCard("map3d", "map")}${soonCard("mapMeters", "route")}</div></section>
   <section class="sec"><h2>Fuentes de datos</h2>
     <div class="list">
       <div class="li"><span class="grow"><span class="t">Tienda, catálogo y mapa</span><span class="s">fortnite-api.com · gratuita · no oficial</span></span><button class="btn sm" data-act="test-shop">Comprobar</button></div>
@@ -1911,7 +1939,7 @@ function applyLook() {
 /* =================== ACCESOS RÁPIDOS E INICIO (Pro) =================== */
 const QUICK = {
   catalog: ["Catálogo", "Todos los cosméticos", "grid"], map: ["Mapa", "Estrategias y rutas", "map"], stats: ["Stats", "Busca jugadores", "stats"],
-  events: ["Torneos", "FNCS y Cash Cups", "trophy"], favs: ["Favoritos", "Tus skins guardadas", "star"],
+  events: ["Torneos", "FNCS y Cash Cups", "trophy"], meta: ["Meta Lab", "Próximamente", "bolt"], favs: ["Favoritos", "Tus skins guardadas", "star"],
   shop: ["Tienda", "Ofertas de hoy", "shop"], ai: ["Drop AI", "Asistente de IA", "spark"], premium: ["Premium", "Planes y demostración", "gem"]
 };
 const QUICK_DEFAULT = ["events", "catalog", "map", "favs"];
@@ -1951,7 +1979,7 @@ function planCard(p) {
     <h2 class="plan-name">${p === "ultra" ? `<span class="ultra-word">Drop Ultra</span>` : P.name}</h2>
     <div class="plan-price"><b>${p === "free" ? "0 €" : priceTxt(P.price)}</b><span>${p === "free" ? "siempre" : "/ mes"}</span></div><p class="plan-prov">${p === "free" ? "Sin registro obligatorio" : BILL.configured ? (BILL.mode === "test" ? "Modo de prueba · sin dinero real" : "IVA incluido · cancela cuando quieras") : "Precio provisional · sin cobros"}</p>
     <ul class="perks">${PLAN_PERKS[p].map(x => `<li>${I.check}<span>${x}</span></li>`).join("")}</ul>
-    ${p === "free" ? (cur || !demoAllowed() || Entitlements.demo() === "free" ? "" : `<button class="btn" data-act="demo-plan" data-v="free">Volver a Gratis</button>`) : BILL.configured ? (Entitlements.paid() === p ? `<button class="btn" data-act="manage-sub">Gestionar suscripción</button>` : `<button class="btn ${p === "ultra" ? "ultra-btn" : "pri"}" data-act="plan-choose" data-v="${p}">${p === "ultra" ? I.gem : ""}${Entitlements.paid() !== "free" ? "Cambiar a " + P.short : "Suscribirme"} · ${priceTxt(P.price)}/mes</button>`) : TEST_UNLOCK ? (cur ? `<p class="small muted" style="text-align:center">Activo en modo prueba</p>` : `<button class="btn ${p === "ultra" ? "ultra-btn" : "pri"}" data-act="test-unlock" data-v="${p}">${I.gem}Desbloquear ${p === "ultra" ? "Drop Ultra" : P.short} · prueba sin pago</button>`) : `<button class="btn ${p === "ultra" ? "ultra-btn" : "pri"}" data-act="plan-choose" data-v="${p}">${p === "ultra" ? I.gem + "Quiero Drop Ultra" : "Elegir " + P.short}</button>`}
+    ${p === "free" ? (cur || !demoAllowed() || Entitlements.demo() === "free" ? "" : `<button class="btn" data-act="demo-plan" data-v="free">Volver a Gratis</button>`) : BILL.configured ? (Entitlements.paid() === p ? `<button class="btn" data-act="manage-sub">Gestionar suscripción</button>` : `<button class="btn ${p === "ultra" ? "ultra-btn" : "pri"}" data-act="plan-choose" data-v="${p}">${p === "ultra" ? I.gem : ""}${Entitlements.paid() !== "free" ? "Cambiar a " + P.short : "Suscribirme"} · ${priceTxt(P.price)}/mes</button>`) : TEST_UNLOCK ? (cur ? `<p class="small muted" style="text-align:center">Activo en modo prueba</p>` : `<button class="btn ${p === "ultra" ? "ultra-btn" : "pri"}" data-act="test-unlock" data-v="${p}">${I.gem}Desbloquear ${p === "ultra" ? "Drop Ultra" : P.short} · prueba sin pago</button>`) : soonBtn("subscriptions", `${p === "ultra" ? I.gem : ""}Suscribirme · ${priceTxt(P.price)}/mes`, p === "ultra" ? "ultra-btn" : "pri")}
   </article>`;
 }
 /* filas: [texto, gratis, pro, elite, ultra] · true = incluido, false = no, texto = valor concreto */
@@ -1972,6 +2000,7 @@ const CMP_GROUPS = [
   ["Interfaz", [
     ["Interfaz oscura para móvil", 1, 1, 1, 1], ["Temas", "1", "3", "5", "7"], ["Modo compacto y orden del inicio", 0, 1, 1, 1], ["Acabado visual propio del plan", 0, "Negro y morado", "Violeta y azul", "Holográfico"],
     ["Color de acento, esquinas y tamaño de texto", 0, 0, 0, 1], ["Efectos visuales sutiles", 0, 0, 0, 1]]],
+  ["En desarrollo", [["Meta Lab: armas y estadísticas por parche", "Próximamente", "Próximamente", "Próximamente", "Próximamente"], ["Calendario automático de torneos", "No disponible aún", "No disponible aún", "No disponible aún", "No disponible aún"]]],
   ["Exclusivo de Drop Ultra", [["Widgets (12 tipos, configurables)", 0, 0, 0, 1], ["Drop AI, asistente de IA con búsqueda web", 0, 0, 0, 1]]]
 ];
 const cmpCell = (x, k) => x === 1 || x === true ? `<span class="yes ${k === 3 ? "u" : ""}" aria-label="Incluido">${I.check}</span>` : x ? `<span class="val">${esc(x)}</span>` : `<span class="no" aria-label="No incluido">—</span>`;
@@ -1979,7 +2008,7 @@ VIEWS.premium = v => {
   const p = planId();
   v.innerHTML = `<div class="page">
     <div class="prem-hero"><span class="eyebrow">DropStats Premium</span><h1>Cuatro niveles, de menos a más</h1><p class="muted">Gratis tiene lo esencial. Pro y Elite amplían estadísticas, mapa, catálogo y favoritos. Widgets y Drop AI son exclusivos de Drop Ultra.</p></div>
-    ${!BILL.configured ? `<div class="note warn">${I.info}<p><b>Aún no hay suscripciones.</b> Los precios son provisionales, no se cobra nada y ningún plan está contratado. Para probar cada plan usa el selector de demostración.</p></div>`
+    ${!BILL.configured ? `<div class="note warn">${I.info}<p><b>Suscripciones: próximamente.</b> DropStats es gratis: no se cobra nada y ningún plan está contratado. Los precios son provisionales. Para probar cada plan usa el selector de demostración.</p></div>`
       : BILL.mode === "test" ? `<div class="note warn">${I.info}<p><b>Pagos en modo de prueba (Stripe).</b> No se cobra dinero real. Para probar, usa la tarjeta <b class="num">4242 4242 4242 4242</b>, cualquier fecha futura y cualquier CVC.</p></div>` : ""}
     ${BILL.configured && ACC.user && Entitlements.paid() !== "free" ? `<section class="sec"><div class="panel sub-box"><div class="grow"><span class="eyebrow">Tu suscripción</span><h2>${PLANS[Entitlements.paid()].name}</h2><p class="small muted">${BILL.cancelAtPeriodEnd ? "Se cancela" : "Se renueva"} el ${BILL.periodEnd ? fmtDay(BILL.periodEnd) : "—"}${BILL.mode === "test" ? " · modo de prueba" : ""}</p></div><button class="btn" data-act="manage-sub">Gestionar</button></div></section>` : ""}
     ${BILL.configured && !ACC.user ? `<div class="note">${I.user}<p>Para suscribirte, <button class="link" data-go="account">inicia sesión o crea tu cuenta</button>. La suscripción queda guardada en tu cuenta.</p></div>` : ""}
@@ -2242,6 +2271,55 @@ function widgetAction(act, a) {
   else if (act === "w-layout") { S.wlayout = a.dataset.v === "list" ? "list" : "grid"; save("wlayout"); }
   else if (act === "w-reset") { if (!arm(a, "wreset")) return true; S.widgets = DEFAULT_WIDGETS(); S.wlayout = "grid"; save("wlayout"); toast("Diseño original restaurado"); }
   save("widgets"); render(); return true;
+}
+
+/* =================== FUNCIONES FUTURAS («Próximamente») Y ESPACIOS PUBLICITARIOS =================== */
+/* Registro central de funciones que dependen de servicios que aún no están disponibles. Para activar una función:
+   cambia su estado a "on" y conecta su servicio (cada entrada indica qué falta). Nunca se muestran datos inventados. */
+const SOON = {
+  subscriptions: { state: "soon", name: "Suscripciones Pro, Elite y Drop Ultra", why: "DropStats es gratis por ahora: no hay pagos ni suscripciones activos.", needs: "Una forma de cobro compatible con las condiciones de Epic Games y revisada por un adulto responsable. El código de pagos está preparado y apagado.", tip: "Puedes probar todas las funciones de cada plan con el selector de demostración." },
+  metaLab: { state: "soon", name: "Meta Lab", why: "La única fuente con armas por parche (api-fortnite.com) solo ofrece esos datos en un plan de pago.", needs: "Una fuente de datos de armas gratuita o autorizada. La función del servidor está guardada y apagada.", tip: "Mientras tanto, Drop AI (Drop Ultra) responde el daño de las armas con datos de la Fortnite Wiki." },
+  tourneyFeed: { state: "na", name: "Calendario automático de torneos", why: "No existe una fuente pública y autorizada con el calendario competitivo de Fortnite.", needs: "Una fuente oficial de Epic Games.", tip: "Puedes añadir tus recordatorios con la fecha oficial de fortnite.com/competitive." },
+  map3d: { state: "na", name: "Vista 3D del terreno", why: "No hay una fuente pública y autorizada del relieve del mapa.", needs: "Una fuente oficial del terreno." },
+  mapMeters: { state: "na", name: "Distancias en metros", why: "La escala del mapa cambia cada temporada y no hay una fuente oficial que la publique.", needs: "Una escala oficial por temporada.", tip: "Las distancias se miden en casillas de la cuadrícula." }
+};
+const SOON_LBL = { soon: "Próximamente", na: "No disponible aún", dev: "En desarrollo" };
+const soonTag = k => `<span class="soon-tag s-${SOON[k].state}">${I.clock}${SOON_LBL[SOON[k].state]}</span>`;
+const soonBtn = (k, label, cls = "") => `<button type="button" class="btn ${cls} is-soon" data-act="soon" data-v="${k}" aria-disabled="true">${label}<span class="soon-pill">${SOON_LBL[SOON[k].state]}</span></button>`;
+function soonSheet(k) {
+  const f = SOON[k]; if (!f) return;
+  openSheet(`<div class="stack"><div class="soon-head">${soonTag(k)}<h1>${esc(f.name)}</h1></div>
+    <p class="muted">${esc(f.why)}</p>
+    <dl class="kv"><dt>Qué falta</dt><dd style="text-align:left;font-weight:500">${esc(f.needs)}</dd></dl>
+    ${f.tip ? `<div class="note">${I.info}<p>${esc(f.tip)}</p></div>` : ""}
+    <p class="small faint">El resto de DropStats funciona con normalidad y tus datos no se ven afectados.</p></div>`);
+}
+const soonCard = (k, ic, extra = "") => `<button type="button" class="li soon-li" data-act="soon" data-v="${k}"><span class="av">${I[ic]}</span><span class="grow"><span class="t">${esc(SOON[k].name)} ${soonTag(k)}</span><span class="s">${esc(SOON[k].why)}</span>${extra}</span>${I.chev}</button>`;
+
+/* Meta Lab: apartado visible como «Próximamente» (sin datos ni llamadas a la fuente) */
+VIEWS.meta = v => {
+  v.innerHTML = `<div class="page">
+    <div class="ph"><div class="row"><h1>Meta Lab</h1>${soonTag("metaLab")}</div><p class="small muted">Armas y estadísticas de cada parche.</p></div>
+    <div class="soon-hero">
+      <div class="soon-preview" aria-hidden="true">${[0, 1, 2].map(i => `<div class="sp-card"><i class="sp-img"></i><div class="sp-lines"><i></i><i></i><span>${[0, 1, 2, 3].map(() => "<b></b>").join("")}</span></div></div>`).join("")}</div>
+      <p class="small faint" style="text-align:center">Vista previa ilustrativa: no contiene datos.</p>
+    </div>
+    <section class="sec"><h2>Qué incluirá</h2><ul class="perks">${["Lista de armas del parche actual con su rareza, munición y si están en el botín", "Estadísticas por rareza: daño, cadencia, cargador y recarga", "Comparar armas lado a lado", "Cambios de equilibrio entre parches"].map(x => `<li>${I.check}<span>${x}</span></li>`).join("")}</ul></section>
+    <section class="sec"><div class="note">${I.info}<p><b>¿Por qué aún no está?</b> ${esc(SOON.metaLab.why)} DropStats no muestra estadísticas inventadas ni de ejemplo.</p></div>
+      <div class="note">${I.spark}<p>${esc(SOON.metaLab.tip)}</p></div>
+      <div class="row"><button class="btn" data-go="${can("ai") ? "ai" : "premium"}">${I.spark}${can("ai") ? "Preguntar a Drop AI" : "Ver Drop Ultra"}</button></div></section>
+  </div>`;
+};
+
+/* Espacios publicitarios preparados. ESTADO: desactivados. No se cargan scripts, no se crean cookies y no se recogen datos.
+   Para el futuro: solo se activarían si se confirma que la publicidad está permitida (condiciones de Epic, de Vercel y de la
+   plataforma), con un adulto responsable al frente de la cuenta y con un aviso de consentimiento certificado (EEE). */
+const ADS = { enabled: false, provider: null, slots: { home: "Inicio", shop: "Tienda", catalog: "Catálogo", stats: "Estadísticas" } };
+const adPreview = () => { try { return new URLSearchParams(location.search).get("adpreview") === "1"; } catch { return false; } };
+function adSlot(id) {
+  if (!ADS.enabled && !adPreview()) return ""; // desactivado: no ocupa sitio ni hace nada
+  if (!ADS.enabled) return `<aside class="ad-slot preview" aria-label="Espacio publicitario (vista previa)"><span class="ad-lbl">Espacio publicitario · desactivado</span><p>Aquí podría mostrarse un anuncio en el futuro, si se confirma que está permitido. Ahora no se carga nada.</p></aside>`;
+  return `<aside class="ad-slot" data-slot="${id}" aria-label="Publicidad"><span class="ad-lbl">Publicidad</span></aside>`; // contenedor para la plataforma que se autorice
 }
 
 /* =================== DROP AI (exclusivo de Drop Ultra) =================== */
@@ -2834,6 +2912,7 @@ document.addEventListener("click", async e => {
     case "unlock-skip": return Unlock.skip();
     case "unlock-close": return Unlock.close();
     case "test-unlock": { const pv = a.dataset.v; if (!TEST_UNLOCK || !PAID.includes(pv)) return; closeSheet(); Entitlements.setDemo(pv); return Unlock.play(pv, { test: true }); }
+    case "soon": return soonSheet(a.dataset.v);
     case "manage-sub": return Billing.portal();
     case "plan-choose": { const pv = a.dataset.v; a.disabled = true; const r = await Billing.checkout(pv); a.disabled = false; if (r.ok) return Billing.onResult(r);
       if (r.status === "redirect") return;
