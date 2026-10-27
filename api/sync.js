@@ -2,7 +2,7 @@
 // GET → { data, updatedAt }    PUT { data } → { updatedAt }
 import { storeReady, redis, send, sameOrigin, readJSON, currentUser } from "./_lib.js";
 
-const KEYS = ["favs", "favPlayers", "history", "routes", "markers", "events", "prices", "prefs", "myPlayer", "strategies", "curStrat", "widgets", "wlayout", "look", "quick", "snaps", "favLists", "presets", "homeOrder", "homeHide", "metaSaved"];
+const KEYS = ["favs", "favPlayers", "history", "routes", "markers", "events", "prices", "prefs", "myPlayer", "strategies", "curStrat", "widgets", "wlayout", "look", "quick", "snaps", "favLists", "presets", "homeOrder", "homeHide", "metaSaved", "prSnaps"];
 
 export default async function handler(req, res) {
   if (!storeReady()) return send(res, 503, { error: "not_configured" });

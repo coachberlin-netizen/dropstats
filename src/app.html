@@ -525,6 +525,29 @@ td .pct.up{color:var(--ok)} td .pct.dn{color:var(--bad)}
 .ad-slot.preview{border-style:dashed;background:repeating-linear-gradient(135deg,transparent 0 10px,#ffffff05 10px 20px)}
 .ad-slot p{margin:0;font-size:13px;color:var(--muted)}
 .ad-lbl{font:700 10.5px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+/* ---------- competitivo (PR y earnings) ---------- */
+.comp-grid{display:grid;gap:12px}
+@media (min-width:900px){.comp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.comp-card{border-radius:var(--r);border:1px solid var(--line);background:radial-gradient(120% 70% at 100% 0%,#8b5cf61f,transparent 60%),var(--surface);padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.comp-card header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dtag{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:999px;font:700 10.5px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--ok);background:#3ddc971a;border:1px solid #3ddc9744;vertical-align:middle}
+.dtag.hist{color:#7dd3fc;background:#0ea5e91a;border-color:#0ea5e944}
+.comp-big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.comp-big b{font:700 38px/1 var(--display)}
+.comp-big span{color:var(--muted);font-weight:600}
+.comp-big em{margin-left:auto;font:700 20px/1 var(--display);font-style:normal;color:var(--violet2)}
+.comp-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.comp-kv div{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.comp-kv span{font-size:12px;color:var(--muted)}.comp-kv b{font-size:16px}
+.comp-bars{display:flex;flex-direction:column;gap:8px}
+.comp-bars .bar-row{grid-template-columns:78px minmax(0,1fr) auto;font-size:13px}.comp-bars .bar-row b{min-width:52px;text-align:right}
+.comp-pos{display:flex;flex-direction:column;gap:6px}
+.pos-track{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--violet),#3b82f6 40%,var(--surface2))}
+.pos-track i{position:absolute;top:-4px;width:4px;height:18px;margin-left:-2px;border-radius:2px;background:#fff;box-shadow:0 0 0 2px #08080d}
+.comp-sub{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-top:2px}
+.comp-na{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:12px;background:var(--surface2);border:1px dashed var(--line2)}
+.comp-na p{margin:0;font-size:13.5px;color:var(--muted)}
+.comp-src{margin:0;font-size:11.5px;color:var(--faint)}
 .stop-btn{background:var(--raise);border:1px solid var(--line2);color:var(--fg)}
 .stop-btn svg{width:14px!important;height:14px!important}
 .to-end{position:sticky;bottom:118px;align-self:center;width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:var(--surface2);color:var(--fg);display:grid;place-items:center;box-shadow:0 8px 24px -8px #000;margin-top:-40px;z-index:2}
@@ -1241,6 +1264,7 @@ function statsBlock(d) {
   ${can("statsModes") ? `${modes.length ? `<h2>Por modo</h2>${statTable(modes.map(([l, k]) => [l, d.stats.all[k]]))}` : ""}
   ${inputs.length ? `<h2>Por control</h2>${statTable(inputs.map(([l, k]) => [l, d.stats[k].overall]))}` : ""}` : modes.length || inputs.length ? lockRow("statsModes", "Desglose por modo (solo, dúo, trío, escuadrón) y por control") : ""}
   ${o?.lastModified ? `<p class="small faint">Datos actualizados por la fuente el ${fmtD(o.lastModified)}.</p>` : ""}</section>
+  ${compBlock(d)}
   ${statsExtras(d)}`;
 }
 const statTable = rows => `<div class="tblwrap"><table><thead><tr><th>Modo</th><th>Vict.</th><th>Elim.</th><th>Partidas</th><th>K/D</th><th>% V</th></tr></thead><tbody>${rows.map(([l, s]) => `<tr><td>${l}</td><td>${fmtN(s.wins)}</td><td>${fmtN(s.kills)}</td><td>${fmtN(s.matches)}</td><td>${s.kd == null ? "—" : (+s.kd).toFixed(2)}</td><td>${s.winRate == null ? "—" : (+s.winRate).toFixed(1)}</td></tr>`).join("")}</tbody></table></div>`;
@@ -1744,7 +1768,7 @@ VIEWS.settings = v => {
     <div id="testout"></div>
   </section>
   <section class="sec"><h2>Datos guardados</h2>
-    <div class="list">${[["favs", "Cosméticos favoritos", Object.keys(S.favs).length], ["favPlayers", "Jugadores favoritos", S.favPlayers.length], ["history", "Historial de búsquedas", S.history.length], ["routes", "Rutas del mapa", S.routes.length], ["markers", "Marcadores", S.markers.length], ["events", "Recordatorios de torneos", S.events.length], ["strategies", "Estrategias del mapa", S.strategies.length], ["snaps", "Historial de estadísticas", Object.keys(S.snaps).length], ["favLists", "Listas de favoritos", S.favLists.length], ["presets", "Filtros guardados", S.presets.length], ["aiChats", "Conversaciones de Drop AI", S.aiChats.length], ["prices", "Precios vistos en la tienda", Object.keys(S.prices).length]].map(([k, l, n]) => `<div class="li"><span class="grow"><span class="t">${l}</span><span class="s">${n} ${n === 1 ? "elemento" : "elementos"}</span></span><button class="btn sm danger" data-act="wipe" data-k="${k}" ${n ? "" : "disabled"}>Borrar</button></div>`).join("")}</div>
+    <div class="list">${[["favs", "Cosméticos favoritos", Object.keys(S.favs).length], ["favPlayers", "Jugadores favoritos", S.favPlayers.length], ["history", "Historial de búsquedas", S.history.length], ["routes", "Rutas del mapa", S.routes.length], ["markers", "Marcadores", S.markers.length], ["events", "Recordatorios de torneos", S.events.length], ["strategies", "Estrategias del mapa", S.strategies.length], ["snaps", "Historial de estadísticas", Object.keys(S.snaps).length], ["prSnaps", "Historial de PR", Object.keys(S.prSnaps).length], ["favLists", "Listas de favoritos", S.favLists.length], ["presets", "Filtros guardados", S.presets.length], ["aiChats", "Conversaciones de Drop AI", S.aiChats.length], ["prices", "Precios vistos en la tienda", Object.keys(S.prices).length]].map(([k, l, n]) => `<div class="li"><span class="grow"><span class="t">${l}</span><span class="s">${n} ${n === 1 ? "elemento" : "elementos"}</span></span><button class="btn sm danger" data-act="wipe" data-k="${k}" ${n ? "" : "disabled"}>Borrar</button></div>`).join("")}</div>
     <div class="row"><button class="btn sm" data-act="export">Copia de seguridad</button><button class="btn sm" data-act="import">Restaurar copia</button></div>
   </section>
   <p class="small faint">DropStats es un proyecto independiente. No está afiliado, patrocinado ni aprobado por Epic Games. Fortnite y los nombres e imágenes de sus objetos son marcas de Epic Games, Inc. DropStats nunca pide tu contraseña de Epic ni hace compras.</p>
@@ -2316,6 +2340,91 @@ function adSlot(id) {
   return `<aside class="ad-slot" data-slot="${id}" aria-label="Publicidad"><span class="ad-lbl">Publicidad</span></aside>`; // contenedor para la plataforma que se autorice
 }
 
+/* =================== COMPETITIVO: PR (Power Ranking) Y EARNINGS — gratis para todos =================== */
+/* PR: Power Rankings de Epic vía api-fortnite.com (solo jugadores del top 10.000, sin pedir la cuenta de Epic).
+   Earnings: Esports Earnings (premios de torneos con fuentes citadas). La evolución de PR solo usa mediciones reales
+   que guarda DropStats (una al día por jugador consultado); nunca se rellenan huecos ni se estiman valores. */
+const COMP = {}; // accountId → { pr: {status,…}, ee: {status,…}, at }
+S.prSnaps = store.get("prSnaps", {});
+SOON.compAdvanced = { state: "soon", name: "Análisis competitivo avanzado (Drop Ultra)", why: "Gráficas históricas detalladas de PR y earnings, comparación entre periodos y evolución competitiva a lo largo del tiempo.", needs: "Más mediciones reales acumuladas. Por ahora todo lo competitivo es gratis y no se bloquea nada.", tip: "Cada vez que consultas a un jugador, DropStats guarda una medición real de su PR (una al día)." };
+const usd = v => v == null || isNaN(v) ? "—" : new Intl.NumberFormat("es-ES", { style: "currency", currency: "USD", maximumFractionDigits: v >= 100 ? 0 : 2, minimumFractionDigits: 0 }).format(v);
+async function loadComp(acc, force) {
+  const id = acc.id, c = COMP[id] = COMP[id] || {};
+  if (!force && c.at && Date.now() - c.at < 10 * 60e3) return;
+  c.at = Date.now(); c.pr = { status: "loading" }; c.ee = c.ee?.status === 300 && !force ? c.ee : { status: "loading" }; rerender("stats");
+  const get = u => fetchJSON(u, 30000).catch(() => ({ status: 0, error: "network" }));
+  const [pr, ee] = await Promise.all([get(`/api/competitive?op=pr&accountId=${encodeURIComponent(id)}&name=${encodeURIComponent(acc.name)}`), c.ee.status === 300 ? Promise.resolve(c.ee) : get(`/api/competitive?op=earnings&name=${encodeURIComponent(acc.name)}`)]);
+  c.pr = pr; c.ee = ee;
+  if (pr.status === 200 && pr.pr?.pr != null) recordPR(id, pr.pr);
+  rerender("stats");
+}
+async function pickEarnings(acc, pid) {
+  const c = COMP[acc.id] = COMP[acc.id] || {}; c.ee = { status: "loading" }; rerender("stats");
+  c.ee = await fetchJSON(`/api/competitive?op=earnings&name=${encodeURIComponent(acc.name)}&pick=${encodeURIComponent(pid)}`, 30000).catch(() => ({ status: 0, error: "network" }));
+  rerender("stats");
+}
+function recordPR(id, p) { // una medición real al día; si el PR de la fuente no ha cambiado de fecha, se guarda igualmente como medición del día
+  const day = new Date().toISOString().slice(0, 10);
+  const arr = (S.prSnaps[id] = (S.prSnaps[id] || []).filter(x => x.day !== day));
+  arr.push({ day, at: Date.now(), pr: p.pr, rank: p.rank, srcUpdated: p.lastUpdated || null, season: p.season || null });
+  arr.sort((a, b) => a.at - b.at); if (arr.length > 365) arr.splice(0, arr.length - 365);
+  save("prSnaps");
+}
+const COMP_ERR = {
+  missing_key: "La fuente de datos no está configurada en el servidor.", invalid_key: "La clave de la fuente de datos no es válida.", plan_required: "La fuente no incluye estos datos en su plan gratuito.",
+  rate_limited: "La fuente ha limitado las consultas por ahora. Vuelve a intentarlo en un rato.", source_error: "La fuente no responde ahora mismo.", unreachable: "La fuente no responde ahora mismo.",
+  network: "No hay conexión con el servidor de DropStats.", no_store: "Falta la base de datos del servidor.", index_building: "Se está preparando la lista de jugadores con premios. Vuelve a intentarlo en un minuto."
+};
+const dataTag = kind => `<span class="dtag ${kind === "hist" ? "hist" : ""}">${kind === "hist" ? "Histórico" : "Actual"}</span>`;
+const naBox = (txt, btn = "") => `<div class="comp-na"><b>Datos no disponibles actualmente</b><p>${txt}</p>${btn}</div>`;
+function prCard(d) {
+  const c = COMP[d.account.id]?.pr;
+  let body;
+  if (!c || c.status === "loading") body = `<div class="skel" style="height:150px"></div>`;
+  else if (c.status === 404) body = `<div class="comp-na"><b>No aparece en el Power Ranking</b><p>La fuente solo publica el PR de los jugadores que están o han estado en el top 10.000 mundial. DropStats no pide acceso a tu cuenta de Epic para consultar otros puestos.</p></div>`;
+  else if (c.status !== 200) body = naBox(esc(COMP_ERR[c.error] || COMP_ERR.source_error), `<button class="btn sm" data-act="comp-retry">${I.refresh}Reintentar</button>`);
+  else {
+    const p = c.pr, pctTop = p.rank ? Math.max(1, Math.min(100, (1 - (p.rank - 1) / 10000) * 100)) : null;
+    const snaps = (S.prSnaps[d.account.id] || []).filter(x => x.pr != null);
+    body = `<div class="comp-big"><b class="num">${fmtN(p.pr)}</b><span>PR</span>${p.rank ? `<em class="num">#${fmtN(p.rank)}</em>` : ""}</div>
+      <div class="comp-kv">${[["Mejor puesto", p.bestRank ? "#" + fmtN(p.bestRank) : "—"], ["PR máximo", fmtN(p.peakPr)], ["Cambio de PR", p.deltaPr == null ? "—" : (p.deltaPr > 0 ? "+" : "") + fmtN(p.deltaPr)], ["Torneos que cuentan", fmtN(p.countingEvents)]].map(([l, v]) => `<div><span>${l}</span><b class="num">${v}</b></div>`).join("")}</div>
+      ${p.peakPr ? `<div class="comp-bars"><div class="bar-row"><span>PR actual</span><span class="bar"><i style="width:${Math.min(100, p.pr / p.peakPr * 100).toFixed(0)}%"></i></span><b class="num">${fmtN(p.pr)}</b></div><div class="bar-row"><span>PR máximo</span><span class="bar"><i style="width:100%;background:${COLORS[1]}"></i></span><b class="num">${fmtN(p.peakPr)}</b></div></div>` : ""}
+      ${pctTop ? `<div class="comp-pos"><span class="w-lbl">Posición en el top 10.000</span><span class="pos-track"><i style="left:${(100 - pctTop).toFixed(1)}%"></i></span><span class="small faint">#1 · · · #10.000</span></div>` : ""}
+      <p class="small faint">${p.season ? esc(p.season) + " · " : ""}${p.lastUpdated ? "actualizado por la fuente el " + fmtD(p.lastUpdated) : "fecha de actualización no indicada por la fuente"}.</p>
+      <div class="comp-sub"><span>Evolución ${dataTag("hist")}</span></div>
+      ${snaps.length >= 2 ? `<div class="panel" style="padding:8px 10px">${lineChart(snaps.map(x => ({ at: x.at, v: x.pr })), 0)}</div><p class="small faint">${snaps.length} mediciones guardadas por DropStats (una por día en que consultaste a este jugador). Los días sin consulta no se rellenan.</p>`
+        : `<p class="small muted">Aún no hay historial real: hay ${snaps.length} medición${snaps.length === 1 ? "" : "es"}. DropStats guarda una al día cuando consultas a este jugador; la gráfica aparece con dos días distintos.</p>`}`;
+  }
+  return `<article class="comp-card"><header><span class="w-lbl">Power Ranking</span>${dataTag("now")}</header>${body}<p class="comp-src">Fuente: Power Rankings de Epic vía api-fortnite.com (no oficial)</p></article>`;
+}
+function eeCard(d) {
+  const c = COMP[d.account.id]?.ee;
+  let body;
+  if (!c || c.status === "loading") body = `<div class="skel" style="height:150px"></div>`;
+  else if (c.status === 300) body = `<div class="comp-na"><b>Varios jugadores con ese nombre</b><p>Elige el que corresponde (Esports Earnings no usa cuentas de Epic):</p></div><div class="list">${c.matches.map(m => `<button class="li" data-act="comp-pick" data-v="${esc(m.id)}"><span class="grow"><span class="t">${esc(m.handle)}${m.country ? " · " + esc(String(m.country).toUpperCase()) : ""}</span><span class="s">${usd(m.totalUSD)} en premios</span></span>${I.chev}</button>`).join("")}</div>`;
+  else if (c.status === 404) body = `<div class="comp-na"><b>Sin premios registrados con este nombre</b><p>No hay coincidencia exacta entre los ${fmtN(c.indexed)} jugadores de Fortnite con más premios en Esports Earnings. Si has ganado premios con otro nombre, no se puede enlazar automáticamente.</p></div>`;
+  else if (c.status !== 200) body = naBox(esc(COMP_ERR[c.error] || COMP_ERR.source_error), c.error === "missing_key" ? "" : `<button class="btn sm" data-act="comp-retry">${I.refresh}Reintentar</button>`);
+  else {
+    const p = c.player, byYear = {};
+    c.tournaments.forEach(t => { const y = String(t.date || "").slice(0, 4); if (/^\d{4}$/.test(y) && t.usd != null) byYear[y] = (byYear[y] || 0) + t.usd; });
+    const years = Object.keys(byYear).sort(), mx = Math.max(...Object.values(byYear), 1);
+    body = `<div class="comp-big"><b class="num">${usd(p.totalUSD)}</b><span>en premios</span></div>
+      <div class="comp-kv">${[["Torneos con premio", fmtN(p.tournaments)], ["Ranking mundial", p.worldRanking ? "#" + fmtN(p.worldRanking) : "—"]].map(([l, v]) => `<div><span>${l}</span><b class="num">${v}</b></div>`).join("")}</div>
+      <p class="small muted">Coincidencia por nombre: <b style="color:var(--fg)">${esc(p.handle)}</b>${p.country ? " · " + esc(String(p.country).toUpperCase()) : ""}. <a href="${esc(p.url)}" target="_blank" rel="noopener">Comprobar el perfil</a></p>
+      <div class="comp-sub"><span>Premios por año ${dataTag("hist")}</span></div>
+      ${years.length ? `<div class="comp-bars">${years.map(y => `<div class="bar-row"><span>${y}</span><span class="bar"><i style="width:${(byYear[y] / mx * 100).toFixed(0)}%"></i></span><b class="num">${usd(byYear[y])}</b></div>`).join("")}</div><p class="small faint">Suma de los torneos registrados de cada año. Los años sin torneos no aparecen.</p>` : `<p class="small muted">La fuente no da fechas o importes por torneo.</p>`}
+      ${c.tournaments.length ? `<details><summary class="small">Torneos recientes (${c.tournaments.length})</summary><div class="list" style="margin-top:8px">${c.tournaments.slice(0, 8).map(t => `<div class="li"><span class="grow"><span class="t" style="white-space:normal">${esc(t.name)}</span><span class="s">${t.date ? fmtDay(t.date) : "—"}${t.place ? " · " + esc(t.place) : ""}</span></span><b class="num small">${t.usd != null ? usd(t.usd) : esc(t.prize + " " + (t.currency || ""))}</b></div>`).join("")}</div></details>` : ""}`;
+  }
+  return `<article class="comp-card"><header><span class="w-lbl">Earnings</span>${dataTag("now")}</header>${body}<p class="comp-src">Fuente: Esports Earnings (base de datos comunitaria con fuentes citadas)</p></article>`;
+}
+function compBlock(d) {
+  if (!d?.account?.id) return "";
+  queueMicrotask(() => loadComp(d.account));
+  return `<section class="sec"><div class="sh"><div><h2>Competitivo</h2><p class="sub">PR y earnings · gratis para todos</p></div><button class="link" data-act="comp-retry">Actualizar</button></div>
+    <div class="comp-grid">${prCard(d)}${eeCard(d)}</div>
+    <div class="list" style="margin-top:10px">${soonCard("compAdvanced", "stats")}</div></section>`;
+}
+
 /* =================== DROP AI (exclusivo de Drop Ultra) =================== */
 /* El modelo de IA se llama desde el servidor (/api/ai); la clave nunca llega al navegador.
    Si el servidor no tiene proveedor configurado, la interfaz lo dice y no envía nada: no hay respuestas simuladas. */
@@ -2705,7 +2814,7 @@ const catProControls = () => can("catFilters") ? `<select class="sel" id="catRar
 /* =================== CUENTA Y SINCRONIZACIÓN =================== */
 /* Cuenta propia de DropStats (correo y contraseña), independiente de Epic Games.
    Sincroniza favoritos, jugadores, historial, rutas, marcadores, recordatorios, precios y preferencias. */
-const SYNC_KEYS = ["favs", "favPlayers", "history", "routes", "markers", "events", "prefs", "myPlayer", "strategies", "curStrat", "widgets", "wlayout", "look", "quick", "snaps", "favLists", "presets", "homeOrder", "homeHide"];
+const SYNC_KEYS = ["favs", "favPlayers", "history", "routes", "markers", "events", "prefs", "myPlayer", "strategies", "curStrat", "widgets", "wlayout", "look", "quick", "snaps", "favLists", "presets", "homeOrder", "homeHide", "prSnaps"];
 const ACC = { checked: false, configured: null, user: null, status: "idle", lastAt: store.get("syncAt", 0), dirty: store.get("dirty", false), busy: false, err: "" };
 async function sendJSON(url, body, method = "POST", ms = 15000) {
   const ac = new AbortController(), t = setTimeout(() => ac.abort(), ms);
@@ -2743,6 +2852,7 @@ function mergeData(d) {
   if (Array.isArray(d.homeOrder) && !store.get("homeOrder", null)) S.homeOrder = d.homeOrder.filter(k => HOME_SECS[k]).concat(HOME_DEFAULT.filter(k => !d.homeOrder.includes(k)));
   if (d.homeHide && !store.get("homeHide", null)) S.homeHide = asObj(d.homeHide);
   if (typeof d.wlayout === "string" && !store.get("wlayout", null)) S.wlayout = d.wlayout;
+  const ps = asObj(d.prSnaps); for (const [id, arr] of Object.entries(ps)) S.prSnaps[id] = uniq([...(S.prSnaps[id] || []), ...asArr(arr)], x => x.day).sort((a, b) => a.at - b.at).slice(-365);
   const sn = asObj(d.snaps); for (const [id, arr] of Object.entries(sn)) S.snaps[id] = uniq([...(S.snaps[id] || []), ...asArr(arr)], x => x.day + x.w).sort((a, b) => a.at - b.at).slice(-120);
   persistAll();
 }
@@ -2753,7 +2863,7 @@ function replaceData(d) {
   S.strategies = asArr(d.strategies); S.curStrat = d.curStrat || null; if (Array.isArray(d.widgets)) S.widgets = d.widgets; if (Array.isArray(d.quick)) S.quick = d.quick;
   S.favLists = asArr(d.favLists); S.presets = asArr(d.presets); S.homeHide = asObj(d.homeHide); if (typeof d.wlayout === "string") S.wlayout = d.wlayout;
   if (Array.isArray(d.homeOrder)) S.homeOrder = d.homeOrder.filter(k => HOME_SECS[k]).concat(HOME_DEFAULT.filter(k => !d.homeOrder.includes(k)));
-  S.snaps = asObj(d.snaps); if (d.look && typeof d.look === "object") S.look = Object.assign({}, S.look, d.look);
+  S.prSnaps = asObj(d.prSnaps); S.snaps = asObj(d.snaps); if (d.look && typeof d.look === "object") S.look = Object.assign({}, S.look, d.look);
   persistAll(); applyLook();
 }
 async function syncPush() {
@@ -2907,6 +3017,8 @@ document.addEventListener("click", async e => {
     case "unlock-close": return Unlock.close();
     case "test-unlock": { const pv = a.dataset.v; if (!TEST_UNLOCK || !PAID.includes(pv)) return; closeSheet(); Entitlements.setDemo(pv); return Unlock.play(pv, { test: true }); }
     case "soon": return soonSheet(a.dataset.v);
+    case "comp-retry": if (ST.data?.account) loadComp(ST.data.account, true); return;
+    case "comp-pick": if (ST.data?.account) pickEarnings(ST.data.account, a.dataset.v); return;
     case "manage-sub": return Billing.portal();
     case "plan-choose": { const pv = a.dataset.v; a.disabled = true; const r = await Billing.checkout(pv); a.disabled = false; if (r.ok) return Billing.onResult(r);
       if (r.status === "redirect") return;

@@ -63,6 +63,16 @@ Prueba real: Ajustes → Fuentes de datos → Drop AI → «Comprobar» (llama a
 
 Requiere sesión iniciada (para aplicar el límite diario en Redis). Si no hay clave, la pantalla dice que el servicio aún no está configurado y no envía nada.
 
+## Competitivo: PR y earnings (gratis)
+
+En Stats, al buscar un jugador aparece la sección «Competitivo» (`api/competitive.js`), gratis para todos:
+
+- **PR (Power Ranking):** Power Rankings de Epic a través de api-fortnite.com (clave `APIFORTNITE_API_KEY` o `METALAB_API_KEY`, plan gratuito). Solo se usan las consultas que no necesitan la cuenta de Epic del jugador, así que solo hay datos de quien está o ha estado en el **top 10.000**. Se muestran el PR, el puesto, el mejor puesto, el PR máximo, el cambio y los torneos que cuentan.
+- **Earnings:** Esports Earnings (clave `ESPORTSEARNINGS_API_KEY`). No usa cuentas de Epic: se busca el nombre exacto entre los jugadores de Fortnite con más premios (índice semanal) y se indica como «coincidencia por nombre», con enlace al perfil. Si hay varios con el mismo nombre, el usuario elige.
+- **Actual frente a histórico:** cada dato lleva su etiqueta. La evolución del PR usa solo mediciones reales que guarda DropStats (una al día por jugador consultado) y aparece a partir de dos días distintos; los huecos no se rellenan. Los premios por año salen de los torneos reales de la fuente.
+- Sin clave o sin respuesta de la fuente: «Datos no disponibles actualmente».
+- El análisis avanzado para Drop Ultra está como «Próximamente» y no bloquea nada.
+
 ## Funciones en desarrollo («Próximamente»)
 
 El registro `SOON` de `src/app.html` guarda cada función que depende de un servicio no disponible: su estado («Próximamente», «No disponible aún» o «En desarrollo»), el motivo y lo que falta. Sus botones explican el motivo al pulsarlos; no se muestran datos inventados ni de ejemplo.
